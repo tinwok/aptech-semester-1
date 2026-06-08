@@ -14,6 +14,11 @@ Route::post('login', [AuthController::class, 'login']);
 Route::get('services', [ServicesController::class, 'index']);
 Route::get('services/{service}', [ServicesController::class, 'show']);
 Route::apiResource('services', ServicesController::class);
+<<<<<<< HEAD
+=======
+
+
+>>>>>>> main
 
 // cần phải đăng nhập và gửi gửi request kèm token mới sử dụng được route này
 Route::middleware('auth:sanctum')->group(function () {
@@ -43,6 +48,6 @@ Route::middleware(['auth', 'role:admin'])->prefix('dashboard/admin')->group(func
     Route::apiResource('/staffs', StaffsController::class);
     Route::apiResource('users', UserController::class);
     Route::patch('users/{id}/restore', [UserController::class, 'restore']);
-    Route::apiResource('services', ServicesController::class);
+    // Route::apiResource('services', ServicesController::class);
     Route::apiResource('/appointments', InvoicesController::class);
 });
