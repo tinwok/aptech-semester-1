@@ -1,3 +1,5 @@
+import { getAllServices } from "@/services/api";
+
 const HERO_SLIDES = [
   {
     id: 1,
@@ -49,7 +51,9 @@ const HERO_SLIDES = [
 ];
 
 export async function homeLoader() {
+  const services = await getAllServices();
   return {
     heroSlides: HERO_SLIDES,
+    services: services.data,
   };
 }

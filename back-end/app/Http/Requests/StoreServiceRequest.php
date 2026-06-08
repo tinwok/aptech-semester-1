@@ -1,0 +1,37 @@
+<?php
+
+namespace App\Http\Requests;
+
+use Illuminate\Contracts\Validation\ValidationRule;
+use Illuminate\Foundation\Http\FormRequest;
+
+class StoreServiceRequest extends FormRequest
+{
+    /**
+     * Determine if the user is authorized to make this request.
+     */
+    public function authorize(): bool
+    {
+        return true;
+    }
+
+    /**
+     * Get the validation rules that apply to the request.
+     *
+     * @return array<string, ValidationRule|array<mixed>|string>
+     */
+    public function rules(): array
+    {
+        return [
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'duration_minutes' => 'required|integer',
+            'price' => 'required|numeric',
+            'category' => 'required|string|max:255',
+            'subcategory' => 'required|string|max:255',
+            'status' => 'nullable|in:active,inactive',
+            'note' => 'nullable|string',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+        ];
+    }
+}

@@ -8,14 +8,12 @@ use App\Http\Controllers\StaffsController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
-//không cần đăng nhập
+// không cần đăng nhập
 Route::post('register', [AuthController::class, 'register']);
 Route::post('login', [AuthController::class, 'login']);
 Route::get('services', [ServicesController::class, 'index']);
 Route::get('services/{service}', [ServicesController::class, 'show']);
-// Route::apiResource('services', ServicesController::class);
-
-
+Route::apiResource('services', ServicesController::class);
 
 // cần phải đăng nhập và gửi gửi request kèm token mới sử dụng được route này
 Route::middleware('auth:sanctum')->group(function () {

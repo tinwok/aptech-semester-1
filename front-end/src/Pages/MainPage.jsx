@@ -1,17 +1,13 @@
 import { useLoaderData } from "react-router-dom";
 import Hero from "@/components/Main/common/Hero";
 
-function MainPage() {
-  const { heroSlides } = useLoaderData();
+export default function MainPage() {
+  const { heroSlides, services } = useLoaderData();
+
   return (
     <div>
       <Hero slides={heroSlides} />
-      {/* Anh thien quang het may component con vao main page */}
-      {/* <Hero></Hero>
-  <Services></Services>
-  <Footer></Footer> */}
+      {/* HairStylingSection, Shop sẽ thêm sau */}
     </div>
   );
 }
-
-export default MainPage;
