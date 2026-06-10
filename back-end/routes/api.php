@@ -13,7 +13,7 @@ Route::post('register', [AuthController::class, 'register']);
 Route::post('login', [AuthController::class, 'login']);
 Route::get('services', [ServicesController::class, 'index']);
 Route::get('services/{service}', [ServicesController::class, 'show']);
-Route::apiResource('services', ServicesController::class);
+
 
 
 
@@ -40,11 +40,11 @@ Route::middleware('auth:sanctum')->group(function () {
 });
 
 // Can phai la admin
-Route::middleware(['auth', 'role:admin'])->prefix('dashboard/admin')->group(function () {
+Route::middleware(['auth:sanctum', 'role:admin'])->prefix('dashboard/admin')->group(function () {
     Route::apiResource('/customers', CustomersController::class);
     Route::apiResource('/staffs', StaffsController::class);
     Route::apiResource('users', UserController::class);
     Route::patch('users/{id}/restore', [UserController::class, 'restore']);
-    // Route::apiResource('services', ServicesController::class);
+    Route::apiResource('services', ServicesController::class);
     Route::apiResource('/appointments', InvoicesController::class);
 });
