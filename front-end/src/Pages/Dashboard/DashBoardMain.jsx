@@ -1,24 +1,25 @@
 import { useState } from "react";
+import { useLoaderData } from "react-router-dom";
 
 export default function DashBoardMain() {
   const [currentPage, setCurrentPage] = useState(1);
 
+  const data = useLoaderData();
+
+  console.log(data);
+
   const stats = [
     {
       title: "Staffs",
-      value: 12,
+      value: data.staffs.total ?? 0,
     },
     {
       title: "Customers",
-      value: 150,
+      value: data.customers.total ?? 0,
     },
     {
       title: "Appointments",
-      value: 45,
-    },
-    {
-      title: "Services",
-      value: 10,
+      value: data.appointments.total ?? 0,
     },
   ];
 
