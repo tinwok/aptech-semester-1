@@ -22,6 +22,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/me', [AuthController::class, 'me']);
     Route::post('/me/profile', [AuthController::class, 'updateProfile']);
     //  /me/profile sửa thêm trong cùng 1 route chỉ cần gọi post
+    Route::post('/me/change-password', [AuthController::class, 'changePassword']);
     Route::post('/me/logout', [AuthController::class, 'logout']);
     Route::delete('me/delete', [AuthController::class, 'destroy']);
     Route::middleware('role:staff')->group(function () {
