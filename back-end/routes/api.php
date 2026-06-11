@@ -14,7 +14,7 @@ use App\Http\Controllers\SuppliersController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
-//không cần đăng nhập
+// không cần đăng nhập
 Route::post('register', [AuthController::class, 'register']);
 Route::post('login', [AuthController::class, 'login']);
 Route::get('services', [ServicesController::class, 'index']);
@@ -27,12 +27,7 @@ Route::post('invoice/{id}/complete', [InvoicesController::class, 'complete']);
 // Quản lí nhà cung cấp
 Route::apiResource('/suppliers', SuppliersController::class);
 
-// Route thanh toán
-Route::post('payments', [PaymentsController::class, 'store']);
-Route::put('paid', [PaymentsController::class, 'paid']);
-Route::get('payments', [PaymentsController::class, 'qrInfo']);
-
-
+Route::apiResource('services', ServicesController::class);
 
 // cần phải đăng nhập và gửi gửi request kèm token mới sử dụng được route này
 Route::middleware('auth:sanctum')->group(function () {
