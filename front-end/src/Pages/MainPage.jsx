@@ -1,8 +1,8 @@
 import { useLoaderData } from "react-router-dom";
-import Hero from "@/components/Main/common/Hero";
-import ServiceSection from "@/components/Main/common/hair-styling/ServiceSection";
-import Shop from "@/components/Main/common/Shop";
-import Footer from "@/components/Main/common/Footer";
+import Hero from "@/Pages/Home/common/Hero";
+import ServiceSection from "@/Pages/Home/common/hair-styling/ServiceSection";
+import Shop from "@/Pages/Home/common/Shop";
+import Footer from "@/Pages/Home/common/Footer";
 
 export default function MainPage() {
   const { heroSlides, services, hairProducts, skinProducts } = useLoaderData();
