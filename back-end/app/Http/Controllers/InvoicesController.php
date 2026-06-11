@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreInvoiceRequest;
 use App\Http\Requests\UpdateInvoicesRequest;
+use App\Models\Inventory_transactions;
 use App\Models\Invoices;
 
 use App\Models\Services;
@@ -134,7 +135,6 @@ class InvoicesController extends Controller
                 $service = Services::findOrFail($item['service_id']);
                 $invoice->invoiceDetails()->create([
                     'service_id' => $service->id,
-                    // 'quantity' => $item['quantity'],
                     'discount' => $item['discount'] ?? 0,
                     'unit_price' => $service->price,
                     'subtotal' => $service->price * (1 - $discount / 100)
@@ -145,6 +145,7 @@ class InvoicesController extends Controller
             'message' => 'Appointment created successfully',
         ], 201);
     }
+
     private function findAvailableStaff(
         string $appointmentDate,
         string $startTime,
@@ -166,8 +167,40 @@ class InvoicesController extends Controller
         return null;
     }
     /**
-     * Display the specified resource.
+     * Hàm này quản lí kho khi bán được dịch vụ
      */
+    public function complete(Invoices $invoice)
+    {
+        DB::transaction(function () use ($invoice) {
+            $invoice->update([
+                'status' => 'completed'
+            ]);
+            $invoice->load(
+                'invoiceDetails.service.serviceInventories'
+            );
+            foreach ($invoice->invoiceDetails as $detail) {
+                foreach ($detail->service->serviceInventories as $serviceProduct) {
+                    $product = $serviceProduct->product;
+                    $usedQuantity = $serviceProduct->quantity_used;
+                    $product->decrement(
+                        'current_quantity',
+                        $usedQuantity
+                    );
+                    Inventory_transactions::create([
+                        'product_id' => $product->id,
+                        'invoice_id' => $invoice->id,
+                        'type' => 'export',
+                        'quantity' => $usedQuantity,
+                        'note' => 'Used for service completion'
+                    ]);
+                }
+            }
+        });
+
+        return response()->json([
+            'message' => 'Completed'
+        ]);
+    }
     public function show(Invoices $appointment)
     {
         $appointment->load([

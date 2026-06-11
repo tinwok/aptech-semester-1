@@ -40,4 +40,8 @@ class User extends Authenticatable
     {
         return $this->hasOne(Staffs::class);
     }
+    public function notifications()
+    {
+        return $this->hasMany(Notifications::class);
+    }
 }
