@@ -5,6 +5,7 @@ import { RouterProvider } from "react-router/dom";
 
 import Customers from "./Pages/Dashboard/Customers";
 import Appointments from "./Pages/Dashboard/Appointments";
+import Services from "./Pages/Dashboard/Services";
 
 // import { customerLoader } from "./Pages/Dashboard/customerLoader";
 // import { appointmentLoader } from "./Pages/Dashboard/appointmentLoader";
@@ -39,7 +40,10 @@ const router = createBrowserRouter([
         element: <DashBoardMain />,
         loader: dashboardLoader,
       },
-
+      {
+        path: "services",
+        element: <Services />,
+      },
       {
         path: "staffs",
         element: <Staffs />,
