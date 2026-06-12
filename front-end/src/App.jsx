@@ -1,24 +1,21 @@
 import Staffs from "./Pages/Dashboard/Staffs";
-import { staffLoader } from "./Pages/Dashboard/staffLoader";
+
 import { createBrowserRouter } from "react-router";
 import { RouterProvider } from "react-router/dom";
+import { homeLoader } from "@/loaders/homeLoader";
 
 import Customers from "./Pages/Dashboard/Customers";
 import Appointments from "./Pages/Dashboard/Appointments";
 import Services from "./Pages/Dashboard/Services";
 
-// import { customerLoader } from "./Pages/Dashboard/customerLoader";
-// import { appointmentLoader } from "./Pages/Dashboard/appointmentLoader";
 import MainPage from "./Pages/MainPage";
 import Layout from "./Layouts/mainLayouts";
-
 import DashBoardLayouts from "./Layouts/DashBoardLayouts";
 import DashBoardMain from "./Pages/Dashboard/DashBoardMain";
-
-import { dashboardLoader } from "./Pages/Dashboard/loader";
-
+import ProtectedRoute from "./Pages/ProtectedRoute";
 import "./App.css";
-
+import AuthPage from "./Pages/Login/AuthPage";
+import { Toaster } from "sonner";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -27,18 +24,21 @@ const router = createBrowserRouter([
       {
         index: true,
         element: <MainPage />,
+        loader: homeLoader,
       },
     ],
   },
-
   {
     path: "/dashboard",
-    element: <DashBoardLayouts />,
+    element: (
+      <ProtectedRoute>
+        <DashBoardLayouts />
+      </ProtectedRoute>
+    ),
     children: [
       {
         index: true,
         element: <DashBoardMain />,
-        loader: dashboardLoader,
       },
       {
         path: "services",
@@ -47,26 +47,33 @@ const router = createBrowserRouter([
       {
         path: "staffs",
         element: <Staffs />,
-        loader: staffLoader,
       },
 
       {
         path: "customers",
         element: <Customers />,
-        // loader: customerLoader,
       },
 
       {
         path: "appointments",
         element: <Appointments />,
-        // loader: appointmentLoader,
       },
     ],
+  },
+  {
+    path: "login",
+    element: <AuthPage />,
   },
 ]);
 
 function App() {
-  return <RouterProvider router={router} />;
+  return (
+    <>
+      {" "}
+      <RouterProvider router={router} />
+      <Toaster richColors position="top-right" />
+    </>
+  );
 }
 
 export default App;

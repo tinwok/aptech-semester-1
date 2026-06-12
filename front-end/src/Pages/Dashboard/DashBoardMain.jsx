@@ -1,53 +1,65 @@
-import { useState } from "react";
-import { useLoaderData } from "react-router-dom";
+import { useEffect, useState } from "react";
+import api from "@/services/api";
 
 export default function DashBoardMain() {
   const [currentPage, setCurrentPage] = useState(1);
+  const [loading, setLoading] = useState(true);
+  const [dashboardData, setDashboardData] = useState(null);
 
-  const data = useLoaderData();
+  useEffect(() => {
+    const fetchDashboard = async () => {
+      try {
+        setLoading(true);
+        const res = await api.get("/dashboard");
+        setDashboardData(res.data);
+      } catch (error) {
+        console.error("Dashboard error:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  console.log(data);
+    fetchDashboard();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="p-6">
+        <h1 className="text-2xl font-bold">Loading dashboard...</h1>
+      </div>
+    );
+  }
+
+  if (!dashboardData) {
+    return (
+      <div className="p-6">
+        <h1 className="text-red-500">Failed to load dashboard</h1>
+      </div>
+    );
+  }
 
   const stats = [
     {
       title: "Staffs",
-      value: data.staffs.total ?? 0,
+      value: dashboardData.staffs?.total ?? 0,
     },
     {
       title: "Customers",
-      value: data.customers.total ?? 0,
+      value: dashboardData.customers?.total ?? 0,
     },
     {
       title: "Appointments",
-      value: data.appointments.total ?? 0,
+      value: dashboardData.appointments?.total ?? 0,
     },
   ];
 
-  const recentAppointments = [
-    {
-      id: 1,
-      customer: "Nguyen Van A",
-      service: "Hair Cut",
-      status: "Completed",
-    },
-    {
-      id: 2,
-      customer: "Tran Thi B",
-      service: "Hair Wash",
-      status: "Pending",
-    },
-    {
-      id: 3,
-      customer: "Le Van C",
-      service: "Hair Color",
-      status: "Confirmed",
-    },
-  ];
+  const recentAppointments = dashboardData.recentAppointments ?? [];
 
   return (
     <div className="p-6">
       <h1 className="mb-6 text-3xl font-bold">Dashboard</h1>
 
+      {/* Stats */}
       <div className="mb-8 grid grid-cols-4 gap-4">
         {stats.map((item) => (
           <div
@@ -55,13 +67,13 @@ export default function DashBoardMain() {
             className="rounded-xl border bg-white p-5 shadow transition-all hover:-translate-y-1 hover:shadow-lg"
           >
             <p className="text-gray-500">{item.title}</p>
-
             <h2 className="mt-2 text-3xl font-bold">{item.value}</h2>
           </div>
         ))}
       </div>
 
-      <div className="rounded-xl border bg-white p-5 shadow transition-all hover:-translate-y-1 hover:shadow-lg">
+      {/* Recent */}
+      <div className="rounded-xl border bg-white p-5 shadow">
         <h2 className="mb-4 text-xl font-bold">Recent Appointments</h2>
 
         <table className="w-full">
@@ -78,11 +90,8 @@ export default function DashBoardMain() {
             {recentAppointments.map((item) => (
               <tr key={item.id} className="border-b">
                 <td className="p-3">{item.id}</td>
-
                 <td className="p-3">{item.customer}</td>
-
                 <td className="p-3">{item.service}</td>
-
                 <td className="p-3">
                   <span
                     className={`rounded-full px-3 py-1 text-sm ${
@@ -101,12 +110,12 @@ export default function DashBoardMain() {
           </tbody>
         </table>
 
-        {/* Pagination */}
+        {/* Pagination (fake UI) */}
         <div className="mt-6 flex items-center justify-end gap-2">
           <button
             className="rounded border px-3 py-1 disabled:opacity-50"
             disabled={currentPage === 1}
-            onClick={() => setCurrentPage(currentPage - 1)}
+            onClick={() => setCurrentPage((p) => p - 1)}
           >
             Prev
           </button>
@@ -126,7 +135,7 @@ export default function DashBoardMain() {
           <button
             className="rounded border px-3 py-1 disabled:opacity-50"
             disabled={currentPage === 5}
-            onClick={() => setCurrentPage(currentPage + 1)}
+            onClick={() => setCurrentPage((p) => p + 1)}
           >
             Next
           </button>

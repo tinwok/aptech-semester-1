@@ -71,7 +71,7 @@ Route::middleware('auth:sanctum')->group(function () {
 });
 
 // Can phai la admin
-Route::middleware(['auth:sanctum', 'role:admin'])->prefix('dashboard/admin')->group(function () {
+Route::middleware(['auth:sanctum', 'role:admin'])->prefix('dashboard')->group(function () {
     Route::apiResource('/customers', CustomersController::class);
     Route::apiResource('/staffs', StaffsController::class);
     Route::apiResource('users', UserController::class);

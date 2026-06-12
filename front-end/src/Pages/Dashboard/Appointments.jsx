@@ -1,23 +1,6 @@
 import { useState } from "react";
 
 export default function Appointments() {
-  const [appointments] = useState([
-    {
-      id: 1,
-      customer: "Nguyen Van A",
-      staff: "John",
-      service: "Hair Cut",
-      status: "Pending",
-    },
-    {
-      id: 2,
-      customer: "Tran Van B",
-      staff: "Alex",
-      service: "Hair Wash",
-      status: "Completed",
-    },
-  ]);
-
   return (
     <div className="p-6">
       <div className="mb-6 flex items-center justify-between">

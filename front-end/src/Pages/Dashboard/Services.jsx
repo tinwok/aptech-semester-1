@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
+import api from "@/services/api";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog,
   DialogContent,
@@ -10,238 +13,200 @@ import {
 
 export default function Services() {
   const [services, setServices] = useState([]);
+  const [pagination, setPagination] = useState({
+    current_page: 1,
+    last_page: 1,
+    total: 0,
+  });
   const [loading, setLoading] = useState(true);
 
   const [open, setOpen] = useState(false);
   const [editingId, setEditingId] = useState(null);
 
+  const [file, setFile] = useState(null);
+
   const [formData, setFormData] = useState({
-    name: "",
-    price: "",
-    duration: "",
-    category: "",
-    status: "Active",
+    title: "",
+    description: "",
+    duration_minutes: "",
+    prices: "",
+    status: "active",
+    note: "",
   });
 
-  const fetchServices = () => {
-    fetch("http://127.0.0.1:8000/api/dashboard/admin/services")
-      .then((res) => res.json())
-      .then((data) => {
-        setServices(data.data);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error(err);
-        setLoading(false);
+  // ===== GET (PAGINATION) =====
+  const fetchServices = async (page = 1) => {
+    try {
+      setLoading(true);
+
+      const res = await api.get(`/services?page=${page}`);
+
+      setServices(res.data.data);
+      setPagination({
+        current_page: res.data.current_page,
+        last_page: res.data.last_page,
+        total: res.data.total,
       });
+    } catch (err) {
+      console.log(err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
     fetchServices();
   }, []);
 
-  const handleDelete = async (id) => {
-    const confirmDelete = window.confirm(
-      "Are you sure you want to delete this service?",
-    );
-
-    if (!confirmDelete) return;
-
+  // ===== CREATE =====
+  const handleCreate = async () => {
     try {
-      const response = await fetch(
-        `http://127.0.0.1:8000/api/dashboard/admin/services/${id}`,
-        {
-          method: "DELETE",
-        },
-      );
+      const data = new FormData();
 
-      if (response.ok) {
-        alert("Delete Success!");
-        fetchServices();
-      } else {
-        alert("Delete Failed!");
+      data.append("title", formData.title);
+      data.append("description", formData.description);
+      data.append("duration_minutes", formData.duration_minutes);
+      data.append("status", formData.status);
+      data.append("note", formData.note);
+      data.append("price", formData.prices);
+
+      if (file) {
+        data.append("image", file);
       }
-    } catch (error) {
-      console.error(error);
+
+      await api.post("/services", data);
+
+      setOpen(false);
+      resetForm();
+      fetchServices(pagination.current_page);
+    } catch (err) {
+      console.log(err.response?.data);
     }
   };
 
-  const handleEdit = (service) => {
-    setEditingId(service.id);
+  // ===== UPDATE =====
+  const handleUpdate = async () => {
+    try {
+      const data = new FormData();
+
+      data.append("title", formData.title);
+      data.append("description", formData.description);
+      data.append("duration_minutes", formData.duration_minutes);
+      data.append("status", formData.status);
+      data.append("note", formData.note);
+
+      if (file) {
+        data.append("image", file);
+      }
+
+      await api.post(`/services/${editingId}?_method=PUT`, data);
+
+      setOpen(false);
+      setEditingId(null);
+      resetForm();
+      fetchServices(pagination.current_page);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  // ===== DELETE =====
+  const handleDelete = async (id) => {
+    if (!confirm("Delete service?")) return;
+
+    await api.delete(`/services/${id}`);
+    fetchServices(pagination.current_page);
+  };
+
+  // ===== EDIT =====
+  const handleEdit = (item) => {
+    setEditingId(item.id);
 
     setFormData({
-      name: service.name,
-      price: service.price,
-      duration: service.duration,
-      category: service.category,
-      status: service.status,
+      title: item.title,
+      description: item.description,
+      duration_minutes: item.duration_minutes,
+      status: item.status,
+      prices: item.prices,
+      note: item.note,
     });
 
     setOpen(true);
   };
 
-  const handleSave = async () => {
-    try {
-      const response = await fetch(
-        "http://127.0.0.1:8000/api/dashboard/admin/services",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(formData),
-        },
-      );
+  const resetForm = () => {
+    setFormData({
+      title: "",
+      description: "",
+      duration_minutes: "",
+      status: "active",
+      prices: "",
+      note: "",
+    });
 
-      const data = await response.json();
-
-      console.log(data);
-
-      if (response.ok) {
-        alert("Add Service Success!");
-
-        setOpen(false);
-
-        setFormData({
-          name: "",
-          price: "",
-          duration: "",
-          category: "",
-          status: "Active",
-        });
-
-        fetchServices();
-      } else {
-        console.log(data);
-        alert("Add Service Failed!");
-      }
-    } catch (error) {
-      console.error(error);
-    }
+    setFile(null);
   };
 
-  const handleUpdate = async () => {
-    try {
-      const response = await fetch(
-        `http://127.0.0.1:8000/api/dashboard/admin/services/${editingId}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(formData),
-        },
-      );
-
-      const data = await response.json();
-
-      if (response.ok) {
-        alert("Update Success!");
-
-        setOpen(false);
-
-        fetchServices();
-      } else {
-        console.log(data);
-        alert("Update Failed!");
-      }
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
-  if (loading) {
-    return (
-      <div className="p-6">
-        <h1 className="text-3xl font-bold">Loading Services...</h1>
-      </div>
-    );
-  }
+  if (loading) return <p className="p-6">Loading...</p>;
 
   return (
     <div className="p-6">
-      <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-3xl font-bold">Services</h1>
+      {/* HEADER */}
+      <div className="flex justify-between mb-5">
+        <h1 className="text-2xl font-bold">Services</h1>
 
         <Button
-          className="bg-green-600 hover:bg-green-700"
           onClick={() => {
             setEditingId(null);
-
-            setFormData({
-              name: "",
-              price: "",
-              duration: "",
-              category: "",
-              status: "Active",
-            });
-
+            resetForm();
             setOpen(true);
           }}
         >
-          + Add Service
+          Add Service
         </Button>
       </div>
 
-      <div className="overflow-hidden rounded-xl bg-zinc-900 shadow-lg">
-        <table className="w-full">
-          <thead className="bg-zinc-800 text-white">
+      {/* TABLE */}
+      <div className="border rounded-lg p-6">
+        <table className="w-full text-center">
+          <thead>
             <tr>
-              <th className="p-4 text-left">ID</th>
-              <th className="p-4 text-left">Name</th>
-              <th className="p-4 text-left">Price</th>
-              <th className="p-4 text-left">Duration</th>
-              <th className="p-4 text-left">Category</th>
-              <th className="p-4 text-left">Status</th>
-              <th className="p-4 text-center">Action</th>
+              <th className="py-3">Title</th>
+              <th className="py-3">Duration</th>
+              <th className="py-3">Price</th>
+              <th className="py-3">Image</th>
+              <th className="py-3">Status</th>
+              <th className="py-3">Action</th>
             </tr>
           </thead>
 
           <tbody>
-            {services.map((service) => (
-              <tr
-                key={service.id}
-                className="border-t border-zinc-800 text-white hover:bg-zinc-800/50"
-              >
-                <td className="p-4">{service.id}</td>
-                <td className="p-4">{service.name}</td>
-
-                <td className="p-4">
-                  {Number(service.price).toLocaleString()} đ
+            {services.map((s) => (
+              <tr key={s.id} className="border-t">
+                <td className="py-3">{s.title}</td>
+                <td className="py-3">{s.duration_minutes} min</td>
+                <td className="py-3">{s.price} </td>
+                <td className="py-3">
+                  <div className="flex justify-center">
+                    {s.image_url && (
+                      <img
+                        src={s.image_url}
+                        className="w-12 h-12 object-cover"
+                      />
+                    )}
+                  </div>
                 </td>
-
-                <td className="p-4">{service.duration} phút</td>
-
-                <td className="p-4">{service.category}</td>
-
-                <td className="p-4">
-                  <span
-                    className={`rounded px-3 py-1 text-sm ${
-                      service.status === "Active"
-                        ? "bg-green-600"
-                        : "bg-red-600"
-                    }`}
-                  >
-                    {service.status}
+                <td className="py-3">
+                  <span className="py-2 px-2 bg-green-300 rounded-xl">
+                    {s.status}
                   </span>
                 </td>
 
-                <td className="p-4 text-center">
-                  <Button
-                    size="sm"
-                    className="mr-2 bg-blue-600 hover:bg-blue-700"
-                    onClick={() => handleEdit(service)}
-                  >
-                    Edit
-                  </Button>
-
-                  <Button
-                    size="sm"
-                    variant="destructive"
-                    onClick={() => handleDelete(service.id)}
-                  >
-                    Delete
-                  </Button>
+                <td className="py-3">
+                  <div className="flex justify-center gap-2">
+                    <Button onClick={() => handleEdit(s)}>Edit</Button>
+                    <Button onClick={() => handleDelete(s.id)}>Delete</Button>
+                  </div>
                 </td>
               </tr>
             ))}
@@ -249,6 +214,36 @@ export default function Services() {
         </table>
       </div>
 
+      {/* PAGINATION */}
+      <div className="mt-6 flex items-center justify-between">
+        <p className="text-sm text-gray-500">
+          Total: {pagination.total} services
+        </p>
+
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            disabled={pagination.current_page === 1}
+            onClick={() => fetchServices(pagination.current_page - 1)}
+          >
+            Previous
+          </Button>
+
+          <span className="flex items-center px-3">
+            Page {pagination.current_page} / {pagination.last_page}
+          </span>
+
+          <Button
+            variant="outline"
+            disabled={pagination.current_page === pagination.last_page}
+            onClick={() => fetchServices(pagination.current_page + 1)}
+          >
+            Next
+          </Button>
+        </div>
+      </div>
+
+      {/* MODAL */}
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent>
           <DialogHeader>
@@ -258,43 +253,73 @@ export default function Services() {
           </DialogHeader>
 
           <div className="space-y-3">
+            <h3>Title</h3>
             <Input
-              placeholder="Name"
-              value={formData.name}
+              placeholder="Title"
+              value={formData.title}
               onChange={(e) =>
-                setFormData({ ...formData, name: e.target.value })
+                setFormData({ ...formData, title: e.target.value })
               }
             />
-
+            <h3>Description</h3>
+            <Textarea
+              placeholder="Description"
+              value={formData.description}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  description: e.target.value,
+                })
+              }
+            />
+            <h3>Duration minutes</h3>
+            <Input
+              type="number"
+              placeholder="Duration minutes"
+              value={formData.duration_minutes}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  duration_minutes: e.target.value,
+                })
+              }
+            />
+            <h3>Note</h3>
+            <Input
+              placeholder="Note"
+              value={formData.note}
+              onChange={(e) =>
+                setFormData({ ...formData, note: e.target.value })
+              }
+            />
+            <h3>Price</h3>
             <Input
               placeholder="Price"
-              value={formData.price}
+              value={formData.prices}
               onChange={(e) =>
-                setFormData({ ...formData, price: e.target.value })
+                setFormData({ ...formData, prices: e.target.value })
               }
             />
+            {/* STATUS */}
+            <select
+              value={formData.status}
+              onChange={(e) =>
+                setFormData({ ...formData, status: e.target.value })
+              }
+              className="w-full border p-2"
+            >
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+            </select>
 
-            <Input
-              placeholder="Duration"
-              value={formData.duration}
-              onChange={(e) =>
-                setFormData({ ...formData, duration: e.target.value })
-              }
-            />
-
-            <Input
-              placeholder="Category"
-              value={formData.category}
-              onChange={(e) =>
-                setFormData({ ...formData, category: e.target.value })
-              }
-            />
+            {/* IMAGE */}
+            <Input type="file" onChange={(e) => setFile(e.target.files[0])} />
 
             <Button
-              className="w-full bg-blue-600 hover:bg-blue-700"
-              onClick={editingId ? handleUpdate : handleSave}
+              onClick={editingId ? handleUpdate : handleCreate}
+              className="w-full"
             >
-              {editingId ? "Update Service" : "Add Service"}
+              {editingId ? "Update" : "Create"}
             </Button>
           </div>
         </DialogContent>

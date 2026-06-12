@@ -1,4 +1,4 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -14,8 +14,26 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
+import { LogOut } from "lucide-react";
+import api from "@/services/api";
+import { Button } from "@/components/ui/button";
+
 function SideBar() {
   const location = useLocation();
+
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    try {
+      await api.post("/logout");
+    } catch (error) {
+      console.error(error);
+    } finally {
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      navigate("/");
+    }
+  };
 
   return (
     <div className="flex min-h-screen">
@@ -64,45 +82,14 @@ function SideBar() {
           </Link>
         </nav>
       </aside>
-
-      {/* Header */}
-      <div className="flex-1">
-        <header className="flex items-center justify-between border-b bg-white px-6 py-4">
-          <div className="flex gap-3">
-            <Input placeholder="Search by name..." className="w-64" />
-
-            <Select>
-              <SelectTrigger className="w-40">
-                <SelectValue placeholder="Filter status" />
-              </SelectTrigger>
-
-              <SelectContent>
-                <SelectItem value="all">All</SelectItem>
-                <SelectItem value="pending">Pending</SelectItem>
-                <SelectItem value="confirmed">Confirmed</SelectItem>
-                <SelectItem value="completed">Completed</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <DropdownMenu>
-            <DropdownMenuTrigger className="rounded-md border px-4 py-2 text-sm">
-              User
-            </DropdownMenuTrigger>
-
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem>
-                <Link to="/profile">Profile</Link>
-              </DropdownMenuItem>
-
-              <DropdownMenuItem>
-                <Link to="/settings">Settings</Link>
-              </DropdownMenuItem>
-
-              <DropdownMenuItem>Logout</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </header>
+      <div className="fixed bottom-4 left-4 w-56">
+        <Button
+          onClick={handleLogout}
+          className="flex w-full items-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-white transition hover:bg-red-700"
+        >
+          <LogOut size={18} />
+          Logout
+        </Button>
       </div>
     </div>
   );
