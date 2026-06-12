@@ -21,11 +21,12 @@ class AuthController extends Controller
 
         DB::transaction(function () use ($request, &$user) {
             $user = User::create([
+                'name' => $request->name,
                 'email' => $request->email,
                 'phone' => $request->phone,
-                'password' => Hash::make('12345678'),
+                'password' => Hash::make($request->password),
                 'role' => 'customer',
-                'must_change_password' => true,
+                'must_change_password' => false,
             ]);
 
             Customers::create([
@@ -33,14 +34,13 @@ class AuthController extends Controller
                 'preferred_staff_id' => null,
                 'preferences' => null,
                 'allergies' => null,
-                'status' => 'active',
             ]);
         });
 
         return response()->json([
             'data' => $user,
             'message' => 'Register successfully!'
-        ]);
+        ], 201);
     }
 
     public function login(AuthLoginRequest $request)
@@ -55,6 +55,8 @@ class AuthController extends Controller
 
         /** @var \App\Models\User $user */
         $user = Auth::user();
+        $user->load('customer');
+
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
@@ -70,20 +72,13 @@ class AuthController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Đăng xuất thành công'
-        ], 200);
+            'message' => 'Logged out successfully.'
+        ]);
     }
 
     public function me(Request $request)
     {
-        $user = $request->user();
-
-        if (!$user) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Không tồn tại người dùng'
-            ], 401);
-        }
+        $user = $request->user()->load('customer');
 
         return response()->json([
             'success' => true,
@@ -94,13 +89,6 @@ class AuthController extends Controller
     public function updateProfile(UpdateProfile $request)
     {
         $user = $request->user();
-
-        if ($user->must_change_password) {
-            return response()->json([
-                'message' => 'Bạn cần đổi mật khẩu trước khi cập nhật hồ sơ.',
-                'must_change_password' => true,
-            ], 403);
-        }
 
         DB::transaction(function () use ($request, $user) {
             $user->update([
@@ -115,13 +103,12 @@ class AuthController extends Controller
                     'preferred_staff_id' => $request->preferred_staff_id,
                     'preferences' => $request->preferences,
                     'allergies' => $request->allergies,
-                    'status' => 'active',
                 ]
             );
         });
 
         return response()->json([
-            'message' => 'Updated profile successfully!'
+            'message' => 'Profile updated successfully!'
         ]);
     }
 
@@ -143,7 +130,7 @@ class AuthController extends Controller
         if (!$user->must_change_password) {
             if (!Hash::check($request->current_password, $user->password)) {
                 throw ValidationException::withMessages([
-                    'current_password' => ['Mật khẩu hiện tại không đúng.'],
+                    'current_password' => ['The current password is incorrect.'],
                 ]);
             }
         }
@@ -170,12 +157,16 @@ class AuthController extends Controller
 
         DB::transaction(function () use ($user) {
             $user->tokens()->delete();
-            $user->customer()?->delete();
-            $user->delete();
+
+            if ($user->customer) {
+                $user->customer()->delete();
+            }
+
+            $user->forceDelete();
         });
 
         return response()->json([
-            'message' => 'Deleted successfully!'
+            'message' => 'Account removed permanently!'
         ]);
     }
 }

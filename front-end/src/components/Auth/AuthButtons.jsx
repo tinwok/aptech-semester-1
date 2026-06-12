@@ -13,8 +13,8 @@ function AuthButtons() {
 
   if (isLoadingUser) {
     return (
-      <Button disabled className="bg-[#C2A26A] text-white hover:bg-[#C2A26A]">
-        Đang tải...
+      <Button disabled className="bg-[#C2A26A] text-white">
+        Loading...
       </Button>
     );
   }
@@ -27,18 +27,10 @@ function AuthButtons() {
     <>
       <div className="flex items-center gap-3">
         <Button
-          variant="outline"
           onClick={() => setIsLoginOpen(true)}
-          className="border-[#C2A26A] text-[#9B7A3F] hover:bg-[#FFF7E6]"
-        >
-          Đăng nhập
-        </Button>
-
-        <Button
-          onClick={() => setIsRegisterOpen(true)}
           className="bg-[#C2A26A] text-white hover:bg-[#9B7A3F]"
         >
-          Đăng ký
+          Sign In / Sign Up
         </Button>
       </div>
 

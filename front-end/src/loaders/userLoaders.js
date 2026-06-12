@@ -4,19 +4,24 @@ import {
   updateProfileApi,
   changePasswordApi,
   logoutApi,
+  deleteMeApi,
 } from "@/services/authService";
 
 function getUserFromResponse(response) {
   return response?.data || response?.user || response;
 }
 
+function getBasePathByRole(role) {
+  if (role === "staff") return "/staff";
+  if (role === "admin") return "/dashboard";
+  return "/user";
+}
+
 export async function publicUserLoader() {
   const token = localStorage.getItem("zenstyle_access_token");
 
   if (!token) {
-    return {
-      user: null,
-    };
+    return { user: null };
   }
 
   try {
@@ -25,20 +30,16 @@ export async function publicUserLoader() {
 
     localStorage.setItem("zenstyle_user", JSON.stringify(user));
 
-    return {
-      user,
-    };
+    return { user };
   } catch {
     localStorage.removeItem("zenstyle_access_token");
     localStorage.removeItem("zenstyle_user");
 
-    return {
-      user: null,
-    };
+    return { user: null };
   }
 }
 
-export async function protectedUserLoader() {
+export async function protectedUserLoader({ params }) {
   const token = localStorage.getItem("zenstyle_access_token");
 
   if (!token) {
@@ -51,12 +52,10 @@ export async function protectedUserLoader() {
 
     localStorage.setItem("zenstyle_user", JSON.stringify(user));
 
-    if (user?.must_change_password) {
-      return redirect("/change-password");
-    }
-
     return {
       user,
+      basePath: getBasePathByRole(user?.role),
+      params,
     };
   } catch {
     localStorage.removeItem("zenstyle_access_token");
@@ -70,29 +69,23 @@ export async function updateProfileAction({ request }) {
   const formData = await request.formData();
 
   const profileData = {
-    name: formData.get("name"),
-    phone: formData.get("phone"),
-    dob: formData.get("dob"),
+    dob: formData.get("dob") || null,
     preferred_staff_id: formData.get("preferred_staff_id") || null,
-    preferences: formData.get("preferences"),
-    allergies: formData.get("allergies"),
+    preferences: formData.get("preferences") || "",
+    allergies: formData.get("allergies") || "",
   };
 
   try {
     await updateProfileApi(profileData);
 
     return {
-      success: "Cập nhật hồ sơ thành công.",
+      success: "Profile updated successfully.",
     };
   } catch (error) {
-    if (error.response?.data?.must_change_password) {
-      return redirect("/change-password");
-    }
-
     return {
       error:
         error.response?.data?.message ||
-        "Cập nhật hồ sơ thất bại. Vui lòng thử lại.",
+        "Failed to update profile. Please try again.",
     };
   }
 }
@@ -112,7 +105,7 @@ export async function changePasswordAction({ request }) {
     try {
       await logoutApi();
     } catch {
-      // Nếu logout API lỗi thì vẫn xóa token frontend.
+      // Still clear frontend auth state if backend logout fails.
     }
 
     localStorage.removeItem("zenstyle_access_token");
@@ -125,7 +118,24 @@ export async function changePasswordAction({ request }) {
         error.response?.data?.errors?.current_password?.[0] ||
         error.response?.data?.errors?.password?.[0] ||
         error.response?.data?.message ||
-        "Đổi mật khẩu thất bại. Vui lòng thử lại.",
+        "Failed to change password. Please try again.",
+    };
+  }
+}
+
+export async function removeAccountAction() {
+  try {
+    await deleteMeApi();
+
+    localStorage.removeItem("zenstyle_access_token");
+    localStorage.removeItem("zenstyle_user");
+
+    return redirect("/");
+  } catch (error) {
+    return {
+      error:
+        error.response?.data?.message ||
+        "Failed to remove account. Please try again.",
     };
   }
 }

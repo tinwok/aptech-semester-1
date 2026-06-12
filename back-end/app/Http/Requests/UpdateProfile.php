@@ -2,32 +2,31 @@
 
 namespace App\Http\Requests;
 
-use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdateProfile extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
     public function authorize(): bool
     {
         return true;
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, ValidationRule|array<mixed>|string>
-     */
     public function rules(): array
     {
         return [
-            // user
+            'name' => 'required|string|max:255',
+            'phone' => [
+                'required',
+                'string',
+                'min:10',
+                'max:15',
+                Rule::unique('users', 'phone')->ignore($this->user()->id),
+            ],
             'dob' => 'nullable|date',
-            'preferred_staff_id' => 'sometimes|integer|exists:staffs,id',
-            'preferences' => 'sometimes|string',
-            'allergies' => 'sometimes|string'
+            'preferred_staff_id' => 'nullable|integer|exists:staffs,id',
+            'preferences' => 'nullable|string',
+            'allergies' => 'nullable|string',
         ];
     }
 }

@@ -1,14 +1,19 @@
 import { useState } from "react";
-import { UserRound, Mail, Phone, Calendar, ShieldCheck } from "lucide-react";
+import { Calendar, Mail, Phone, ShieldCheck, UserRound } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { updateProfileApi } from "@/services/authService";
 
 function ProfilePage() {
   const { user, role, refreshUser } = useAuth();
 
+  const [name, setName] = useState(user?.name || "");
+  const [phone, setPhone] = useState(user?.phone || "");
   const [dob, setDob] = useState(user?.dob || "");
-  const [preferences, setPreferences] = useState("");
-  const [allergies, setAllergies] = useState("");
+  const [preferences, setPreferences] = useState(
+    user?.customer?.preferences || "",
+  );
+  const [allergies, setAllergies] = useState(user?.customer?.allergies || "");
+
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
@@ -19,23 +24,27 @@ function ProfilePage() {
 
     try {
       await updateProfileApi({
+        name,
+        phone,
         dob,
         preferences,
         allergies,
       });
 
       await refreshUser();
-      setMessage("Cập nhật hồ sơ thành công.");
+      setMessage("Profile updated successfully.");
     } catch (err) {
       setError(
         err.response?.data?.message ||
-          "Cập nhật thất bại. Vui lòng kiểm tra lại thông tin.",
+          err.response?.data?.errors?.name?.[0] ||
+          err.response?.data?.errors?.phone?.[0] ||
+          "Failed to update profile. Please check your information.",
       );
     }
   }
 
   if (!user) {
-    return <div className="p-8 text-[#8A6A35]">Bạn cần đăng nhập.</div>;
+    return <div className="p-8 text-[#8A6A35]">Please sign in first.</div>;
   }
 
   return (
@@ -45,45 +54,41 @@ function ProfilePage() {
           <p className="text-sm font-medium uppercase tracking-[0.2em] text-[#B89555]">
             ZenStyle Account
           </p>
-          <h1 className="mt-2 text-3xl font-bold text-[#2B2115]">
-            Hồ sơ cá nhân
-          </h1>
-          <p className="mt-2 text-[#7B684A]">
-            Trang này dùng chung cho customer và staff. Nội dung sẽ thay đổi dựa
-            theo role hiện tại.
-          </p>
+
+          <h1 className="mt-2 text-3xl font-bold text-[#2B2115]">Profile</h1>
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-[1fr_1.4fr]">
-          <div className="rounded-3xl border border-[#E8D7B3] bg-white p-6 shadow-sm">
+        <div className="grid gap-8 lg:grid-cols-[1fr_1.4fr]">
+          <div className="rounded-3xl border border-[#E8D7B3] bg-white p-8 shadow-sm">
             <div className="flex h-20 w-20 items-center justify-center rounded-full bg-[#FFF2D8]">
               <UserRound className="h-10 w-10 text-[#B89555]" />
             </div>
 
-            <h2 className="mt-4 text-xl font-bold text-[#2B2115]">
-              {user.name || "Chưa cập nhật tên"}
+            <h2 className="mt-6 text-2xl font-bold text-[#2B2115]">
+              {user.name || "No name provided"}
             </h2>
-            <p className="mt-1 text-sm capitalize text-[#8A6A35]">
+
+            <p className="mt-2 text-sm capitalize text-[#8A6A35]">
               Role: {role || "customer"}
             </p>
 
-            <div className="mt-6 space-y-4 text-sm">
-              <div className="flex gap-3">
+            <div className="mt-8 space-y-5 text-sm text-[#2B2115]">
+              <div className="flex items-center gap-3">
                 <Mail className="h-5 w-5 text-[#B89555]" />
-                <span>{user.email || "Chưa có email"}</span>
+                <span>{user.email || "No email provided"}</span>
               </div>
 
-              <div className="flex gap-3">
+              <div className="flex items-center gap-3">
                 <Phone className="h-5 w-5 text-[#B89555]" />
-                <span>{user.phone || "Chưa có số điện thoại"}</span>
+                <span>{user.phone || "No phone provided"}</span>
               </div>
 
-              <div className="flex gap-3">
+              <div className="flex items-center gap-3">
                 <Calendar className="h-5 w-5 text-[#B89555]" />
-                <span>{user.dob || "Chưa có ngày sinh"}</span>
+                <span>{user.dob || "No date of birth provided"}</span>
               </div>
 
-              <div className="flex gap-3">
+              <div className="flex items-center gap-3">
                 <ShieldCheck className="h-5 w-5 text-[#B89555]" />
                 <span>{user.status || "active"}</span>
               </div>
@@ -92,17 +97,42 @@ function ProfilePage() {
 
           <form
             onSubmit={handleSubmit}
-            className="rounded-3xl border border-[#E8D7B3] bg-white p-6 shadow-sm"
+            className="rounded-3xl border border-[#E8D7B3] bg-white p-8 shadow-sm"
           >
-            <h2 className="text-xl font-bold text-[#2B2115]">
-              Cập nhật thông tin
+            <h2 className="text-2xl font-bold text-[#2B2115]">
+              Update Information
             </h2>
 
-            <div className="mt-6 grid gap-4">
+            <div className="mt-6 grid gap-5">
               <label className="grid gap-2">
                 <span className="text-sm font-medium text-[#2B2115]">
-                  Ngày sinh
+                  Full Name
                 </span>
+
+                <input
+                  value={name}
+                  onChange={(event) => setName(event.target.value)}
+                  className="rounded-xl border border-[#E8D7B3] px-4 py-3 outline-none focus:border-[#B89555]"
+                />
+              </label>
+
+              <label className="grid gap-2">
+                <span className="text-sm font-medium text-[#2B2115]">
+                  Phone
+                </span>
+
+                <input
+                  value={phone}
+                  onChange={(event) => setPhone(event.target.value)}
+                  className="rounded-xl border border-[#E8D7B3] px-4 py-3 outline-none focus:border-[#B89555]"
+                />
+              </label>
+
+              <label className="grid gap-2">
+                <span className="text-sm font-medium text-[#2B2115]">
+                  Date of Birth
+                </span>
+
                 <input
                   type="date"
                   value={dob}
@@ -113,25 +143,27 @@ function ProfilePage() {
 
               <label className="grid gap-2">
                 <span className="text-sm font-medium text-[#2B2115]">
-                  Sở thích / Preferences
+                  Preferences
                 </span>
+
                 <textarea
                   value={preferences}
                   onChange={(event) => setPreferences(event.target.value)}
-                  className="min-h-24 rounded-xl border border-[#E8D7B3] px-4 py-3 outline-none focus:border-[#B89555]"
-                  placeholder="Ví dụ: thích kiểu tóc tự nhiên, ưu tiên nhân viên nữ..."
+                  className="min-h-28 rounded-xl border border-[#E8D7B3] px-4 py-3 outline-none focus:border-[#B89555]"
+                  placeholder="Example: Natural hairstyles, prefer female staff..."
                 />
               </label>
 
               <label className="grid gap-2">
                 <span className="text-sm font-medium text-[#2B2115]">
-                  Dị ứng / Allergies
+                  Allergies
                 </span>
+
                 <textarea
                   value={allergies}
                   onChange={(event) => setAllergies(event.target.value)}
-                  className="min-h-24 rounded-xl border border-[#E8D7B3] px-4 py-3 outline-none focus:border-[#B89555]"
-                  placeholder="Ví dụ: dị ứng thuốc nhuộm, da nhạy cảm..."
+                  className="min-h-28 rounded-xl border border-[#E8D7B3] px-4 py-3 outline-none focus:border-[#B89555]"
+                  placeholder="Example: Hair dye allergy, sensitive skin..."
                 />
               </label>
             </div>
@@ -152,7 +184,7 @@ function ProfilePage() {
               type="submit"
               className="mt-6 rounded-xl bg-[#B89555] px-6 py-3 font-semibold text-white hover:bg-[#9B7A3F]"
             >
-              Lưu thay đổi
+              Save Changes
             </button>
           </form>
         </div>

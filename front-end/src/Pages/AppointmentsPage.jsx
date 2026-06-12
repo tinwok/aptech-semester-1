@@ -22,7 +22,7 @@ function AppointmentsPage() {
       } catch (err) {
         setError(
           err.response?.data?.message ||
-            "Không thể tải lịch hẹn. Có thể user chưa có customer/staff profile.",
+            "Unable to load appointments. Please try again later.",
         );
       } finally {
         setIsLoading(false);
@@ -33,7 +33,7 @@ function AppointmentsPage() {
   }, []);
 
   if (!user) {
-    return <div className="p-8 text-[#8A6A35]">Bạn cần đăng nhập.</div>;
+    return <div className="p-8 text-[#8A6A35]">Please sign in first.</div>;
   }
 
   return (
@@ -41,18 +41,19 @@ function AppointmentsPage() {
       <div className="mx-auto max-w-5xl">
         <div className="mb-8 rounded-3xl border border-[#E8D7B3] bg-white p-6 shadow-sm">
           <p className="text-sm font-medium uppercase tracking-[0.2em] text-[#B89555]">
-            Appointment
+            ZenStyle Booking
           </p>
-          <h1 className="mt-2 text-3xl font-bold text-[#2B2115]">Lịch hẹn</h1>
-          <p className="mt-2 text-[#7B684A]">
-            Đường dẫn chung: <strong>/appointments</strong>. Role hiện tại:{" "}
-            <strong>{role}</strong>.
-          </p>
+
+          <h1 className="mt-2 text-3xl font-bold text-[#2B2115]">
+            Appointments
+          </h1>
+
+          <p className="mt-2 text-[#7B684A] capitalize">Role: {role}</p>
         </div>
 
         {isLoading && (
           <div className="rounded-3xl border border-[#E8D7B3] bg-white p-6">
-            Đang tải lịch hẹn...
+            Loading appointments...
           </div>
         )}
 
@@ -66,15 +67,15 @@ function AppointmentsPage() {
           <div className="rounded-3xl border border-[#E8D7B3] bg-white p-8 text-center shadow-sm">
             <CalendarDays className="mx-auto h-12 w-12 text-[#B89555]" />
             <h2 className="mt-4 text-xl font-bold text-[#2B2115]">
-              Chưa có lịch hẹn
+              No appointments found
             </h2>
             <p className="mt-2 text-[#7B684A]">
-              Khi có lịch hẹn pending, dữ liệu sẽ hiển thị ở đây.
+              Your upcoming appointments will appear here.
             </p>
           </div>
         )}
 
-        <div className="grid gap-4">
+        <div className="grid gap-5">
           {appointments.map((appointment) => {
             const details = appointment.invoice_details || [];
 
@@ -86,10 +87,10 @@ function AppointmentsPage() {
                 <div className="flex flex-wrap items-start justify-between gap-4">
                   <div>
                     <h2 className="text-xl font-bold text-[#2B2115]">
-                      Lịch hẹn #{appointment.id}
+                      Appointment #{appointment.id}
                     </h2>
                     <p className="mt-1 text-sm capitalize text-[#8A6A35]">
-                      Trạng thái: {appointment.status}
+                      Status: {appointment.status}
                     </p>
                   </div>
 
@@ -108,19 +109,21 @@ function AppointmentsPage() {
 
                   <div className="flex gap-3">
                     <UserRound className="h-5 w-5 text-[#B89555]" />
-                    <span>Staff ID: {appointment.staff_id || "Chưa có"}</span>
+                    <span>
+                      Staff ID: {appointment.staff_id || "Not assigned"}
+                    </span>
                   </div>
 
                   <div className="flex gap-3">
                     <Scissors className="h-5 w-5 text-[#B89555]" />
-                    <span>{details.length} dịch vụ</span>
+                    <span>{details.length} services</span>
                   </div>
                 </div>
 
                 {details.length > 0 && (
                   <div className="mt-5 rounded-2xl bg-[#FFF7E6] p-4">
                     <h3 className="font-semibold text-[#2B2115]">
-                      Dịch vụ trong lịch hẹn
+                      Appointment Services
                     </h3>
 
                     <div className="mt-3 grid gap-3">
@@ -130,18 +133,19 @@ function AppointmentsPage() {
                           className="rounded-xl border border-[#E8D7B3] bg-white p-4"
                         >
                           <p className="font-semibold text-[#2B2115]">
-                            {detail.service?.title || "Dịch vụ chưa rõ"}
+                            {detail.service?.title || "Unknown service"}
                           </p>
 
                           <p className="mt-1 text-sm text-[#7B684A]">
-                            Giá: {formatMoney(detail.unit_price)} | Giảm:{" "}
-                            {detail.discount || 0}% | Thành tiền:{" "}
+                            Price: {formatMoney(detail.unit_price)} | Discount:{" "}
+                            {detail.discount || 0}% | Subtotal:{" "}
                             {formatMoney(detail.subtotal)}
                           </p>
 
                           {detail.service?.duration_minutes && (
                             <p className="mt-1 text-sm text-[#7B684A]">
-                              Thời lượng: {detail.service.duration_minutes} phút
+                              Duration: {detail.service.duration_minutes}{" "}
+                              minutes
                             </p>
                           )}
                         </div>
@@ -152,7 +156,7 @@ function AppointmentsPage() {
 
                 {appointment.note && (
                   <p className="mt-4 rounded-xl bg-[#FFF7E6] p-4 text-[#7B684A]">
-                    Ghi chú: {appointment.note}
+                    Note: {appointment.note}
                   </p>
                 )}
               </div>

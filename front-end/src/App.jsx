@@ -2,11 +2,14 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import MainPage from "./Pages/MainPage";
 import Layout from "./Layouts/mainLayouts";
 import "./App.css";
+
 import DashBoardLayouts from "./Layouts/DashBoardLayouts";
 import DashBoardMain from "./Pages/DashBoardMain";
 
 import ServicesPage from "./Pages/ServicesPage";
+import UserPortalPage from "./Pages/UserPortalPage";
 import ProfilePage from "./Pages/ProfilePage";
+import PreferencesPage from "./Pages/PreferencesPage";
 import AppointmentsPage from "./Pages/AppointmentsPage";
 import ServiceHistoryPage from "./Pages/ServiceHistoryPage";
 import OrdersPage from "./Pages/OrdersPage";
@@ -37,40 +40,78 @@ const router = createBrowserRouter([
         loader: publicUserLoader,
       },
       {
-        path: "profile",
+        path: "user",
+        element: <UserPortalPage />,
+        loader: protectedUserLoader,
+      },
+      {
+        path: "user/profile",
         element: <ProfilePage />,
         loader: protectedUserLoader,
         action: updateProfileAction,
       },
       {
-        path: "appointments",
+        path: "user/preferences",
+        element: <PreferencesPage />,
+        loader: protectedUserLoader,
+      },
+      {
+        path: "user/appointments",
         element: <AppointmentsPage />,
         loader: protectedUserLoader,
       },
       {
-        path: "service-history",
+        path: "user/service-history",
         element: <ServiceHistoryPage />,
         loader: protectedUserLoader,
       },
       {
-        path: "orders",
+        path: "user/orders",
         element: <OrdersPage />,
         loader: protectedUserLoader,
       },
       {
-        path: "promotions",
+        path: "user/promotions",
         element: <PromotionsPage />,
         loader: protectedUserLoader,
       },
       {
-        path: "notifications",
+        path: "user/notifications",
         element: <NotificationsPage />,
         loader: protectedUserLoader,
       },
       {
-        path: "change-password",
+        path: "user/change-password",
         element: <ChangePasswordPage />,
-        loader: publicUserLoader,
+        loader: protectedUserLoader,
+        action: changePasswordAction,
+      },
+
+      {
+        path: "staff",
+        element: <UserPortalPage />,
+        loader: protectedUserLoader,
+      },
+      {
+        path: "staff/profile",
+        element: <ProfilePage />,
+        loader: protectedUserLoader,
+        action: updateProfileAction,
+      },
+      {
+        path: "staff/appointments",
+        element: <AppointmentsPage />,
+        loader: protectedUserLoader,
+      },
+      {
+        path: "staff/service-history",
+        element: <ServiceHistoryPage />,
+        loader: protectedUserLoader,
+      },
+      {
+        path: "staff/change-password",
+        element: <ChangePasswordPage />,
+        loader: protectedUserLoader,
         action: changePasswordAction,
       },
     ],

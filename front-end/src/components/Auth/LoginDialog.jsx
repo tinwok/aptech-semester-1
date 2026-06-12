@@ -25,21 +25,23 @@ function LoginDialog({ open, onClose, onOpenRegister }) {
 
   async function handleSubmit(event) {
     event.preventDefault();
-
     setError("");
     setIsSubmitting(true);
 
     try {
-      await login(formData.email, formData.password);
+      const loggedInUser = await login(formData.email, formData.password);
 
       onClose();
 
-      // luôn về trang chính
-      navigate("/");
+      if (loggedInUser?.role === "staff") {
+        navigate("/staff");
+      } else {
+        navigate("/user");
+      }
     } catch (err) {
       setError(
         err.response?.data?.message ||
-          "Đăng nhập thất bại. Vui lòng kiểm tra email và mật khẩu.",
+          "Sign in failed. Please check your email and password.",
       );
     } finally {
       setIsSubmitting(false);
@@ -47,12 +49,12 @@ function LoginDialog({ open, onClose, onOpenRegister }) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
-      <div className="w-full max-w-xl rounded-3xl border border-[#E8D7B3] bg-[#FFFDF8] p-8 shadow-2xl">
-        <h2 className="text-3xl font-bold text-[#2B2115]">Đăng nhập</h2>
+    <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/40 px-4 py-6">
+      <div className="w-full max-w-lg rounded-3xl border border-[#E8D7B3] bg-[#FFFDF8] p-8 shadow-2xl">
+        <h2 className="text-3xl font-bold text-[#2B2115]">Sign In</h2>
 
         <p className="mt-2 text-[#7B684A]">
-          Đăng nhập để sử dụng các chức năng dành cho khách hàng.
+          Sign in to access your account and personal services.
         </p>
 
         <form onSubmit={handleSubmit} className="mt-6 space-y-4">
@@ -64,20 +66,20 @@ function LoginDialog({ open, onClose, onOpenRegister }) {
               type="email"
               value={formData.email}
               onChange={handleChange}
-              placeholder="Nhập email"
+              placeholder="Enter your email"
               className="rounded-xl border border-[#E8D7B3] px-4 py-3 outline-none focus:border-[#B89555]"
             />
           </label>
 
           <label className="grid gap-2">
-            <span className="font-medium text-[#2B2115]">Mật khẩu</span>
+            <span className="font-medium text-[#2B2115]">Password</span>
 
             <input
               name="password"
               type="password"
               value={formData.password}
               onChange={handleChange}
-              placeholder="Nhập mật khẩu"
+              placeholder="Enter your password"
               className="rounded-xl border border-[#E8D7B3] px-4 py-3 outline-none focus:border-[#B89555]"
             />
           </label>
@@ -92,32 +94,32 @@ function LoginDialog({ open, onClose, onOpenRegister }) {
             <button
               type="button"
               onClick={onClose}
-              className="rounded-xl border border-gray-200 bg-white px-5 py-3 font-semibold text-[#2B2115]"
+              className="rounded-xl border border-gray-200 bg-white px-5 py-3 font-semibold text-[#2B2115] hover:bg-gray-50"
             >
-              Hủy
+              Cancel
             </button>
 
             <button
               type="submit"
               disabled={isSubmitting}
-              className="rounded-xl bg-[#B89555] px-5 py-3 font-semibold text-white hover:bg-[#9B7A3F]"
+              className="rounded-xl bg-[#B89555] px-5 py-3 font-semibold text-white hover:bg-[#9B7A3F] disabled:opacity-60"
             >
-              {isSubmitting ? "Đang xử lý..." : "Đăng nhập"}
+              {isSubmitting ? "Signing in..." : "Sign In"}
             </button>
           </div>
         </form>
 
         <p className="mt-6 text-center text-[#7B684A]">
-          Chưa có tài khoản?{" "}
+          Do not have an account?{" "}
           <button
             type="button"
             onClick={() => {
               onClose();
               onOpenRegister();
             }}
-            className="font-bold text-[#B89555]"
+            className="font-bold text-[#B89555] transition hover:text-[#9B7A3F] hover:no-underline"
           >
-            Đăng ký
+            Sign Up
           </button>
         </p>
       </div>

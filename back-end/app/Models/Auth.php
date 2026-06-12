@@ -14,3 +14,4 @@ class Auth extends Model
         'must_change_password',
     ];
 }
+a

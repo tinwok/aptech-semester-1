@@ -33,34 +33,31 @@ function ServiceHistoryPage() {
           <History className="h-10 w-10 text-[#B89555]" />
 
           <h1 className="mt-4 text-3xl font-bold text-[#2B2115]">
-            Lịch sử dịch vụ
+            Service History
           </h1>
-
-          <p className="mt-2 text-[#7B684A]">
-            Hiển thị lịch hẹn đã hoàn thành từ API{" "}
-            <strong>/api/me/appointments/history</strong>.
-          </p>
         </div>
 
         {isLoading && (
           <div className="mt-6 rounded-3xl border border-[#E8D7B3] bg-white p-6">
-            Đang tải lịch sử...
+            Loading service history...
           </div>
         )}
 
         {!isLoading && items.length === 0 && (
           <div className="mt-6 rounded-3xl border border-[#E8D7B3] bg-white p-8 text-center shadow-sm">
             <Scissors className="mx-auto h-12 w-12 text-[#B89555]" />
+
             <h2 className="mt-4 text-xl font-bold text-[#2B2115]">
-              Chưa có lịch sử dịch vụ
+              No service history available
             </h2>
+
             <p className="mt-2 text-[#7B684A]">
-              Khi lịch hẹn completed, lịch sử sẽ hiển thị ở đây.
+              Completed appointments will appear here.
             </p>
           </div>
         )}
 
-        <div className="mt-6 grid gap-4">
+        <div className="mt-6 grid gap-5">
           {items.map((item) => {
             const details = item.invoice_details || [];
 
@@ -72,10 +69,11 @@ function ServiceHistoryPage() {
                 <div className="flex flex-wrap items-start justify-between gap-4">
                   <div>
                     <h2 className="text-xl font-bold text-[#2B2115]">
-                      Dịch vụ #{item.id}
+                      Service #{item.id}
                     </h2>
+
                     <p className="mt-1 text-sm capitalize text-[#8A6A35]">
-                      Trạng thái: {item.status}
+                      Status: {item.status}
                     </p>
                   </div>
 
@@ -85,7 +83,7 @@ function ServiceHistoryPage() {
                 </div>
 
                 <p className="mt-4 text-sm text-[#7B684A]">
-                  Thời gian: {item.start_time} - {item.end_time}
+                  Time: {item.start_time} - {item.end_time}
                 </p>
 
                 {details.length > 0 && (
@@ -96,12 +94,12 @@ function ServiceHistoryPage() {
                         className="rounded-2xl border border-[#E8D7B3] bg-[#FFFDF8] p-4"
                       >
                         <p className="font-semibold text-[#2B2115]">
-                          {detail.service?.title || "Dịch vụ chưa rõ"}
+                          {detail.service?.title || "Unknown service"}
                         </p>
 
                         <p className="mt-1 text-sm text-[#7B684A]">
-                          Giá: {formatMoney(detail.unit_price)} | Giảm:{" "}
-                          {detail.discount || 0}% | Thành tiền:{" "}
+                          Price: {formatMoney(detail.unit_price)} | Discount:{" "}
+                          {detail.discount || 0}% | Subtotal:{" "}
                           {formatMoney(detail.subtotal)}
                         </p>
                       </div>

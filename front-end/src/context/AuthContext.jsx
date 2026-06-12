@@ -1,19 +1,22 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
-import { getMeApi, loginApi, logoutApi } from "@/services/authService";
+import {
+  getMeApi,
+  loginApi,
+  logoutApi,
+  deleteMeApi,
+} from "@/services/authService";
 
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
-  const [token, setToken] = useState(() => {
-    return localStorage.getItem("zenstyle_access_token");
-  });
+  const [token, setToken] = useState(() =>
+    localStorage.getItem("zenstyle_access_token"),
+  );
 
   const [user, setUser] = useState(() => {
     const savedUser = localStorage.getItem("zenstyle_user");
 
-    if (!savedUser) {
-      return null;
-    }
+    if (!savedUser) return null;
 
     try {
       return JSON.parse(savedUser);
@@ -28,21 +31,15 @@ export function AuthProvider({ children }) {
   const isAuthenticated = Boolean(token && user);
 
   async function login(email, password) {
-    const data = await loginApi({
-      email,
-      password,
-    });
+    const data = await loginApi({ email, password });
 
-    const accessToken = data.access_token;
-    const loggedInUser = data.user;
+    localStorage.setItem("zenstyle_access_token", data.access_token);
+    localStorage.setItem("zenstyle_user", JSON.stringify(data.user));
 
-    localStorage.setItem("zenstyle_access_token", accessToken);
-    localStorage.setItem("zenstyle_user", JSON.stringify(loggedInUser));
+    setToken(data.access_token);
+    setUser(data.user);
 
-    setToken(accessToken);
-    setUser(loggedInUser);
-
-    return loggedInUser;
+    return data.user;
   }
 
   async function refreshUser() {
@@ -82,7 +79,7 @@ export function AuthProvider({ children }) {
     try {
       await logoutApi();
     } catch {
-      // Nếu token hết hạn hoặc backend lỗi, frontend vẫn logout khỏi máy.
+      // Still clear frontend auth state if backend logout fails.
     } finally {
       localStorage.removeItem("zenstyle_access_token");
       localStorage.removeItem("zenstyle_user");
@@ -90,6 +87,16 @@ export function AuthProvider({ children }) {
       setToken(null);
       setUser(null);
     }
+  }
+
+  async function removeAccount() {
+    await deleteMeApi();
+
+    localStorage.removeItem("zenstyle_access_token");
+    localStorage.removeItem("zenstyle_user");
+
+    setToken(null);
+    setUser(null);
   }
 
   useEffect(() => {
@@ -100,11 +107,12 @@ export function AuthProvider({ children }) {
     return {
       token,
       user,
-      role: user?.role,
+      role: user?.role?.name || user?.role || user?.roles?.[0]?.name,
       isAuthenticated,
       isLoadingUser,
       login,
       logout,
+      removeAccount,
       refreshUser,
       setUser,
     };

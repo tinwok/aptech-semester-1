@@ -4,10 +4,13 @@ import {
   CalendarDays,
   ChevronDown,
   Gift,
+  Heart,
   History,
+  Home,
   KeyRound,
   LogOut,
   Package,
+  Trash2,
   UserRound,
 } from "lucide-react";
 
@@ -21,25 +24,37 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
+function getBasePathByRole(role) {
+  if (role === "staff") return "/staff";
+  return "/user";
+}
+
 function UserDropdown() {
   const navigate = useNavigate();
-  const { user, role, logout } = useAuth();
+  const { user, role, logout, removeAccount } = useAuth();
+
+  const basePath = getBasePathByRole(role);
+  const displayPhone = user?.phone || user?.email || "Account";
 
   async function handleLogout() {
     await logout();
     navigate("/");
   }
 
-  function goToProtectedPage(path) {
-    if (user?.must_change_password) {
-      navigate("/change-password");
-      return;
-    }
+  async function handleRemoveAccount() {
+    const confirmed = window.confirm(
+      "Are you sure you want to remove your account? This action cannot be undone.",
+    );
 
-    navigate(path);
+    if (!confirmed) return;
+
+    await removeAccount();
+    navigate("/");
   }
 
-  const displayPhone = user?.phone || user?.email || "Tài khoản";
+  function goToPage(path = "") {
+    navigate(`${basePath}${path}`);
+  }
 
   return (
     <DropdownMenu>
@@ -64,86 +79,110 @@ function UserDropdown() {
           </p>
 
           <p className="mt-1 truncate text-xs text-[#8A6A35]">
-            {user?.email || "Chưa có email"}
+            {user?.email || "No email"}
           </p>
 
           <p className="mt-1 text-xs capitalize text-[#8A6A35]">
             Role: {role || "customer"}
           </p>
-
-          {user?.must_change_password && (
-            <p className="mt-2 rounded-lg bg-amber-100 px-2 py-1 text-xs font-medium text-amber-800">
-              Cần đổi mật khẩu trước khi xem/sửa thông tin.
-            </p>
-          )}
         </div>
 
         <DropdownMenuSeparator className="my-2 bg-[#E8D7B3]" />
 
         <DropdownMenuItem
-          onClick={() => goToProtectedPage("/profile")}
+          onClick={() => goToPage()}
+          className="cursor-pointer rounded-lg px-3 py-2 text-[#2B2115] focus:bg-[#FFF7E6]"
+        >
+          <Home className="mr-3 h-4 w-4 text-[#C2A26A]" />
+          Home
+        </DropdownMenuItem>
+
+        <DropdownMenuItem
+          onClick={() => goToPage("/profile")}
           className="cursor-pointer rounded-lg px-3 py-2 text-[#2B2115] focus:bg-[#FFF7E6]"
         >
           <UserRound className="mr-3 h-4 w-4 text-[#C2A26A]" />
-          Hồ sơ cá nhân
+          Profile
         </DropdownMenuItem>
 
+        {role !== "staff" && (
+          <DropdownMenuItem
+            onClick={() => goToPage("/preferences")}
+            className="cursor-pointer rounded-lg px-3 py-2 text-[#2B2115] focus:bg-[#FFF7E6]"
+          >
+            <Heart className="mr-3 h-4 w-4 text-[#C2A26A]" />
+            Preferences
+          </DropdownMenuItem>
+        )}
+
         <DropdownMenuItem
-          onClick={() => goToProtectedPage("/appointments")}
+          onClick={() => goToPage("/appointments")}
           className="cursor-pointer rounded-lg px-3 py-2 text-[#2B2115] focus:bg-[#FFF7E6]"
         >
           <CalendarDays className="mr-3 h-4 w-4 text-[#C2A26A]" />
-          Lịch hẹn
+          Appointments
         </DropdownMenuItem>
 
         <DropdownMenuItem
-          onClick={() => goToProtectedPage("/service-history")}
+          onClick={() => goToPage("/service-history")}
           className="cursor-pointer rounded-lg px-3 py-2 text-[#2B2115] focus:bg-[#FFF7E6]"
         >
           <History className="mr-3 h-4 w-4 text-[#C2A26A]" />
-          Lịch sử dịch vụ
+          Service History
         </DropdownMenuItem>
 
-        <DropdownMenuItem
-          onClick={() => goToProtectedPage("/orders")}
-          className="cursor-pointer rounded-lg px-3 py-2 text-[#2B2115] focus:bg-[#FFF7E6]"
-        >
-          <Package className="mr-3 h-4 w-4 text-[#C2A26A]" />
-          Đơn hàng
-        </DropdownMenuItem>
+        {role !== "staff" && (
+          <>
+            <DropdownMenuItem
+              onClick={() => goToPage("/orders")}
+              className="cursor-pointer rounded-lg px-3 py-2 text-[#2B2115] focus:bg-[#FFF7E6]"
+            >
+              <Package className="mr-3 h-4 w-4 text-[#C2A26A]" />
+              Orders
+            </DropdownMenuItem>
+
+            <DropdownMenuItem
+              onClick={() => goToPage("/promotions")}
+              className="cursor-pointer rounded-lg px-3 py-2 text-[#2B2115] focus:bg-[#FFF7E6]"
+            >
+              <Gift className="mr-3 h-4 w-4 text-[#C2A26A]" />
+              Promotions
+            </DropdownMenuItem>
+
+            <DropdownMenuItem
+              onClick={() => goToPage("/notifications")}
+              className="cursor-pointer rounded-lg px-3 py-2 text-[#2B2115] focus:bg-[#FFF7E6]"
+            >
+              <Bell className="mr-3 h-4 w-4 text-[#C2A26A]" />
+              Notifications
+            </DropdownMenuItem>
+          </>
+        )}
 
         <DropdownMenuItem
-          onClick={() => goToProtectedPage("/promotions")}
-          className="cursor-pointer rounded-lg px-3 py-2 text-[#2B2115] focus:bg-[#FFF7E6]"
-        >
-          <Gift className="mr-3 h-4 w-4 text-[#C2A26A]" />
-          Ưu đãi / Khuyến mãi
-        </DropdownMenuItem>
-
-        <DropdownMenuItem
-          onClick={() => goToProtectedPage("/notifications")}
-          className="cursor-pointer rounded-lg px-3 py-2 text-[#2B2115] focus:bg-[#FFF7E6]"
-        >
-          <Bell className="mr-3 h-4 w-4 text-[#C2A26A]" />
-          Thông báo
-        </DropdownMenuItem>
-
-        <DropdownMenuItem
-          onClick={() => navigate("/change-password")}
+          onClick={() => goToPage("/change-password")}
           className="cursor-pointer rounded-lg px-3 py-2 text-[#2B2115] focus:bg-[#FFF7E6]"
         >
           <KeyRound className="mr-3 h-4 w-4 text-[#C2A26A]" />
-          Đổi mật khẩu
+          Change Password
         </DropdownMenuItem>
 
         <DropdownMenuSeparator className="my-2 bg-[#E8D7B3]" />
+
+        <DropdownMenuItem
+          onClick={handleRemoveAccount}
+          className="cursor-pointer rounded-lg px-3 py-2 text-red-600 focus:bg-red-50 focus:text-red-600"
+        >
+          <Trash2 className="mr-3 h-4 w-4" />
+          Remove Account
+        </DropdownMenuItem>
 
         <DropdownMenuItem
           onClick={handleLogout}
           className="cursor-pointer rounded-lg px-3 py-2 text-red-600 focus:bg-red-50 focus:text-red-600"
         >
           <LogOut className="mr-3 h-4 w-4" />
-          Đăng xuất
+          Sign Out
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
