@@ -17,26 +17,11 @@ class AuthController extends Controller
 {
     public function register(AuthRegisterRequest $request)
     {
-        $user = null;
-
-        DB::transaction(function () use ($request, &$user) {
-            $user = User::create([
-                'name' => $request->name,
-                'email' => $request->email,
-                'phone' => $request->phone,
-                'password' => Hash::make($request->password),
-                'role' => 'customer',
-                'must_change_password' => false,
-            ]);
-
-            Customers::create([
-                'user_id' => $user->id,
-                'preferred_staff_id' => null,
-                'preferences' => null,
-                'allergies' => null,
-            ]);
-        });
-
+        $user = User::create([
+            'email' => $request->email,
+            'phone' => $request->phone,
+            'password' => Hash::make($request->password)
+        ]);
         return response()->json([
             'data' => $user,
             'message' => 'Register successfully!'

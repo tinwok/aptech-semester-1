@@ -24,10 +24,12 @@ class StoreServiceRequest extends FormRequest
     {
         return [
             'title' => 'required|string|max:255',
-            'description' => 'nullable|string|max:1000',
-            'price' => 'required|numeric|min:0',
-            'duration_minutes' => 'required|integer|min:1',
-            'image_url' => 'nullable|image|mimes:jpeg,png,webp|max:2048'
+            'description' => 'nullable|string',
+            'duration_minutes' => 'required|integer',
+            'price' => 'required|numeric',
+            'status' => 'nullable|in:active,inactive',
+            'note' => 'nullable|string',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048'
         ];
     }
 }

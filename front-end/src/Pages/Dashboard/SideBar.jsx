@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -13,90 +13,83 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+
+import { LogOut } from "lucide-react";
+import api from "@/services/api";
 import { Button } from "@/components/ui/button";
 
 function SideBar() {
+  const location = useLocation();
+
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    try {
+      await api.post("/logout");
+    } catch (error) {
+      console.error(error);
+    } finally {
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      navigate("/");
+    }
+  };
+
   return (
-    <div>
-      {" "}
-      <div className="flex min-h-screen">
-        {/* Sidebar */}
-        <aside className="w-64 border-r bg-white p-4">
-          <h2 className="mb-6 text-xl font-bold">ZenStyle</h2>
+    <div className="flex min-h-screen">
+      {/* Sidebar */}
+      <aside className="w-64 border-r border-zinc-800 bg-zinc-900 text-white p-4">
+        <h2 className="mb-6 text-2xl font-bold text-white">ZenStyle</h2>
 
-          <nav className="space-y-2">
-            <Link
-              to="/dashboard"
-              className="block rounded-lg px-3 py-2 hover:bg-gray-100"
-            >
-              Dashboard
-            </Link>
-            <Link
-              to="/dashboard/appointments"
-              className="block rounded-lg px-3 py-2 hover:bg-gray-100"
-            >
-              Appointments
-            </Link>
-            <Link
-              to="/dashboard/services"
-              className="block rounded-lg px-3 py-2 hover:bg-gray-100"
-            >
-              Services
-            </Link>
-            <Link
-              to="/dashboard/staffs"
-              className="block rounded-lg px-3 py-2 hover:bg-gray-100"
-            >
-              Staffs
-            </Link>
-            <Link
-              to="/dashboard/customers"
-              className="block rounded-lg px-3 py-2 hover:bg-gray-100"
-            >
-              Customers
-            </Link>
-          </nav>
-        </aside>
+        <nav className="space-y-2">
+          <Link
+            to="/dashboard"
+            className={`block rounded-lg px-3 py-2 ${
+              location.pathname === "/dashboard"
+                ? "bg-zinc-800 text-white"
+                : "text-gray-300 hover:bg-zinc-800 hover:text-white"
+            }`}
+          >
+            Dashboard
+          </Link>
 
-        {/* Main Content */}
-        <div className="flex-1">
-          <header className="flex items-center justify-between border-b bg-white px-6 py-4">
-            <div className="flex gap-3">
-              <Input placeholder="Search by name..." className="w-64" />
+          <Link
+            to="/dashboard/appointments"
+            className="block rounded-lg px-3 py-2 text-gray-300 hover:bg-zinc-800 hover:text-white"
+          >
+            Appointments
+          </Link>
 
-              <Select>
-                <SelectTrigger className="w-40">
-                  <SelectValue placeholder="Filter status" />
-                </SelectTrigger>
+          <Link
+            to="/dashboard/services"
+            className="block rounded-lg px-3 py-2 text-gray-300 hover:bg-zinc-800 hover:text-white"
+          >
+            Services
+          </Link>
 
-                <SelectContent>
-                  <SelectItem value="all">All</SelectItem>
-                  <SelectItem value="pending">Pending</SelectItem>
-                  <SelectItem value="confirmed">Confirmed</SelectItem>
-                  <SelectItem value="completed">Completed</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+          <Link
+            to="/dashboard/staffs"
+            className="block rounded-lg px-3 py-2 text-gray-300 hover:bg-zinc-800 hover:text-white"
+          >
+            Staffs
+          </Link>
 
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline">User</Button>
-              </DropdownMenuTrigger>
-
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem asChild>
-                  <Link to="/profile">Profile</Link>
-                </DropdownMenuItem>
-
-                <DropdownMenuItem asChild>
-                  <Link to="/settings">Settings</Link>
-                </DropdownMenuItem>
-
-                <DropdownMenuItem>Logout</DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </header>
-        </div>
+          <Link
+            to="/dashboard/customers"
+            className="block rounded-lg px-3 py-2 text-gray-300 hover:bg-zinc-800 hover:text-white"
+          >
+            Customers
+          </Link>
+        </nav>
+      </aside>
+      <div className="fixed bottom-4 left-4 w-56">
+        <Button
+          onClick={handleLogout}
+          className="flex w-full items-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-white transition hover:bg-red-700"
+        >
+          <LogOut size={18} />
+          Logout
+        </Button>
       </div>
     </div>
   );

@@ -19,4 +19,8 @@ class Services extends Model
     {
         return $this->hasMany(Invoice_details::class, 'service_id');
     }
+    public function serviceInventories()
+    {
+        return $this->hasMany(ServiceInventory::class, 'service_id');
+    }
 }

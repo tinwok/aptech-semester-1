@@ -13,6 +13,17 @@ return Application::configure(basePath: dirname(__DIR__))
         commands: __DIR__ . '/../routes/console.php',
         health: '/up',
     )
+    ->withSchedule(function ($schedule) {
+        $schedule->call(function () {
+            app(\App\Services\NotificationService::class)
+                ->testNotification();
+        })->everyMinute();
+
+        $schedule->call(function () {
+            app(\App\Services\NotificationService::class)
+                ->checkLowInventory();
+        })->everyFiveMinutes();
+    })
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
             'role' => RoleMiddleware::class,
