@@ -1,9 +1,23 @@
 import axios from "axios";
 
 // ── Backend Laravel ──
+
 const api = axios.create({
-  baseURL: "/api",
+  baseURL: import.meta.env.VITE_API_URL,
 });
+
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem("token");
+
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+
+    return config;
+  },
+  (error) => Promise.reject(error),
+);
 
 // ── Helper: map fields backend → frontend ──
 const mapService = (item) => ({

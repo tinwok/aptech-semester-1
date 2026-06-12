@@ -14,7 +14,7 @@ export default function LoginButton() {
       hover:bg-[var(--color-zen-accent)]
       font-[var(--font-logo)] text-sm tracking-wide"
     >
-      <Link to="/dang-nhap">LOG IN</Link>
+      <Link to="/login">LOG IN</Link>
     </Button>
   );
 }
