@@ -31,7 +31,7 @@ export default function ServiceCard({ item, moreInfoLink, size }) {
         >
           {item.description}
         </p>
-        {item.duration && (
+        {item.duration_minutes && (
           <div className="flex items-center gap-1 text-[var(--color-zen-text-muted)]">
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -61,7 +61,6 @@ export default function ServiceCard({ item, moreInfoLink, size }) {
             {item.price.toLocaleString("vi-VN")}đ
           </span>
           <Button
-            asChild
             className={`rounded-none bg-[var(--color-zen-accent)] text-[var(--color-zen-primary)] hover:bg-[var(--color-zen-accent-hover)] font-[var(--font-logo)] tracking-widest uppercase border-none ${isSmall ? "px-2 h-6 text-[10px]" : "px-4 h-8 text-xs"}`}
           >
             <Link to={moreInfoLink}>{isSmall ? "Detail" : "More Info"}</Link>

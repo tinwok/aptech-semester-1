@@ -1,12 +1,13 @@
 import { useLoaderData } from "react-router-dom";
-import Hero from "@/Pages/Home/common/Hero";
+import Hero from "./Hero";
+import ServicesSection from "./ServicesSection";
 
 export default function HomePage() {
-  const { heroSlide } = useLoaderData();
-
+  const { heroSlides, services } = useLoaderData();
   return (
     <div>
-      <Hero slides={heroSlide}></Hero>
+      <Hero slides={heroSlides} />
+      <ServicesSection services={services} />
     </div>
   );
 }

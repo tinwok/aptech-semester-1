@@ -1,3 +1,5 @@
+import { getAllServices } from "@/services/api";
+
 const HERO_SLIDES = [
   {
     id: 1,
@@ -19,59 +21,48 @@ const HERO_SLIDES = [
     id: 3,
     image: "/images/hero/khong_gian_thu_gian_dang_cap.png",
     title: "Premium relaxation space",
-    subtitle: "5 starts standard salon operation.",
-    cta: "salon operation.",
+    subtitle: "5 stars standard salon operation.",
+    cta: "Salon System",
+    cta_link: "/salon",
   },
   {
     id: 4,
     image: "/images/hero/hairstyling.png",
-    title: "Hair styling",
+    title: "Hair Styling",
     subtitle: "Professional hair styling",
-    cta: "Hair styling",
+    cta: "Hair Styling Services",
     cta_link: "/services/hair-styling",
   },
   {
     id: 5,
     image: "/images/hero/skin_care.png",
-    title: "Skin care",
+    title: "Skin Care",
     subtitle: "Reborn and take care of skin face",
-    cta: "Skin care services",
+    cta: "Skin Care Services",
     cta_link: "/services/skin-care",
   },
   {
     id: 6,
     image: "/images/hero/beautry_treatements.png",
-    title: "Beauty treatment",
+    title: "Beauty Treatment",
     subtitle: "Make you to be beautiful",
-    cta: "Beauty treatment services",
+    cta: "Beauty Treatment Services",
     cta_link: "/services/beauty-treatment",
   },
 ];
 
 export async function homeLoader() {
   let services = [];
-  let hairProducts = [];
-  let skinProducts = [];
 
   try {
-    const { getAllServices, getHairProducts, getSkinProducts } =
-      await import("@/services/api");
-    const [servicesRes, hairRes, skinRes] = await Promise.all([
-      getAllServices(),
-      getHairProducts(),
-      getSkinProducts(),
-    ]);
-
-    services = servicesRes.data;
-    hairProducts = hairRes.data;
-    skinProducts - skinRes.data;
+    const result = await getAllServices();
+    console.log("✅ result:", result);
+    console.log("✅ result.data:", result.data);
+    services = result.data;
   } catch (error) {
-    console.warn("API unavailable:", error.message);
+    console.error("❌ API error:", error); // đổi warn → error để thấy rõ
   }
-  return {
-    heroSlides: HERO_SLIDES,
-    services,
-    hairProducts,
-    skinProducts,
-  };
+
+  console.log("📦 services trả về:", services);
+  return { heroSlides: HERO_SLIDES, services };
 }
