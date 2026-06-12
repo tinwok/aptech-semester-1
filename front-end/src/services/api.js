@@ -22,10 +22,10 @@ api.interceptors.request.use(
 // ── Helper: map fields backend → frontend ──
 const mapService = (item) => ({
   id: item.id,
-  name: item.name,
+  name: item.title,
   description: item.description,
   duration_minutes: item.duration_minutes,
-  price: item.price,
+  price: Number(item.price),
   status: item.status,
   image: item.image_url,
 });
@@ -46,6 +46,6 @@ export const getServices = async (params = {}) => {
   };
 };
 
-export const getAllServices = () => getServices();
+export const getAllServices = () => getServices({ per_page: 50 });
 
 export default api;

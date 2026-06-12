@@ -68,7 +68,7 @@ export default function Header() {
             <LoginButton onClick={() => console.log("login clicked")} />
           ) : (
             <DropdownMenu>
-              <DropdownMenuTrigger asChild>
+              <DropdownMenuTrigger>
                 <button className="flex items-center gap-2 rounded-md border px-3 py-2 cursor-pointer">
                   <User size={18} />
                   <span>{user?.phone || "User"}</span>
@@ -81,7 +81,7 @@ export default function Header() {
                 </DropdownMenuItem>
 
                 {user?.role === "customer" && (
-                  <DropdownMenuItem asChild>
+                  <DropdownMenuItem>
                     <NavLink to="/appointment-history">
                       Appointment History
                     </NavLink>
