@@ -11,9 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('service_inventories', function (Blueprint $table) {
-            $table->id();
-            $table->timestamps();
+        Schema::table('inventory_transactions', function (Blueprint $table) {
+
+            $table->enum('type', ['import', 'export', 'waste'])->change();
         });
     }
 
@@ -22,6 +22,9 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('service_inventories');
+        Schema::table('inventory_transactions', function (Blueprint $table) {
+
+            $table->enum('type', ['import', 'export'])->change();
+        });
     }
 };

@@ -38,14 +38,22 @@ class ServicesController extends Controller
         $imageUrl = null;
         $validated = $request->validated();
         if ($request->hasFile('image')) {
-            $upload = $this->cloudinaryService->upload($request->file('image'), 'services');
-            $imageUrl = $upload['url'];
+            $upload = $this->cloudinaryService->upload(
+                $request->file('image'),
+                'services'
+            );
+            if ($upload && isset($upload['url'])) {
+                $imageUrl = $upload['url'];
+            } else {
+                return response()->json([
+                    'message' => 'Upload image failed'
+                ], 500);
+            }
         }
         $validated['image_url'] = $imageUrl;
-        $services = Services::create($validated);
-        return response()->json($services, 201);
+        $service = Services::create($validated);
+        return response()->json($service, 201);
     }
-
     /**
      * Display the specified resource.
      */
