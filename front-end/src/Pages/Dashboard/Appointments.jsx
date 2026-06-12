@@ -1,6 +1,44 @@
-import { useState } from "react";
-
+import { useEffect, useState } from "react";
+import api from "../../services/api";
 export default function Appointments() {
+  const [appointments, setAppointments] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [pagination, setPagination] = useState({
+    current_page: 1,
+    last_page: 1,
+    total: 0,
+  });
+  const [error, setError] = useState("");
+  const fetchAppointments = async (page = 1) => {
+    try {
+      setLoading(true);
+      setError("");
+      const res = await api.get(`dashboard/appointments?page=${page}`);
+      setAppointments(res.data.data);
+
+      setPagination({
+        current_page: res.data.current_page,
+        last_page: res.data.last_page,
+        total: res.data.total,
+      });
+    } catch (err) {
+      console.error("Fetch appointments failed:", err);
+
+      if (err.response) {
+        setError(err.response.data.message || "Server error");
+      } else if (err.request) {
+        setError("Không thể kết nối tới server");
+      } else {
+        setError(err.message);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchAppointments();
+  }, []);
   return (
     <div className="p-6">
       <div className="mb-6 flex items-center justify-between">
@@ -15,7 +53,6 @@ export default function Appointments() {
         <table className="w-full">
           <thead className="bg-zinc-800">
             <tr>
-              <th className="p-4 text-left text-zinc-300">ID</th>
               <th className="p-4 text-left text-zinc-300">Customer</th>
               <th className="p-4 text-left text-zinc-300">Staff</th>
               <th className="p-4 text-left text-zinc-300">Service</th>
@@ -30,7 +67,6 @@ export default function Appointments() {
                 key={item.id}
                 className="border-t border-zinc-700 hover:bg-zinc-800"
               >
-                <td className="p-4 text-white">{item.id}</td>
                 <td className="p-4 text-white">{item.customer}</td>
                 <td className="p-4 text-white">{item.staff}</td>
                 <td className="p-4 text-white">{item.service}</td>
@@ -54,6 +90,29 @@ export default function Appointments() {
             ))}
           </tbody>
         </table>
+      </div>
+      {/* Pagination */}
+
+      <div className="mt-4 flex justify-center gap-2">
+        <button
+          disabled={pagination.current_page === 1}
+          onClick={() => fetchAppointments(pagination.current_page - 1)}
+          className="rounded bg-zinc-700 px-3 py-2 text-white disabled:opacity-50"
+        >
+          Prev
+        </button>
+
+        <span className="px-4 py-2 text-white">
+          {pagination.current_page} / {pagination.last_page}
+        </span>
+
+        <button
+          disabled={pagination.current_page === pagination.last_page}
+          onClick={() => fetchAppointments(pagination.current_page + 1)}
+          className="rounded bg-zinc-700 px-3 py-2 text-white disabled:opacity-50"
+        >
+          Next
+        </button>
       </div>
     </div>
   );

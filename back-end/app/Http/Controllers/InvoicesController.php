@@ -29,10 +29,16 @@ class InvoicesController extends Controller
         $appointment =  Invoices::where('staff_id', $request->user()->staff->id)->where('status', 'pending')->with('invoiceDetails')->latest()->get();
         return response()->json($appointment, 200);
     }
-    public function getAppointmentsHistory(Request $request)
+    public function getStaffAppointmentsHistory(Request $request)
     {
 
-        $appointment =  Invoices::where('staff_id', $request->user()->staff?->customer?->id)->where('status', 'completed')->with('invoiceDetails')->latest()->get();
+        $appointment =  Invoices::where('staff_id', $request->user()->staff->id)->where('status', 'completed')->with('invoiceDetails')->latest()->get();
+        return response()->json($appointment, 200);
+    }
+    public function getCustommerAppointmentsHistory(Request $request)
+    {
+
+        $appointment =  Invoices::where('staff_id', $request->user()->customer->id)->where('status', 'completed')->with('invoiceDetails')->latest()->get();
         return response()->json($appointment, 200);
     }
     public function getAvailableTimeOfStaff(Request $request)
