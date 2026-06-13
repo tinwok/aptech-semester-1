@@ -50,7 +50,6 @@ export default function Hero({ slides = [] }) {
           {slide.subtitle}
         </p>
         <Button
-          asChild
           className="rounded-none px-8 h-12 bg-[var(--color-zen-accent)]
           text-[var(--color-zen-primary)]
           hover:bg-[var(--color-zen-accent-hover)]

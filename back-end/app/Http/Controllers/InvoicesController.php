@@ -24,9 +24,14 @@ class InvoicesController extends Controller
         $appointment =  Invoices::where('customer_id', $request->user()->customer->id)->where('status', 'pending')->with('invoiceDetails')->latest()->get();
         return response()->json($appointment, 200);
     }
-    public function getStaffAppointments(Request $request)
+    public function getCustomerAppointmentsHistory(Request $request)
     {
-        $appointment =  Invoices::where('staff_id', $request->user()->staff->id)->where('status', 'pending')->with('invoiceDetails')->latest()->get();
+        $appointment = Invoices::where('customer_id', $request->user()->customer->id)
+            ->where('status', 'completed')
+            ->with('invoiceDetails')
+            ->latest()
+            ->get();
+
         return response()->json($appointment, 200);
     }
     public function getStaffAppointmentsHistory(Request $request)
@@ -72,11 +77,17 @@ class InvoicesController extends Controller
                 }
             );
             if (!$isBooked) {
-                $availableSlots[] = $slotStart;
+                $availableSlots[] = [
+                    'time' => $slotStart,
+                    'available' => !$isBooked
+                ];
             }
             $start->addMinutes(20);
         }
-        return response()->json($availableSlots);
+        return response()->json([
+            'staff_id' => $request->staff_id,
+            'slots' => $availableSlots
+        ]);
     }
     //cho admin
     public function index()

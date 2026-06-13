@@ -68,7 +68,7 @@ export default function Header() {
             <AuthButtons onClick={() => console.log("login clicked")} />
           ) : (
             <DropdownMenu>
-              <DropdownMenuTrigger asChild>
+              <DropdownMenuTrigger>
                 <button className="flex items-center gap-2 rounded-md border px-3 py-2 cursor-pointer">
                   <User size={18} />
                   <span>{user?.phone || "User"}</span>
@@ -76,12 +76,12 @@ export default function Header() {
               </DropdownMenuTrigger>
 
               <DropdownMenuContent align="end">
-                <DropdownMenuItem asChild>
+                <DropdownMenuItem>
                   <NavLink to="/profile">User Profile</NavLink>
                 </DropdownMenuItem>
 
                 {user?.role === "customer" && (
-                  <DropdownMenuItem asChild>
+                  <DropdownMenuItem>
                     <NavLink to="/appointment-history">
                       Appointment History
                     </NavLink>
@@ -89,7 +89,7 @@ export default function Header() {
                 )}
 
                 {user?.role === "admin" && (
-                  <DropdownMenuItem asChild>
+                  <DropdownMenuItem>
                     <NavLink to="/dashboard">Dashboard</NavLink>
                   </DropdownMenuItem>
                 )}

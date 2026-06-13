@@ -36,8 +36,9 @@ export default function Staffs() {
         console.error("Error:", err);
         setLoading(false);
       });
+    π;
   };
-
+  console.log("TOKEN:", localStorage.getItem("zenstyle_access_token"));
   useEffect(() => {
     fetchStaffs();
   }, []);
