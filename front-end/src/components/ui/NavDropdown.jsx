@@ -47,7 +47,7 @@ export default function NavDropdown({ item }) {
             <NavLink
               key={child.path}
               to={child.path}
-              onClick={() => setOpen()}
+              onClick={() => setOpen(false)}
               className={({ isActive }) =>
                 `block px-4 py-2.5 mx-2 my-1 border-2 border-[var(--color-zen-accent)] font-[var(--font-logo)] text-sm tracking-wide transition-colors duration-150 ${
                   isActive

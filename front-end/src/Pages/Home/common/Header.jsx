@@ -69,10 +69,10 @@ export default function Header() {
           ) : (
             <DropdownMenu>
               <DropdownMenuTrigger>
-                <button className="flex items-center gap-2 rounded-md border px-3 py-2 cursor-pointer">
+                <div className="flex items-center gap-2 rounded-md border px-3 py-2 cursor-pointer">
                   <User size={18} />
                   <span>{user?.phone || "User"}</span>
-                </button>
+                </div>
               </DropdownMenuTrigger>
 
               <DropdownMenuContent align="end">

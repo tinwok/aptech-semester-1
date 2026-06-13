@@ -20,10 +20,6 @@ import {
 
 import Staffs from "./Pages/Dashboard/Staffs";
 
-import { createBrowserRouter } from "react-router";
-import { RouterProvider } from "react-router/dom";
-import { homeLoader } from "@/loaders/homeLoader";
-
 import Customers from "./Pages/Dashboard/Customers";
 import Appointments from "./Pages/Dashboard/Appointments";
 import Services from "./Pages/Dashboard/Services";
@@ -33,7 +29,7 @@ import Layout from "./Layouts/mainLayouts";
 import DashBoardLayouts from "./Layouts/DashBoardLayouts";
 import DashBoardMain from "./Pages/Dashboard/DashBoardMain";
 import ProtectedRoute from "./Pages/ProtectedRoute";
-import "./App.css";
+
 import AuthPage from "./Pages/Login/AuthPage";
 import { Toaster } from "sonner";
 import Booking from "./Pages/Booking/Booking";
@@ -131,7 +127,6 @@ const router = createBrowserRouter([
         element: <ChangePasswordPage />,
         loader: protectedUserLoader,
         action: changePasswordAction,
-        loader: homeLoader,
       },
     ],
   },
