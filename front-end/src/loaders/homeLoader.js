@@ -1,3 +1,5 @@
+import { getAllServices, getAllProducts } from "@/services/api";
+
 const HERO_SLIDES = [
   {
     id: 1,
@@ -50,28 +52,18 @@ const HERO_SLIDES = [
 
 export async function homeLoader() {
   let services = [];
-  let hairProducts = [];
-  let skinProducts = [];
+  let products = [];
 
   try {
-    const { getAllServices, getHairProducts, getSkinProducts } =
-      await import("@/services/api");
-    const [servicesRes, hairRes, skinRes] = await Promise.all([
+    const [servicesResult, productsResult] = await Promise.all([
       getAllServices(),
-      getHairProducts(),
-      getSkinProducts(),
+      getAllProducts(),
     ]);
-
-    services = servicesRes.data;
-    hairProducts = hairRes.data;
-    skinProducts - skinRes.data;
+    services = servicesResult.data;
+    products = productsResult;
   } catch (error) {
-    console.warn("API unavailable:", error.message);
+    console.error("API unavailable:", error.message);
   }
-  return {
-    heroSlides: HERO_SLIDES,
-    services,
-    hairProducts,
-    skinProducts,
-  };
+
+  return { heroSlides: HERO_SLIDES, services, products };
 }

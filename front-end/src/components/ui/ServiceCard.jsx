@@ -1,37 +1,49 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 
+const PLACEHOLDER = "/images/placeholder.png"; // ← tạo ảnh này trong public/images/
+
 export default function ServiceCard({ item, moreInfoLink, size }) {
   const isSmall = size === "small";
 
   return (
     <div
-      className={`flex flex-col border-2 border-[var(--color-zen-accent)] overflow-hidden hover:shadow-xl hover:shadow-black/20 transition-all duration-300 group ${isSmall ? "w-44" : "w-full"} `}
+      className={`flex flex-col border-2 border-[var(--color-zen-accent)] overflow-hidden hover:shadow-xl hover:shadow-black/20 transition-all duration-300 group ${isSmall ? "w-44" : "w-full"}`}
     >
       {/* Image */}
       <div className={`w-full overflow-hidden ${isSmall ? "h-36" : "h-52"}`}>
         <img
-          src={item.image}
-          alt={item.image}
+          src={item.image ?? PLACEHOLDER} // ← fallback khi null
+          alt={item.name} // ← dùng name thay vì image url
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
         />
       </div>
 
       {/* Text */}
       <div
-        className={`flex flex-col flex-1 bg-white ${isSmall ? "p-3 gap-2" : "p-4 gap-3"} `}
+        className={`flex flex-col flex-1 bg-white ${isSmall ? "p-3 gap-2" : "p-4 gap-3"}`}
       >
         <h3
-          className={`font-[var(--font-logo)]  font-semibold text-[var(--color-zen-primary)] tracking-wide ${isSmall ? "text-sm line-clamp-1" : "text-lg"} `}
+          className={`font-[var(--font-logo)] font-semibold text-[var(--color-zen-primary)] tracking-wide ${isSmall ? "text-sm line-clamp-1" : "text-lg"}`}
         >
           {item.name}
         </h3>
-        <p
-          className={`font-[var(--font-sans)] text-sm text-[var(--color-zen-primary)]/70 flex-1 ${isSmall ? "text-sm line-clamp-2" : "text-lg"} `}
-        >
-          {item.description}
-        </p>
-        {item.duration && (
+
+        {/* Description (services) hoặc Unit (products) */}
+        {item.description ? (
+          <p
+            className={`font-[var(--font-sans)] text-sm text-[var(--color-zen-primary)]/70 flex-1 ${isSmall ? "line-clamp-2" : ""}`}
+          >
+            {item.description}
+          </p>
+        ) : item.unit ? (
+          <p className="font-[var(--font-sans)] text-sm text-[var(--color-zen-primary)]/70 flex-1">
+            Unit: {item.unit}
+          </p>
+        ) : null}
+
+        {/* Duration — chỉ hiện với services */}
+        {item.duration_minutes && (
           <div className="flex items-center gap-1 text-[var(--color-zen-text-muted)]">
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -54,6 +66,8 @@ export default function ServiceCard({ item, moreInfoLink, size }) {
             </span>
           </div>
         )}
+
+        {/* Price + Button */}
         <div className="flex items-center justify-between mt-auto pt-2 border-t border-[var(--color-zen-accent)]/30">
           <span
             className={`font-[var(--font-logo)] font-semibold text-[var(--color-zen-accent)] ${isSmall ? "text-xs" : "text-base"}`}
