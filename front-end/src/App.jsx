@@ -1,4 +1,3 @@
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import "./App.css";
 
 import ServicesPage from "./Pages/ServicesPage";
@@ -33,6 +32,7 @@ import ProtectedRoute from "./Pages/ProtectedRoute";
 
 import AuthPage from "./Pages/Login/AuthPage";
 import { Toaster } from "sonner";
+import Booking from "./Pages/Booking/Booking";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -46,6 +46,11 @@ const router = createBrowserRouter([
       {
         path: "services",
         element: <ServicesPage />,
+        loader: publicUserLoader,
+      },
+      {
+        path: "booking",
+        element: <Booking />,
         loader: publicUserLoader,
       },
       {
@@ -127,11 +132,8 @@ const router = createBrowserRouter([
   },
   {
     path: "/dashboard",
-    element: (
-      <ProtectedRoute>
-        <DashBoardLayouts />
-      </ProtectedRoute>
-    ),
+    element: <DashBoardLayouts />,
+    loader: protectedUserLoader,
     children: [
       {
         index: true,

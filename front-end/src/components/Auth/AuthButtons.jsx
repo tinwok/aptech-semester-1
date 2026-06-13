@@ -30,7 +30,7 @@ function AuthButtons() {
           onClick={() => setIsLoginOpen(true)}
           className="bg-[#C2A26A] text-white hover:bg-[#9B7A3F]"
         >
-          Sign In / Sign Up
+          Sign In
         </Button>
       </div>
 

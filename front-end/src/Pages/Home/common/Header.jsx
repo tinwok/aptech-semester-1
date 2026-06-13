@@ -9,7 +9,7 @@ import NavButton from "@/components/ui/NavButton";
 import NavDropdown from "@/components/ui/NavDropdown";
 import LoginButton from "@/components/ui/LoginButton";
 import { User } from "lucide-react";
-
+import AuthButtons from "@/components/Auth/AuthButtons";
 const NAV_ITEMS = [
   { label: "ABOUT US", path: "/about-us", type: "link" },
   {
@@ -65,7 +65,7 @@ export default function Header() {
 
         <div className="flex items-center gap-3 shrink-0">
           {!token ? (
-            <LoginButton onClick={() => console.log("login clicked")} />
+            <AuthButtons onClick={() => console.log("login clicked")} />
           ) : (
             <DropdownMenu>
               <DropdownMenuTrigger>
