@@ -1,4 +1,3 @@
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import "./App.css";
 
 import ServicesPage from "./Pages/ServicesPage";
@@ -20,11 +19,6 @@ import {
 } from "@/loaders/userLoaders";
 
 import Staffs from "./Pages/Dashboard/Staffs";
-
-
-
-import { homeLoader } from "@/loaders/homeLoader";
-
 import Customers from "./Pages/Dashboard/Customers";
 import Appointments from "./Pages/Dashboard/Appointments";
 import Services from "./Pages/Dashboard/Services";
@@ -33,25 +27,20 @@ import MainPage from "./Pages/MainPage";
 import Layout from "./Layouts/mainLayouts";
 import DashBoardLayouts from "./Layouts/DashBoardLayouts";
 import DashBoardMain from "./Pages/Dashboard/DashBoardMain";
-import ProtectedRoute from "./Pages/ProtectedRoute";
-import "./App.css";
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import AuthPage from "./Pages/Login/AuthPage";
 import { Toaster } from "sonner";
+import Booking from "./Pages/Booking/Booking";
+
 const router = createBrowserRouter([
   {
     path: "/",
     element: <Layout />,
     children: [
-      {
-        index: true,
-        element: <MainPage />,
-        loader: publicUserLoader,
-      },
-      {
-        path: "services",
-        element: <ServicesPage />,
-        loader: publicUserLoader,
-      },
+      { index: true, element: <MainPage />, loader: publicUserLoader },
+      { path: "services", element: <ServicesPage />, loader: publicUserLoader },
+      { path: "booking", element: <Booking />, loader: publicUserLoader },
+
       {
         path: "user",
         element: <UserPortalPage />,
@@ -126,40 +115,19 @@ const router = createBrowserRouter([
         element: <ChangePasswordPage />,
         loader: protectedUserLoader,
         action: changePasswordAction,
-        loader: homeLoader,
       },
     ],
   },
   {
     path: "/dashboard",
-    element: (
-      <ProtectedRoute>
-        <DashBoardLayouts />
-      </ProtectedRoute>
-    ),
+    element: <DashBoardLayouts />,
+    loader: protectedUserLoader,
     children: [
-      {
-        index: true,
-        element: <DashBoardMain />,
-      },
-      {
-        path: "services",
-        element: <Services />,
-      },
-      {
-        path: "staffs",
-        element: <Staffs />,
-      },
-
-      {
-        path: "customers",
-        element: <Customers />,
-      },
-
-      {
-        path: "appointments",
-        element: <Appointments />,
-      },
+      { index: true, element: <DashBoardMain /> },
+      { path: "services", element: <Services /> },
+      { path: "staffs", element: <Staffs /> },
+      { path: "customers", element: <Customers /> },
+      { path: "appointments", element: <Appointments /> },
     ],
   },
   {
@@ -171,7 +139,6 @@ const router = createBrowserRouter([
 function App() {
   return (
     <>
-      {" "}
       <RouterProvider router={router} />
       <Toaster richColors position="top-right" />
     </>

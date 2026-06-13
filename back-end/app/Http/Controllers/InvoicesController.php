@@ -107,7 +107,10 @@ class InvoicesController extends Controller
             });
 
             if (!$isBooked) {
-                $availableSlots[] = $slotStart;
+                $availableSlots[] = [
+                    'time' => $slotStart,
+                    'available' => !$isBooked
+                ];
             }
 
             $start->addMinutes(20);

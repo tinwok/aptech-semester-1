@@ -1,10 +1,11 @@
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   Bell,
   CalendarDays,
   ChevronDown,
   Gift,
   Heart,
+  ComputerIcon,
   History,
   Home,
   KeyRound,
@@ -83,14 +84,22 @@ function UserDropdown() {
 
         <DropdownMenuSeparator className="my-2 bg-[#E8D7B3]" />
 
-        <DropdownMenuItem
-          onClick={() => goToPage()}
-          className="cursor-pointer rounded-lg px-3 py-2 text-[#2B2115] focus:bg-[#FFF7E6]"
-        >
-          <Home className="mr-3 h-4 w-4 text-[#C2A26A]" />
-          Home
-        </DropdownMenuItem>
-
+        {role == "admin" ? (
+          <DropdownMenuItem className="cursor-pointer rounded-lg px-3 py-2 text-[#2B2115] focus:bg-[#FFF7E6] mb-2">
+            <Link to="/dashboard">
+              <ComputerIcon className="mr-3 h-4 w-4 text-[#C2A26A]" />
+              <span>Dashboard</span>
+            </Link>
+          </DropdownMenuItem>
+        ) : (
+          <DropdownMenuItem
+            onClick={() => goToPage()}
+            className="cursor-pointer rounded-lg px-3 py-2 text-[#2B2115] focus:bg-[#FFF7E6]"
+          >
+            <Home className="mr-3 h-4 w-4 text-[#C2A26A]" />
+            Home
+          </DropdownMenuItem>
+        )}
         <DropdownMenuItem
           onClick={() => goToPage("/profile")}
           className="cursor-pointer rounded-lg px-3 py-2 text-[#2B2115] focus:bg-[#FFF7E6]"

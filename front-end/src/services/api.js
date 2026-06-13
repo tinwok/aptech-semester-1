@@ -4,20 +4,18 @@ import axios from "axios";
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
-});
-
-api.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem("token");
-
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-
-    return config;
+  headers: {
+    Accept: "application/json",
   },
-  (error) => Promise.reject(error),
-);
+});
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem("zenstyle_access_token");
+
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
 
 // ── Helper: map fields backend → frontend ──
 const mapService = (item) => ({
@@ -47,5 +45,28 @@ export const getServices = async (params = {}) => {
 };
 
 export const getAllServices = () => getServices({ per_page: 50 });
+
+// ── Products ──
+const mapProduct = (item) => ({
+  id: item.id,
+  name: item.name,
+  price: Number(item.retail_price),
+  unit: item.unit,
+  status: item.status,
+  image: item.image_url ?? null,
+});
+
+export const getAllProducts = async () => {
+  const res = await api.get("/products", { params: { per_page: 50 } });
+
+  console.log("🔍 res.data:", res.data);
+  console.log("🔍 res.data.data:", res.data?.data);
+  console.log("🔍 res.data.data.data:", res.data?.data?.data);
+
+  const items = res.data?.data?.data ?? [];
+  console.log("🔍 items:", items);
+
+  return items.map(mapProduct);
+};
 
 export default api;

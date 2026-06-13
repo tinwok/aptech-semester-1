@@ -1,19 +1,6 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 
+import { ArrowLeft } from "lucide-react";
 import { LogOut } from "lucide-react";
 import api from "@/services/api";
 import { Button } from "@/components/ui/button";
@@ -83,6 +70,10 @@ function SideBar() {
         </nav>
       </aside>
       <div className="fixed bottom-4 left-4 w-56">
+        <div className="mb-3 text-center text-white flex justify-center hover:text-red-500">
+          <ArrowLeft></ArrowLeft>
+          <Link to="/">Back to mainpage</Link>
+        </div>
         <Button
           onClick={handleLogout}
           className="flex w-full items-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-white transition hover:bg-red-700"

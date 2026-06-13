@@ -1,12 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
-import {
-  Field,
-  FieldDescription,
-  FieldGroup,
-  FieldLabel,
-} from "@/components/ui/field";
+import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 
@@ -78,10 +73,13 @@ function AuthPage() {
         password: formData.password,
       });
 
-      localStorage.setItem("token", res.data.token);
+      console.log("LOGIN RESPONSE:", res.data);
+      console.log(res.data);
+
+      localStorage.setItem("token", res.data.access_token);
       localStorage.setItem("user", JSON.stringify(res.data.user));
       navigate("/dashboard");
-
+      console.log("res data: " + res);
       toast.success("Đăng nhập thành công");
     } catch (err) {
       console.log(err.response?.data);

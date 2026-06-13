@@ -18,6 +18,7 @@ export default function Services() {
     last_page: 1,
     total: 0,
   });
+
   const [loading, setLoading] = useState(true);
 
   const [open, setOpen] = useState(false);
@@ -29,7 +30,7 @@ export default function Services() {
     title: "",
     description: "",
     duration_minutes: "",
-    prices: "",
+    price: "",
     status: "active",
     note: "",
   });
@@ -38,14 +39,14 @@ export default function Services() {
   const fetchServices = async (page = 1) => {
     try {
       setLoading(true);
-
       const res = await api.get(`/services?page=${page}`);
+      const data = res.data;
+      setServices(data.data);
 
-      setServices(res.data.data);
       setPagination({
-        current_page: res.data.current_page,
-        last_page: res.data.last_page,
-        total: res.data.total,
+        current_page: data.current_page,
+        last_page: data.last_page,
+        total: data.total,
       });
     } catch (err) {
       console.log(err);
@@ -68,14 +69,12 @@ export default function Services() {
       data.append("duration_minutes", formData.duration_minutes);
       data.append("status", formData.status);
       data.append("note", formData.note);
-      data.append("price", formData.prices);
+      data.append("price", formData.price);
 
       if (file) {
         data.append("image", file);
       }
-
       await api.post("/services", data);
-
       setOpen(false);
       resetForm();
       fetchServices(pagination.current_page);
@@ -105,8 +104,8 @@ export default function Services() {
       setEditingId(null);
       resetForm();
       fetchServices(pagination.current_page);
-    } catch (err) {
-      console.log(err);
+    } catch (error) {
+      console.log(error.response?.data);
     }
   };
 
@@ -127,7 +126,7 @@ export default function Services() {
       description: item.description,
       duration_minutes: item.duration_minutes,
       status: item.status,
-      prices: item.prices,
+      price: item.price,
       note: item.note,
     });
 
@@ -140,7 +139,7 @@ export default function Services() {
       description: "",
       duration_minutes: "",
       status: "active",
-      prices: "",
+      price: "",
       note: "",
     });
 
@@ -295,9 +294,9 @@ export default function Services() {
             <h3>Price</h3>
             <Input
               placeholder="Price"
-              value={formData.prices}
+              value={formData.price}
               onChange={(e) =>
-                setFormData({ ...formData, prices: e.target.value })
+                setFormData({ ...formData, price: e.target.value })
               }
             />
             {/* STATUS */}

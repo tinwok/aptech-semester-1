@@ -21,7 +21,7 @@ class ServicesController extends Controller
      */
     public function index()
     {
-        $services = Services::latest()->paginate(10);
+        $services = Services::with('invoiceDetails.invoice')->latest()->paginate(10);
         return response()->json($services);
     }
 
