@@ -15,7 +15,6 @@ import {
 } from "lucide-react";
 
 import { useAuth } from "@/context/AuthContext";
-import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -58,15 +57,10 @@ function UserDropdown() {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button
-          variant="outline"
-          className="border-[#C2A26A] bg-[#FFFDF8] px-4 text-[#2B2115] shadow-sm hover:bg-[#FFF7E6] hover:text-[#9B7A3F]"
-        >
-          <UserRound className="mr-2 h-4 w-4 text-[#C2A26A]" />
-          Hi, {displayPhone}
-          <ChevronDown className="ml-2 h-4 w-4 text-[#C2A26A]" />
-        </Button>
+      <DropdownMenuTrigger className="inline-flex items-center justify-center rounded-md border border-[#C2A26A] bg-[#FFFDF8] px-4 py-2 text-sm font-medium text-[#2B2115] shadow-sm transition hover:bg-[#FFF7E6] hover:text-[#9B7A3F] focus:outline-none">
+        <UserRound className="mr-2 h-4 w-4 text-[#C2A26A]" />
+        Hi, {displayPhone}
+        <ChevronDown className="ml-2 h-4 w-4 text-[#C2A26A]" />
       </DropdownMenuTrigger>
 
       <DropdownMenuContent

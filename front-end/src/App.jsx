@@ -21,8 +21,8 @@ import {
 
 import Staffs from "./Pages/Dashboard/Staffs";
 
-import { createBrowserRouter } from "react-router";
-import { RouterProvider } from "react-router/dom";
+
+
 import { homeLoader } from "@/loaders/homeLoader";
 
 import Customers from "./Pages/Dashboard/Customers";
