@@ -1,4 +1,4 @@
-import { getAllServices } from "@/services/api";
+import { getAllServices, getAllProducts } from "@/services/api";
 
 const HERO_SLIDES = [
   {
@@ -53,16 +53,18 @@ const HERO_SLIDES = [
 
 export async function homeLoader() {
   let services = [];
+  let products = [];
 
   try {
-    const result = await getAllServices();
-    console.log("✅ result:", result);
-    console.log("✅ result.data:", result.data);
-    services = result.data;
+    const [servicesResult, productsResult] = await Promise.all([
+      getAllServices(),
+      getAllProducts(),
+    ]);
+    services = servicesResult.data;
+    products = productsResult;
   } catch (error) {
-    console.error("❌ API error:", error); // đổi warn → error để thấy rõ
+    console.error("API unavailable:", error.message);
   }
 
-  console.log("📦 services trả về:", services);
-  return { heroSlides: HERO_SLIDES, services };
+  return { heroSlides: HERO_SLIDES, services, products };
 }

@@ -5,13 +5,13 @@ import Shop from "@/Pages/Home/common/Shop";
 import Footer from "@/Pages/Home/common/Footer";
 
 export default function MainPage() {
-  const { heroSlides, services, hairProducts, skinProducts } = useLoaderData();
+  const { heroSlides, services, products } = useLoaderData();
 
   return (
     <div>
       <Hero slides={heroSlides} />
       <ServiceSection services={services} />
-      <Shop hairProducts={hairProducts} skinProducts={skinProducts} />
+      <Shop products={products} />
       <Footer />
     </div>
   );
