@@ -29,7 +29,7 @@ import Layout from "./Layouts/mainLayouts";
 import DashBoardLayouts from "./Layouts/DashBoardLayouts";
 import DashBoardMain from "./Pages/Dashboard/DashBoardMain";
 import ProtectedRoute from "./Pages/ProtectedRoute";
-
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import AuthPage from "./Pages/Login/AuthPage";
 import { Toaster } from "sonner";
 import Booking from "./Pages/Booking/Booking";

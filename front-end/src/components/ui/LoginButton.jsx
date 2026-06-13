@@ -11,9 +11,8 @@ export default function LoginButton() {
       hover:text-[var(--color-zen-primary)]
       hover:bg-[var(--color-zen-accent)]
       font-[var(--font-logo)] text-sm tracking-wide"
-      >
-        <Link to="/login">LOG IN</Link>
-      </Button>
-
+    >
+      <Link to="/login">LOG IN</Link>
+    </Button>
   );
 }
