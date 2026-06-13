@@ -31,7 +31,7 @@ export default function ServiceCard({ item, moreInfoLink, size }) {
         >
           {item.description}
         </p>
-        {item.duration && (
+        {item.duration_minutes && (
           <div className="flex items-center gap-1 text-[var(--color-zen-text-muted)]">
             <svg
               xmlns="http://www.w3.org/2000/svg"

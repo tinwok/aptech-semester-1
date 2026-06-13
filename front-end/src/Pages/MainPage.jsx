@@ -10,7 +10,7 @@ export default function MainPage() {
   return (
     <div>
       <Hero slides={heroSlides} />
-      <ServiceSection sevices={services} />
+      <ServiceSection services={services} />
       <Shop hairProducts={hairProducts} skinProducts={skinProducts} />
       <Footer />
     </div>
