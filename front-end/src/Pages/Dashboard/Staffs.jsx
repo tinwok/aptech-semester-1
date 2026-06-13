@@ -26,7 +26,7 @@ export default function Staffs() {
   });
 
   const fetchStaffs = () => {
-    fetch("http://127.0.0.1:8000/api/dashboard/admin/staffs")
+    fetch("http://127.0.0.1:8000/api/dashboard/staffs")
       .then((res) => res.json())
       .then((data) => {
         setStaffs(data.data);
@@ -36,8 +36,9 @@ export default function Staffs() {
         console.error("Error:", err);
         setLoading(false);
       });
+    π;
   };
-
+  console.log("TOKEN:", localStorage.getItem("zenstyle_access_token"));
   useEffect(() => {
     fetchStaffs();
   }, []);

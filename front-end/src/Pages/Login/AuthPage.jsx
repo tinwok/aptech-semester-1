@@ -81,7 +81,7 @@ function AuthPage() {
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("user", JSON.stringify(res.data.user));
       navigate("/dashboard");
-
+      console.log("res data: " + res);
       toast.success("Đăng nhập thành công");
     } catch (err) {
       console.log(err.response?.data);
