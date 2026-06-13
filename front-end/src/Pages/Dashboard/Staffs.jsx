@@ -1,6 +1,8 @@
+import axiosClient from "@/api/axiosClient";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Pencil, Trash2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -11,8 +13,11 @@ import {
 export default function Staffs() {
   const [staffs, setStaffs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
 
   const [open, setOpen] = useState(false);
+  const [isEdit, setIsEdit] = useState(false);
+  const [editingId, setEditingId] = useState(null);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -25,48 +30,71 @@ export default function Staffs() {
     status: "active",
   });
 
-  const fetchStaffs = () => {
-    fetch("http://127.0.0.1:8000/api/dashboard/admin/staffs")
-      .then((res) => res.json())
-      .then((data) => {
-        setStaffs(data.data);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error("Error:", err);
-        setLoading(false);
-      });
+  const fetchStaffs = async () => {
+    try {
+      const response = await axiosClient.get("/dashboard/staffs");
+
+      console.log(JSON.stringify(response.data, null, 2));
+      console.log("FIRST STAFF:", response.data.data?.[0]);
+
+      setStaffs(response.data.data || response.data || []);
+    } catch (err) {
+      console.error("Error:", err);
+      setStaffs([]);
+    } finally {
+      setLoading(false);
+    }
   };
-
   useEffect(() => {
-    fetchStaffs();
-  }, []);
+    const loadData = async () => {
+      await fetchStaffs();
+    };
 
+    loadData();
+  }, []);
   const handleChange = (e) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
     });
   };
+  const handleEdit = (staff) => {
+    setIsEdit(true);
+    setEditingId(staff.id);
 
+    setFormData({
+      name: staff.users?.name || "",
+      email: staff.users?.email || "",
+      phone: staff.users?.phone || "",
+      password: "",
+      position: staff.position || "",
+      salary: staff.salary || "",
+      shift: staff.shift || "",
+      status: staff.status || "active",
+    });
+
+    setOpen(true);
+  };
   const handleSubmit = async () => {
     try {
-      const response = await fetch(
-        "http://127.0.0.1:8000/api/dashboard/admin/staffs",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(formData),
-        },
-      );
+      console.log("FORM DATA:", formData);
 
-      const data = await response.json();
+      let response;
+
+      if (isEdit) {
+        response = await axiosClient.put(
+          `/dashboard/staffs/${editingId}`,
+          formData,
+        );
+      } else {
+        response = await axiosClient.post("/dashboard/staffs", formData);
+      }
+
+      const data = response.data;
 
       console.log(data);
 
-      if (response.ok) {
+      if (response.status === 200 || response.status === 201) {
         alert("Add Staff Success!");
 
         setOpen(false);
@@ -88,7 +116,10 @@ export default function Staffs() {
       }
     } catch (error) {
       console.error(error);
-      alert("Something went wrong!");
+
+      console.log("FULL ERROR:", error.response?.data);
+
+      alert(JSON.stringify(error.response?.data, null, 2));
     }
   };
   const handleDelete = async (id) => {
@@ -97,14 +128,9 @@ export default function Staffs() {
     if (!confirmDelete) return;
 
     try {
-      const response = await fetch(
-        `http://127.0.0.1:8000/api/dashboard/admin/staffs/${id}`,
-        {
-          method: "DELETE",
-        },
-      );
+      const response = await axiosClient.delete(`/dashboard/staffs/${id}`);
 
-      if (response.ok) {
+      if (response.status === 200) {
         alert("Delete Success!");
         fetchStaffs();
       } else {
@@ -125,20 +151,70 @@ export default function Staffs() {
 
   return (
     <div className="p-6">
+      <div className="grid grid-cols-4 gap-4 mb-6">
+        <div className="bg-white rounded-xl p-4 shadow">
+          <p className="text-gray-500">Total Staffs</p>
+          <h2 className="text-3xl font-bold">{staffs.length}</h2>
+        </div>
+
+        <div className="bg-green-100 rounded-xl p-4 shadow">
+          <p className="text-green-700">Active</p>
+          <h2 className="text-3xl font-bold">
+            {staffs.filter((s) => s.status === "active").length}
+          </h2>
+        </div>
+
+        <div className="bg-blue-100 rounded-xl p-4 shadow">
+          <p className="text-blue-700">Stylists</p>
+          <h2 className="text-3xl font-bold">
+            {staffs.filter((s) => s.position === "stylist").length}
+          </h2>
+        </div>
+
+        <div className="bg-purple-100 rounded-xl p-4 shadow">
+          <p className="text-purple-700">Barbers</p>
+          <h2 className="text-3xl font-bold">
+            {staffs.filter((s) => s.position === "baber").length}
+          </h2>
+        </div>
+      </div>
       <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-3xl font-bold">Staffs</h1>
+        <div className="flex gap-3">
+          <Input
+            placeholder="🔍 Search staff..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-80 bg-white"
+          />
+        </div>
 
         <Button
-          className="bg-green-600 hover:bg-green-700"
-          onClick={() => setOpen(true)}
+          className="bg-green-600 hover:bg-green-700 shadow-lg"
+          onClick={() => {
+            setIsEdit(false);
+            setEditingId(null);
+
+            setFormData({
+              name: "",
+              email: "",
+              phone: "",
+              password: "",
+              position: "",
+              salary: "",
+              shift: "",
+              status: "active",
+            });
+
+            setOpen(true);
+          }}
         >
           + Add Staff
         </Button>
       </div>
 
-      <div className="overflow-hidden rounded-xl bg-zinc-900 shadow-lg">
+      <div className="overflow-hidden rounded-2xl bg-white shadow-xl border">
         <table className="w-full">
-          <thead className="bg-zinc-800 text-white">
+          <thead className="bg-gradient-to-r from-indigo-600 to-purple-600 text-gray-800">
             <tr>
               <th className="p-4 text-left">ID</th>
               <th className="p-4 text-left">Name</th>
@@ -151,45 +227,56 @@ export default function Staffs() {
           </thead>
 
           <tbody>
-            {staffs.map((staff) => (
-              <tr
-                key={staff.id}
-                className="border-t border-zinc-800 text-white hover:bg-zinc-800/50"
-              >
-                <td className="p-4">{staff.id}</td>
-                <td className="p-4">{staff.name}</td>
-                <td className="p-4">{staff.email}</td>
-                <td className="p-4">{staff.phone}</td>
-                <td className="p-4">{staff.position}</td>
+            {(staffs || [])
+              .filter((staff) =>
+                staff.users?.name?.toLowerCase().includes(search.toLowerCase()),
+              )
+              .map((staff) => (
+                <tr
+                  key={staff.id}
+                  className="border-t border-gray-200 text-gray-800 hover:bg-gray-50"
+                >
+                  <td className="p-4">{staff.id}</td>
+                  <td className="p-4">{staff.users?.name}</td>
+                  <td className="p-4">{staff.users?.email}</td>
+                  <td className="p-4">{staff.users?.phone}</td>
+                  <td className="p-4">
+                    <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm">
+                      {staff.position}
+                    </span>
+                  </td>
 
-                <td className="p-4">
-                  <span
-                    className={`rounded px-3 py-1 text-sm ${
-                      staff.status === "Active" ? "bg-green-600" : "bg-red-600"
-                    }`}
-                  >
-                    {staff.status}
-                  </span>
-                </td>
+                  <td className="p-4">
+                    <span
+                      className={`rounded-full px-3 py-1 text-sm text-gray-800 ${
+                        staff.status === "active"
+                          ? "bg-green-500"
+                          : "bg-red-500"
+                      }`}
+                    >
+                      {staff.status}
+                    </span>
+                  </td>
 
-                <td className="p-4 text-center">
-                  <Button
-                    size="sm"
-                    className="mr-2 bg-blue-600 hover:bg-blue-700"
-                  >
-                    Edit
-                  </Button>
+                  <td className="p-4 text-center">
+                    <Button
+                      size="sm"
+                      className="mr-2 bg-blue-600 hover:bg-blue-700"
+                      onClick={() => handleEdit(staff)}
+                    >
+                      <Pencil size={16} />
+                    </Button>
 
-                  <Button
-                    size="sm"
-                    variant="destructive"
-                    onClick={() => handleDelete(staff.id)}
-                  >
-                    Delete
-                  </Button>
-                </td>
-              </tr>
-            ))}
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      onClick={() => handleDelete(staff.id)}
+                    >
+                      <Trash2 size={16} />
+                    </Button>
+                  </td>
+                </tr>
+              ))}
           </tbody>
         </table>
       </div>
@@ -197,7 +284,7 @@ export default function Staffs() {
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Add Staff</DialogTitle>
+            <DialogTitle>{isEdit ? "Edit Staff" : "Add Staff"}</DialogTitle>
           </DialogHeader>
 
           <div className="space-y-3">
@@ -230,12 +317,18 @@ export default function Staffs() {
               onChange={handleChange}
             />
 
-            <Input
-              placeholder="Position"
+            <select
               name="position"
               value={formData.position}
               onChange={handleChange}
-            />
+              className="w-full rounded-md border border-gray-300 p-2"
+            >
+              <option value="">Select Position</option>
+              <option value="baber">Barber</option>
+              <option value="stylist">Stylist</option>
+              <option value="manager">Manager</option>
+              <option value="receptionist">Receptionist</option>
+            </select>
 
             <Input
               placeholder="Salary"
@@ -255,7 +348,7 @@ export default function Staffs() {
               className="w-full bg-green-600 hover:bg-green-700"
               onClick={handleSubmit}
             >
-              Save Staff
+              {isEdit ? "Update Staff" : "Save Staff"}
             </Button>
           </div>
         </DialogContent>
