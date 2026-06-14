@@ -13,6 +13,7 @@ function AppointmentsPage() {
   const [appointments, setAppointments] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
+  console.log(appointments);
 
   useEffect(() => {
     async function loadAppointments() {
