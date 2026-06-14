@@ -30,9 +30,9 @@ import DashBoardLayouts from "./Layouts/DashBoardLayouts";
 import DashBoardMain from "./Pages/Dashboard/DashBoardMain";
 import ProtectedRoute from "./Pages/ProtectedRoute";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import AuthPage from "./Pages/Login/AuthPage";
 import { Toaster } from "sonner";
 import Booking from "./Pages/Booking/Booking";
+import { homeLoader } from "./loaders/homeLoader";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -41,17 +41,17 @@ const router = createBrowserRouter([
       {
         index: true,
         element: <MainPage />,
-        loader: publicUserLoader,
+        loader: homeLoader,
       },
       {
         path: "services",
         element: <ServicesPage />,
-        loader: publicUserLoader,
+        loader: homeLoader,
       },
       {
         path: "booking",
         element: <Booking />,
-        loader: publicUserLoader,
+        loader: homeLoader,
       },
       {
         path: "user",
@@ -158,10 +158,6 @@ const router = createBrowserRouter([
         element: <Appointments />,
       },
     ],
-  },
-  {
-    path: "login",
-    element: <AuthPage />,
   },
 ]);
 
