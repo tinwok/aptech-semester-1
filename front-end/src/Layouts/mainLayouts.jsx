@@ -4,13 +4,12 @@ import { Outlet } from "react-router";
 import Header from "@/Pages/Home/common/Header";
 
 function Layout() {
-  const navigate = useNavigate();
   return (
     <div>
-      {/* <Navbar /> */}
+      ={/* <Navbar /> */}
       <Header />
       <main>
-        <Outlet></Outlet>
+        <Outlet />
       </main>
     </div>
   );

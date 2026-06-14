@@ -6,10 +6,12 @@ use App\Http\Controllers\FeedBackController;
 use App\Http\Controllers\InventoryTransactionController;
 use App\Http\Controllers\InvoicesController;
 use App\Http\Controllers\NotificationsController;
-use App\Http\Controllers\PaymentsController;
+
 use App\Http\Controllers\ProductsController;
 use App\Http\Controllers\ServicesController;
 use App\Http\Controllers\StaffsController;
+
+use App\Http\Controllers\StatsController;
 use App\Http\Controllers\SuppliersController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
@@ -17,7 +19,7 @@ use Illuminate\Support\Facades\Route;
 // không cần đăng nhập
 Route::post('register', [AuthController::class, 'register']);
 Route::post('login', [AuthController::class, 'login']);
-Route::get('services', [ServicesController::class, 'index']);
+// Route::get('services', [ServicesController::class, 'index']);
 Route::get('services/{service}', [ServicesController::class, 'show']);
 Route::apiResource('/products', ProductsController::class);
 // quản lí kho
@@ -26,7 +28,7 @@ Route::post('inventory/wastage', [InventoryTransactionController::class, 'wastag
 Route::post('invoice/{id}/complete', [InvoicesController::class, 'complete']);
 // Quản lí nhà cung cấp
 Route::apiResource('/suppliers', SuppliersController::class);
-
+Route::get('staffs', [StaffsController::class, 'index']);
 Route::apiResource('services', ServicesController::class);
 
 // cần phải đăng nhập và gửi gửi request kèm token mới sử dụng được route này
@@ -34,6 +36,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/me', [AuthController::class, 'me']);
     Route::post('/me/profile', [AuthController::class, 'updateProfile']);
     //  /me/profile sửa thêm trong cùng 1 route chỉ cần gọi post
+    Route::post('/me/change-password', [AuthController::class, 'changePassword']);
     Route::post('/me/logout', [AuthController::class, 'logout']);
     Route::delete('me/delete', [AuthController::class, 'destroy']);
     // notifications
@@ -56,22 +59,28 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::middleware('role:staff')->group(function () {
         Route::get('/me/appointments', [InvoicesController::class, 'getStaffAppointments']);
-        Route::get('/me/appointments/history', [InvoicesController::class, 'getAppointmentsHistory']);
+        Route::get('/me/appointments/history', [InvoicesController::class, 'getStaffAppointmentsHistory']);
     });
     Route::middleware('role:customer')->group(function () {
         Route::get('/me/appointments', [InvoicesController::class, 'getCustomerAppointments']);
-        Route::get('/me/appointments/history', [InvoicesController::class, 'getAppointmentsHistory']);
+        Route::get('/me/appointments/history', [InvoicesController::class, 'getCustommerAppointmentsHistory']);
         Route::get('/appointments/{appointment}', [InvoicesController::class, 'show']);
-        Route::get('/booking', [InvoicesController::class, 'getAvailableTimeOfStaff']);
+        Route::post('/available-times', [InvoicesController::class, 'getAvailableTimeOfStaff']);
         Route::get('/book', [InvoicesController::class, 'store']);
-        Route::put('/appointments/{invoice}', [InvoicesController::class, 'update']);
+        Route::put('/appointments/{invoice}
+        ', [InvoicesController::class, 'update']);
         Route::post('/appointments/book', [InvoicesController::class, 'store']);
         Route::apiResource('feedbacks', FeedBackController::class);
     });
 });
-
+// middleware(['auth:sanctum', 'role:admin'])->
 // Can phai la admin
-Route::middleware(['auth:sanctum', 'role:admin'])->prefix('dashboard')->group(function () {
+Route::prefix('dashboard')->group(function () {
+    // Stats
+    Route::get('/stats/salereport', [StatsController::class, 'salesReport']);
+    Route::get('/stats/inventoryReport', [StatsController::class, 'inventoryReport']);
+    Route::get('/stats/report', [StatsController::class, 'salesReport']);
+
     Route::apiResource('/customers', CustomersController::class);
     Route::apiResource('/staffs', StaffsController::class);
     Route::apiResource('users', UserController::class);

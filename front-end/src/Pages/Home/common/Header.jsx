@@ -9,7 +9,7 @@ import NavButton from "@/components/ui/NavButton";
 import NavDropdown from "@/components/ui/NavDropdown";
 import LoginButton from "@/components/ui/LoginButton";
 import { User } from "lucide-react";
-
+import AuthButtons from "@/components/Auth/AuthButtons";
 const NAV_ITEMS = [
   { label: "ABOUT US", path: "/about-us", type: "link" },
   {
@@ -65,23 +65,23 @@ export default function Header() {
 
         <div className="flex items-center gap-3 shrink-0">
           {!token ? (
-            <LoginButton onClick={() => console.log("login clicked")} />
+            <AuthButtons onClick={() => console.log("login clicked")} />
           ) : (
             <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button className="flex items-center gap-2 rounded-md border px-3 py-2 cursor-pointer">
+              <DropdownMenuTrigger>
+                <div className="flex items-center gap-2 rounded-md border px-3 py-2 cursor-pointer">
                   <User size={18} />
                   <span>{user?.phone || "User"}</span>
-                </button>
+                </div>
               </DropdownMenuTrigger>
 
               <DropdownMenuContent align="end">
-                <DropdownMenuItem asChild>
+                <DropdownMenuItem>
                   <NavLink to="/profile">User Profile</NavLink>
                 </DropdownMenuItem>
 
                 {user?.role === "customer" && (
-                  <DropdownMenuItem asChild>
+                  <DropdownMenuItem>
                     <NavLink to="/appointment-history">
                       Appointment History
                     </NavLink>
@@ -89,7 +89,7 @@ export default function Header() {
                 )}
 
                 {user?.role === "admin" && (
-                  <DropdownMenuItem asChild>
+                  <DropdownMenuItem>
                     <NavLink to="/dashboard">Dashboard</NavLink>
                   </DropdownMenuItem>
                 )}

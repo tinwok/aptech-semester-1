@@ -13,20 +13,103 @@ class ServiceSeeder extends Seeder
     public function run(): void
     {
         $services = [
-            ['title' => 'Classic Style',       'description' => 'Classic style haircuting',           'duration_minutes' => 45, 'price' => 150000, 'status' => 'active'],
-            ['title' => 'Layer Style',         'description' => 'Layer style haircuting',              'duration_minutes' => 60, 'price' => 150000, 'status' => 'active'],
-            ['title' => 'Undercut Style',      'description' => 'Undercut style haircuting',           'duration_minutes' => 60, 'price' => 150000, 'status' => 'active'],
-            ['title' => 'Hair Coloring',       'description' => 'Color the hair within modern style',  'duration_minutes' => 90, 'price' => 200000, 'status' => 'active'],
-            ['title' => 'Massage Skin Face',   'description' => 'Ressurecting the skin of your face', 'duration_minutes' => 60, 'price' => 200000, 'status' => 'active'],
-            ['title' => 'White Skin Face',     'description' => 'Make your face bright and shining',   'duration_minutes' => 60, 'price' => 250000, 'status' => 'active'],
-            ['title' => 'Moisture Skin Face',  'description' => 'Make your face firmed and plumped',   'duration_minutes' => 60, 'price' => 250000, 'status' => 'active'],
-            ['title' => 'Nails',               'description' => 'Take care and nail',                  'duration_minutes' => 45, 'price' => 100000, 'status' => 'active'],
-            ['title' => 'Earwax',              'description' => 'Clean and defend your ears',          'duration_minutes' => 45, 'price' => 100000, 'status' => 'active'],
-            ['title' => 'Relaxation Hairwash', 'description' => 'Enjoy and relax a clean hair',       'duration_minutes' => 45, 'price' => 150000, 'status' => 'active'],
+            [
+                'title' => 'Men Haircut',
+                'description' => 'Professional haircut for men.',
+                'duration_minutes' => 30,
+                'price' => 100000,
+                'status' => 'active',
+                'note' => 'Most popular service',
+                'image_url' => null,
+            ],
+            [
+                'title' => 'Women Haircut',
+                'description' => 'Professional haircut for women.',
+                'duration_minutes' => 45,
+                'price' => 180000,
+                'status' => 'active',
+                'note' => null,
+                'image_url' => null,
+            ],
+            [
+                'title' => 'Hair Wash',
+                'description' => 'Relaxing hair wash and scalp massage.',
+                'duration_minutes' => 20,
+                'price' => 50000,
+                'status' => 'active',
+                'note' => null,
+                'image_url' => null,
+            ],
+            [
+                'title' => 'Hair Coloring',
+                'description' => 'Full hair coloring service.',
+                'duration_minutes' => 120,
+                'price' => 600000,
+                'status' => 'active',
+                'note' => 'Color price may vary by hair length.',
+                'image_url' => null,
+            ],
+            [
+                'title' => 'Hair Highlight',
+                'description' => 'Fashion highlight coloring.',
+                'duration_minutes' => 150,
+                'price' => 800000,
+                'status' => 'active',
+                'note' => null,
+                'image_url' => null,
+            ],
+            [
+                'title' => 'Hair Perm',
+                'description' => 'Create natural curls and waves.',
+                'duration_minutes' => 180,
+                'price' => 900000,
+                'status' => 'active',
+                'note' => null,
+                'image_url' => null,
+            ],
+            [
+                'title' => 'Hair Straightening',
+                'description' => 'Permanent hair straightening treatment.',
+                'duration_minutes' => 180,
+                'price' => 1000000,
+                'status' => 'active',
+                'note' => null,
+                'image_url' => null,
+            ],
+            [
+                'title' => 'Hair Spa',
+                'description' => 'Deep nourishment and scalp care.',
+                'duration_minutes' => 60,
+                'price' => 250000,
+                'status' => 'active',
+                'note' => 'Recommended once a month.',
+                'image_url' => null,
+            ],
+            [
+                'title' => 'Hair Recovery Treatment',
+                'description' => 'Repair damaged and dry hair.',
+                'duration_minutes' => 90,
+                'price' => 450000,
+                'status' => 'active',
+                'note' => null,
+                'image_url' => null,
+            ],
+            [
+                'title' => 'Beard Trim',
+                'description' => 'Professional beard shaping and trimming.',
+                'duration_minutes' => 20,
+                'price' => 70000,
+                'status' => 'active',
+                'note' => null,
+                'image_url' => null,
+            ],
         ];
 
         foreach ($services as $service) {
-            Services::create($service);
+            Services::updateOrCreate(
+                ['title' => $service['title']],
+                $service
+            );
         }
     }
 }

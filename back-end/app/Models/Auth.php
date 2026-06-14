@@ -11,6 +11,5 @@ class Auth extends Model
         'email',
         'password',
         'role',
-        'must_change_password',
     ];
 }
