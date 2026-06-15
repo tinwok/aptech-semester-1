@@ -20,6 +20,7 @@ function AppointmentsPage() {
       try {
         const data = await getMyAppointmentsApi();
         setAppointments(Array.isArray(data) ? data : []);
+        console.log(data);
       } catch (err) {
         setError(
           err.response?.data?.message ||
@@ -111,7 +112,7 @@ function AppointmentsPage() {
                   <div className="flex gap-3">
                     <UserRound className="h-5 w-5 text-[#B89555]" />
                     <span>
-                      Staff ID: {appointment.staff_id || "Not assigned"}
+                      {appointment.staff.users.name || "Not assigned"}
                     </span>
                   </div>
 

@@ -5,10 +5,11 @@ import { useAuth } from "@/context/AuthContext";
 function LoginDialog({ open, onClose, onOpenRegister }) {
   const navigate = useNavigate();
   const { login } = useAuth();
-
+  const [phone, setPhone] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
+    phone: "",
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -58,18 +59,52 @@ function LoginDialog({ open, onClose, onOpenRegister }) {
         </p>
 
         <form onSubmit={handleSubmit} className="mt-6 space-y-4">
-          <label className="grid gap-2">
-            <span className="font-medium text-[#2B2115]">Email</span>
+          {phone ? (
+            <label className="grid gap-2 ">
+              <div className="flex gap-2">
+                {" "}
+                <span className="font-medium text-[#2B2115]">Email</span>
+                <p
+                  className="text-xs text-blue-800 cursor-pointer"
+                  onClick={() => setPhone(!phone)}
+                >
+                  Signin with your phone ?
+                </p>
+              </div>
 
-            <input
-              name="email"
-              type="email"
-              value={formData.email}
-              onChange={handleChange}
-              placeholder="Enter your email"
-              className="rounded-xl border border-[#E8D7B3] px-4 py-3 outline-none focus:border-[#B89555]"
-            />
-          </label>
+              <input
+                name="email"
+                type="email"
+                value={formData.email}
+                onChange={handleChange}
+                placeholder="Enter your email"
+                className="rounded-xl border border-[#E8D7B3] px-4 py-3 outline-none focus:border-[#B89555]"
+              />
+            </label>
+          ) : (
+            <label className="grid gap-2">
+              <div className="flex gap-2">
+                {" "}
+                <span className="font-medium text-[#2B2115]">Phone</span>
+                <p
+                  className="text-xs text-blue-800 cursor-pointer"
+                  onClick={() => setPhone(!phone)}
+                >
+                  {" "}
+                  Signin with your email ?
+                </p>
+              </div>
+
+              <input
+                name="phone"
+                type="phone"
+                value={formData.phone}
+                onChange={handleChange}
+                placeholder="Enter your phone"
+                className="rounded-xl border border-[#E8D7B3] px-4 py-3 outline-none focus:border-[#B89555]"
+              />
+            </label>
+          )}
 
           <label className="grid gap-2">
             <span className="font-medium text-[#2B2115]">Password</span>
@@ -94,7 +129,7 @@ function LoginDialog({ open, onClose, onOpenRegister }) {
             <button
               type="button"
               onClick={onClose}
-              className="rounded-xl border border-gray-200 bg-white px-5 py-3 font-semibold text-[#2B2115] hover:bg-gray-50"
+              className="rounded-xl border border-gray-200 bg-white px-5 py-3 font-semibold text-[#2B2115] hover:bg-gray-50 cursor-pointer"
             >
               Cancel
             </button>
@@ -102,14 +137,14 @@ function LoginDialog({ open, onClose, onOpenRegister }) {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="rounded-xl bg-[#B89555] px-5 py-3 font-semibold text-white hover:bg-[#9B7A3F] disabled:opacity-60"
+              className="rounded-xl bg-[#B89555] px-5 py-3 font-semibold text-white hover:bg-[#9B7A3F] disabled:opacity-60 cursor-pointer"
             >
               {isSubmitting ? "Signing in..." : "Sign In"}
             </button>
           </div>
         </form>
 
-        <p className="mt-6 text-center text-[#7B684A]">
+        <p className="mt-6 text-center text-[#7B684A]  ">
           Do not have an account?{" "}
           <button
             type="button"
@@ -117,7 +152,7 @@ function LoginDialog({ open, onClose, onOpenRegister }) {
               onClose();
               onOpenRegister();
             }}
-            className="font-bold text-[#B89555] transition hover:text-[#9B7A3F] hover:no-underline"
+            className="font-bold text-[#B89555] transition hover:text-[#9B7A3F] hover:no-underline cursor-pointer "
           >
             Sign Up
           </button>

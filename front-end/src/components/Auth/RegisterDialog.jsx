@@ -134,7 +134,7 @@ function RegisterDialog({ open, onClose, onOpenLogin }) {
             <button
               type="button"
               onClick={onClose}
-              className="rounded-xl border border-gray-200 bg-white px-5 py-2.5 font-semibold text-[#2B2115] hover:bg-gray-50"
+              className="rounded-xl border border-gray-200 bg-white px-5 py-2.5 font-semibold text-[#2B2115] hover:bg-gray-50 cursor-pointer"
             >
               Cancel
             </button>
@@ -142,7 +142,7 @@ function RegisterDialog({ open, onClose, onOpenLogin }) {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="rounded-xl bg-[#B89555] px-5 py-2.5 font-semibold text-white hover:bg-[#9B7A3F] disabled:opacity-60"
+              className="rounded-xl bg-[#B89555] px-5 py-2.5 font-semibold text-white hover:bg-[#9B7A3F] disabled:opacity-60 cursor-pointer"
             >
               {isSubmitting ? "Creating..." : "Sign Up"}
             </button>
@@ -157,7 +157,7 @@ function RegisterDialog({ open, onClose, onOpenLogin }) {
               onClose();
               onOpenLogin();
             }}
-            className="font-bold text-[#B89555] transition hover:text-[#9B7A3F] hover:underline"
+            className="font-bold text-[#B89555] transition hover:text-[#9B7A3F] hover:underline cursor-pointer"
           >
             Sign In
           </button>

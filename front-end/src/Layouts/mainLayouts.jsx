@@ -6,7 +6,7 @@ import Header from "@/Pages/Home/common/Header";
 function Layout() {
   return (
     <div>
-      ={/* <Navbar /> */}
+      {/* <Navbar /> */}
       <Header />
       <main>
         <Outlet />

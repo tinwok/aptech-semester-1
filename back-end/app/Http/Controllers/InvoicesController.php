@@ -20,8 +20,7 @@ class InvoicesController extends Controller
      */
     public function getCustomerAppointments(Request $request)
     {
-
-        $appointment =  Invoices::where('customer_id', $request->user()->customer->id)->where('status', 'pending')->with('invoiceDetails')->latest()->get();
+        $appointment =  Invoices::where('customer_id', $request->user()->customer->id)->with('staff.users', 'invoiceDetails.service')->where('status', 'pending')->with('invoiceDetails')->latest()->get();
         return response()->json($appointment, 200);
     }
     public function getCustomerAppointmentsHistory(Request $request)
@@ -65,7 +64,7 @@ class InvoicesController extends Controller
         }
         $totalDuration = Services::whereIn(
             'id',
-            collect('services')->pluck('service_id')
+            collect($request->services)->pluck('service_id')
         )->sum('duration_minutes');
         $start = Carbon::parse('08:00');
         $end   = Carbon::parse('20:00');
@@ -75,7 +74,7 @@ class InvoicesController extends Controller
 
             $slotStart = $start->format('H:i:s');
             $slotEnd = Carbon::parse($slotStart)
-                ->addMinutes($totalDuration)
+                ->addMinutes((int) $totalDuration)
                 ->format('H:i:s');
             if (Carbon::parse($slotEnd)->gt($end)) {
                 break;
@@ -86,13 +85,14 @@ class InvoicesController extends Controller
                         && $slotEnd > $appointment->start_time;
                 }
             );
+
             $availableSlots[] = [
                 'time' => $slotStart,
                 'available' => !$isBooked
             ];
-        }
 
-        $start->addMinutes(20);
+            $start->addMinutes(20);
+        }
         return response()->json([
             'staff_id' => $request->staff_id,
             'slots' => $availableSlots
@@ -151,31 +151,17 @@ class InvoicesController extends Controller
         }
 
         DB::transaction(function () use ($validated, $endTime) {
-            try {
 
-                $invoice = Invoices::create([
-                    'customer_id' => $validated['customer_id'],
-                    'staff_id' => $validated['staff_id'],
-                    'appointment_date' => $validated['appointment_date'],
-                    'start_time' => $validated['start_time'],
-                    'end_time' => $endTime,
-                    'note' => $validated['note'] ?? null,
-                    'status' => 'pending',
-                    'payment_id' => null,
-                ]);
-
-                return response()->json([
-                    'step' => 'invoice created',
-                    'invoice_id' => $invoice->id
-                ]);
-            } catch (\Throwable $e) {
-
-                return response()->json([
-                    'error' => $e->getMessage(),
-                    'line' => $e->getLine(),
-                    'file' => $e->getFile()
-                ], 500);
-            }
+            $invoice = Invoices::create([
+                'customer_id' => $validated['customer_id'],
+                'staff_id' => $validated['staff_id'],
+                'appointment_date' => $validated['appointment_date'],
+                'start_time' => $validated['start_time'],
+                'end_time' => $endTime,
+                'note' => $validated['note'] ?? null,
+                'status' => 'pending',
+                'payment_id' => null,
+            ]);
             foreach ($validated['services'] as $item) {
                 $discount = $item['discount'] ?? 0;
                 $service = Services::findOrFail($item['service_id']);
@@ -274,7 +260,7 @@ class InvoicesController extends Controller
         $validated = $request->validated();
         $totalDuration = Services::whereIn(
             'id',
-            collect($validated['services'])->pluck('service_id')
+            collect($validated[$request->services])->pluck('service_id')
         )->sum('duration_minutes');
         $endTime = Carbon::parse($validated['start_time'])
             ->addMinutes($totalDuration)

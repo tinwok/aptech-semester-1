@@ -24,7 +24,6 @@ const NAV_ITEMS = [
   { label: "STAFF", path: "/staff", type: "link" },
   { label: "BOOKING", path: "/booking", type: "link" },
 ];
-
 export default function Header() {
   const token = localStorage.getItem("token");
   const user = JSON.parse(localStorage.getItem("user") || "null");
