@@ -10,7 +10,6 @@ class Invoices extends Model
         'status',
         'customer_id',
         'staff_id',
-        'payment_id',
         'appointment_date',
         'start_time',
         'end_time',

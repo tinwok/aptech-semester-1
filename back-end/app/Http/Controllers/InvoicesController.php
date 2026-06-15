@@ -63,7 +63,6 @@ class InvoicesController extends Controller
             if (!$customer) {
                 return response()->json([], 200);
             }
-
             $query->where('customer_id', $customer->id);
         }
 
@@ -82,15 +81,6 @@ class InvoicesController extends Controller
 
     public function getAvailableTimeOfStaff(Request $request)
     {
-        if ($request->staff_id) {
-            $appointments = Invoices::where('staff_id', $request->staff_id)
-                ->whereDate('appointment_date', $request->appointment_date)
-                ->get();
-        } else {
-            $appointments = Invoices::whereDate('appointment_date', $request->appointment_date)
-                ->get();
-        }
-
         $totalDuration = Services::whereIn(
             'id',
             collect($request->services)->pluck('service_id')
@@ -98,27 +88,64 @@ class InvoicesController extends Controller
 
         $start = Carbon::parse('08:00');
         $end = Carbon::parse('20:00');
+
         $availableSlots = [];
 
+        // Nếu chọn staff
+        if ($request->staff_id) {
+            $appointments = Invoices::where('staff_id', $request->staff_id)
+                ->whereDate('appointment_date', $request->appointment_date)
+                ->get();
+        } else {
+            // Không chọn staff -> lấy tất cả lịch hẹn
+            $appointments = Invoices::whereDate(
+                'appointment_date',
+                $request->appointment_date
+            )->get();
+
+            $totalStaffs = Staffs::where('status', 'active')->count();
+        }
+
         while ($start < $end) {
+
             $slotStart = $start->format('H:i:s');
 
             $slotEnd = Carbon::parse($slotStart)
-                ->addMinutes($totalDuration)
+                ->addMinutes((int) $totalDuration)
                 ->format('H:i:s');
 
             if (Carbon::parse($slotEnd)->gt($end)) {
                 break;
             }
 
-            $isBooked = $appointments->contains(function ($appointment) use ($slotStart, $slotEnd) {
-                return $slotStart < $appointment->end_time
-                    && $slotEnd > $appointment->start_time;
-            });
+            if ($request->staff_id) {
+
+                $isBooked = $appointments->contains(
+                    function ($appointment) use ($slotStart, $slotEnd) {
+                        return $slotStart < $appointment->end_time
+                            && $slotEnd > $appointment->start_time;
+                    }
+                );
+
+                $available = !$isBooked;
+            } else {
+
+                $busyStaffs = $appointments
+                    ->filter(function ($appointment) use ($slotStart, $slotEnd) {
+                        return $slotStart < $appointment->end_time
+                            && $slotEnd > $appointment->start_time;
+                    })
+                    ->pluck('staff_id')
+                    ->unique()
+                    ->count();
+
+                // còn ít nhất 1 staff rảnh
+                $available = $busyStaffs < $totalStaffs;
+            }
 
             $availableSlots[] = [
                 'time' => $slotStart,
-                'available' => !$isBooked,
+                'available' => $available,
             ];
 
             $start->addMinutes(20);
@@ -192,17 +219,17 @@ class InvoicesController extends Controller
         }
 
         DB::transaction(function () use ($validated, $endTime) {
+
             $invoice = Invoices::create([
                 'customer_id' => $validated['customer_id'],
                 'staff_id' => $validated['staff_id'],
-                'payment_id' => $validated['payment_id'] ?? null,
                 'appointment_date' => $validated['appointment_date'],
                 'start_time' => $validated['start_time'],
                 'end_time' => $endTime,
                 'note' => $validated['note'] ?? null,
                 'status' => 'pending',
+                'payment_id' => null,
             ]);
-
             foreach ($validated['services'] as $item) {
                 $discount = $item['discount'] ?? 0;
                 $service = Services::findOrFail($item['service_id']);

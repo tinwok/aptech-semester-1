@@ -57,6 +57,9 @@ function Booking() {
     const service = services.find((s) => s.id === item.service_id);
     return total + Number(service?.price || 0);
   }, 0);
+  console.log(availableSlots);
+  console.log("staffId" + staffId);
+  console.log(staffs);
 
   const selectedStaff = staffs.find(
     (staff) => String(staff.id) === String(staffId),
@@ -95,7 +98,7 @@ function Booking() {
         return alert("Please choose at least one service");
       }
 
-      const res = await api.post("/book", payload);
+      await api.post("/book", payload);
 
       toast.success("Booking successful!");
       resetForm();
@@ -151,7 +154,6 @@ function Booking() {
 
     fetchStaffs();
   }, []);
-
   // load giờ trống
   useEffect(() => {
     if (!appointmentDate || selectedServices.length === 0) return;
@@ -213,14 +215,14 @@ function Booking() {
             <SelectTrigger className="w-full max-w-48">
               <SelectValue>
                 {staffId
-                  ? staffs.find((s) => String(s.id) === String(staffId))?.users
-                      ?.name
-                  : "Choose Stylist"}
+                  ? staffs.find((staff) => String(staff.id) === String(staffId))
+                      ?.users?.name
+                  : "Any Stylist (Random)"}
               </SelectValue>
             </SelectTrigger>
 
             <SelectContent className="p-2">
-              <SelectItem value="any">Any Stylist (Random)</SelectItem>
+              <SelectItem value="">Any Stylist (Random)</SelectItem>
 
               {staffs.map((staff) => (
                 <SelectItem key={staff.id} value={String(staff.id)}>
