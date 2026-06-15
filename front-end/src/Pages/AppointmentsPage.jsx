@@ -5,11 +5,43 @@ import { useAuth } from "@/context/AuthContext";
 
 function formatMoney(value) {
   if (!value) return "0 VND";
+
   return Number(value).toLocaleString("vi-VN") + " VND";
+}
+
+function formatTime(time) {
+  if (!time) return "N/A";
+
+  return String(time).slice(0, 5);
+}
+
+function formatPosition(position) {
+  const positionLabels = {
+    stylist: "Stylist",
+    baber: "Barber",
+    barber: "Barber",
+    receptionist: "Receptionist",
+    manager: "Manager",
+  };
+
+  return positionLabels[position] || "Staff";
+}
+
+function getStaffName(appointment) {
+  return (
+    appointment.staff?.users?.name ||
+    appointment.staff?.user?.name ||
+    "Not assigned"
+  );
+}
+
+function getCustomerName(appointment) {
+  return appointment.customer?.user?.name || "Unknown customer";
 }
 
 function AppointmentsPage() {
   const { user, role } = useAuth();
+
   const [appointments, setAppointments] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
@@ -18,10 +50,15 @@ function AppointmentsPage() {
   useEffect(() => {
     async function loadAppointments() {
       try {
-        const data = await getMyAppointmentsApi();
+        setIsLoading(true);
+        setError("");
+
+        const data = await getMyAppointmentsApi(role);
+
         setAppointments(Array.isArray(data) ? data : []);
         console.log(data);
       } catch (err) {
+        setAppointments([]);
         setError(
           err.response?.data?.message ||
             "Unable to load appointments. Please try again later.",
@@ -32,7 +69,7 @@ function AppointmentsPage() {
     }
 
     loadAppointments();
-  }, []);
+  }, [role]);
 
   if (!user) {
     return <div className="p-8 text-[#8A6A35]">Please sign in first.</div>;
@@ -50,11 +87,13 @@ function AppointmentsPage() {
             Appointments
           </h1>
 
-          <p className="mt-2 text-[#7B684A] capitalize">Role: {role}</p>
+          <p className="mt-2 text-[#7B684A] capitalize">
+            Role: {role || "customer"}
+          </p>
         </div>
 
         {isLoading && (
-          <div className="rounded-3xl border border-[#E8D7B3] bg-white p-6">
+          <div className="rounded-3xl border border-[#E8D7B3] bg-white p-6 text-[#7B684A]">
             Loading appointments...
           </div>
         )}
@@ -68,9 +107,11 @@ function AppointmentsPage() {
         {!isLoading && !error && appointments.length === 0 && (
           <div className="rounded-3xl border border-[#E8D7B3] bg-white p-8 text-center shadow-sm">
             <CalendarDays className="mx-auto h-12 w-12 text-[#B89555]" />
+
             <h2 className="mt-4 text-xl font-bold text-[#2B2115]">
               No appointments found
             </h2>
+
             <p className="mt-2 text-[#7B684A]">
               Your upcoming appointments will appear here.
             </p>
@@ -78,92 +119,112 @@ function AppointmentsPage() {
         )}
 
         <div className="grid gap-5">
-          {appointments.map((appointment) => {
-            const details = appointment.invoice_details || [];
+          {!isLoading &&
+            !error &&
+            appointments.map((appointment) => {
+              const details = appointment.invoice_details || [];
+              const staffPosition = formatPosition(appointment.staff?.position);
+              const staffName = getStaffName(appointment);
+              const customerName = getCustomerName(appointment);
 
-            return (
-              <div
-                key={appointment.id}
-                className="rounded-3xl border border-[#E8D7B3] bg-white p-6 shadow-sm"
-              >
-                <div className="flex flex-wrap items-start justify-between gap-4">
-                  <div>
-                    <h2 className="text-xl font-bold text-[#2B2115]">
-                      Appointment #{appointment.id}
-                    </h2>
-                    <p className="mt-1 text-sm capitalize text-[#8A6A35]">
-                      Status: {appointment.status}
-                    </p>
-                  </div>
+              return (
+                <div
+                  key={appointment.id}
+                  className="rounded-3xl border border-[#E8D7B3] bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-md"
+                >
+                  <div className="flex flex-wrap items-start justify-between gap-4">
+                    <div>
+                      <h2 className="text-xl font-bold text-[#2B2115]">
+                        Upcoming Appointment
+                      </h2>
 
-                  <span className="rounded-full bg-[#FFF2D8] px-4 py-2 text-sm font-semibold text-[#8A6A35]">
-                    {appointment.appointment_date}
-                  </span>
-                </div>
+                      <p className="mt-1 text-sm capitalize text-[#8A6A35]">
+                        Status: {appointment.status}
+                      </p>
+                    </div>
 
-                <div className="mt-5 grid gap-3 text-sm md:grid-cols-3">
-                  <div className="flex gap-3">
-                    <Clock className="h-5 w-5 text-[#B89555]" />
-                    <span>
-                      {appointment.start_time} - {appointment.end_time}
+                    <span className="rounded-full bg-[#FFF2D8] px-4 py-2 text-sm font-semibold text-[#8A6A35]">
+                      {appointment.appointment_date}
                     </span>
                   </div>
 
-                  <div className="flex gap-3">
-                    <UserRound className="h-5 w-5 text-[#B89555]" />
-                    <span>
-                      {appointment.staff.users.name || "Not assigned"}
-                    </span>
-                  </div>
+                  <div className="mt-5 grid gap-3 text-sm text-[#2B2115] md:grid-cols-3">
+                    <div className="flex items-center gap-3">
+                      <Clock className="h-5 w-5 text-[#B89555]" />
+                      <span>
+                        {formatTime(appointment.start_time)} -{" "}
+                        {formatTime(appointment.end_time)}
+                      </span>
+                    </div>
 
-                  <div className="flex gap-3">
-                    <Scissors className="h-5 w-5 text-[#B89555]" />
-                    <span>{details.length} services</span>
-                  </div>
-                </div>
+                    <div className="flex items-center gap-3">
+                      <UserRound className="h-5 w-5 text-[#B89555]" />
+                      <span>
+                        {role === "staff"
+                          ? `Customer: ${customerName}`
+                          : `${staffPosition}: ${staffName}`}
+                      </span>
+                    </div>
 
-                {details.length > 0 && (
-                  <div className="mt-5 rounded-2xl bg-[#FFF7E6] p-4">
-                    <h3 className="font-semibold text-[#2B2115]">
-                      Appointment Services
-                    </h3>
-
-                    <div className="mt-3 grid gap-3">
-                      {details.map((detail) => (
-                        <div
-                          key={detail.id}
-                          className="rounded-xl border border-[#E8D7B3] bg-white p-4"
-                        >
-                          <p className="font-semibold text-[#2B2115]">
-                            {detail.service?.title || "Unknown service"}
-                          </p>
-
-                          <p className="mt-1 text-sm text-[#7B684A]">
-                            Price: {formatMoney(detail.unit_price)} | Discount:{" "}
-                            {detail.discount || 0}% | Subtotal:{" "}
-                            {formatMoney(detail.subtotal)}
-                          </p>
-
-                          {detail.service?.duration_minutes && (
-                            <p className="mt-1 text-sm text-[#7B684A]">
-                              Duration: {detail.service.duration_minutes}{" "}
-                              minutes
-                            </p>
-                          )}
-                        </div>
-                      ))}
+                    <div className="flex items-center gap-3">
+                      <Scissors className="h-5 w-5 text-[#B89555]" />
+                      <span>
+                        {details.length} service{details.length > 1 ? "s" : ""}
+                      </span>
                     </div>
                   </div>
-                )}
 
-                {appointment.note && (
-                  <p className="mt-4 rounded-xl bg-[#FFF7E6] p-4 text-[#7B684A]">
-                    Note: {appointment.note}
-                  </p>
-                )}
-              </div>
-            );
-          })}
+                  {details.length > 0 && (
+                    <div className="mt-5 rounded-2xl bg-[#FFF7E6] p-4">
+                      <h3 className="font-semibold text-[#2B2115]">
+                        Appointment Services
+                      </h3>
+
+                      <div className="mt-3 grid gap-3">
+                        {details.map((detail) => (
+                          <div
+                            key={detail.id}
+                            className="rounded-xl border border-[#E8D7B3] bg-white p-4"
+                          >
+                            <div className="flex flex-wrap items-start justify-between gap-3">
+                              <div>
+                                <p className="font-semibold text-[#2B2115]">
+                                  {detail.service?.title || "Unknown service"}
+                                </p>
+
+                                {detail.service?.description && (
+                                  <p className="mt-1 text-sm text-[#7B684A]">
+                                    {detail.service.description}
+                                  </p>
+                                )}
+                              </div>
+
+                              {detail.service?.duration_minutes && (
+                                <span className="rounded-full bg-[#FFF2D8] px-3 py-1 text-xs font-semibold text-[#8A6A35]">
+                                  {detail.service.duration_minutes} minutes
+                                </span>
+                              )}
+                            </div>
+
+                            <p className="mt-3 text-sm text-[#7B684A]">
+                              Price: {formatMoney(detail.unit_price)} |
+                              Discount: {detail.discount || 0}% | Subtotal:{" "}
+                              {formatMoney(detail.subtotal)}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {appointment.note && (
+                    <p className="mt-4 rounded-xl bg-[#FFF7E6] p-4 text-[#7B684A]">
+                      Note: {appointment.note}
+                    </p>
+                  )}
+                </div>
+              );
+            })}
         </div>
       </div>
     </section>

@@ -1,15 +1,8 @@
 import { NavLink } from "react-router-dom";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import NavButton from "@/components/ui/NavButton";
 import NavDropdown from "@/components/ui/NavDropdown";
-import LoginButton from "@/components/ui/LoginButton";
-import { User } from "lucide-react";
 import AuthButtons from "@/components/Auth/AuthButtons";
+
 const NAV_ITEMS = [
   { label: "ABOUT US", path: "/about-us", type: "link" },
   {
@@ -25,34 +18,21 @@ const NAV_ITEMS = [
   { label: "BOOKING", path: "/booking", type: "link" },
 ];
 export default function Header() {
-  const token = localStorage.getItem("token");
-  const user = JSON.parse(localStorage.getItem("user") || "null");
-
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    window.location.href = "/";
-  };
-
   return (
-    <header className="top-0 z-50  border-b border-[var(--color-zen-accent-hover)]">
-      <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between ">
-        {/* ── Logo ── */}
+    <header className="top-0 z-50 border-b border-[var(--color-zen-accent-hover)] bg-white">
+      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
         <NavLink to="/" className="shrink-0">
           <img
             src="/ZenStyle.jpg"
             alt="ZenStyle"
             className="h-12 w-auto object-contain"
-            onError={(e) => {
-              e.target.style.display = "none";
-              e.target.nextSibling.style.display = "block";
+            onError={(event) => {
+              event.currentTarget.style.display = "none";
             }}
           />
-          <span style={{ display: "none" }}></span>
         </NavLink>
 
-        {/* ── Navbar ── */}
-        <nav className="absolute left-1/2 -translate-x-1/2 hidden md:flex items-center gap-[3px]">
+        <nav className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-[3px] md:flex">
           {NAV_ITEMS.map((item) =>
             item.type === "dropdown" ? (
               <NavDropdown key={item.label} item={item} />
@@ -62,43 +42,8 @@ export default function Header() {
           )}
         </nav>
 
-        <div className="flex items-center gap-3 shrink-0">
-          {!token ? (
-            <AuthButtons onClick={() => console.log("login clicked")} />
-          ) : (
-            <DropdownMenu>
-              <DropdownMenuTrigger>
-                <div className="flex items-center gap-2 rounded-md border px-3 py-2 cursor-pointer">
-                  <User size={18} />
-                  <span>{user?.phone || "User"}</span>
-                </div>
-              </DropdownMenuTrigger>
-
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem>
-                  <NavLink to="/profile">User Profile</NavLink>
-                </DropdownMenuItem>
-
-                {user?.role === "customer" && (
-                  <DropdownMenuItem>
-                    <NavLink to="/appointment-history">
-                      Appointment History
-                    </NavLink>
-                  </DropdownMenuItem>
-                )}
-
-                {user?.role === "admin" && (
-                  <DropdownMenuItem>
-                    <NavLink to="/dashboard">Dashboard</NavLink>
-                  </DropdownMenuItem>
-                )}
-
-                <DropdownMenuItem onClick={handleLogout}>
-                  Logout
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          )}
+        <div className="flex shrink-0 items-center gap-3">
+          <AuthButtons />
         </div>
       </div>
     </header>

@@ -14,11 +14,11 @@ class DatabaseSeeder extends Seeder
             ProductSeeder::class,
 
             AdminUserSeeder::class,
-        ]);
-        $this->call([
             StaffSeeder::class,
             CustomerSeeder::class,
             ServiceSeeder::class,
+            AppointmentSeeder::class,
+            NotificationSeeder::class,
         ]);
     }
 }

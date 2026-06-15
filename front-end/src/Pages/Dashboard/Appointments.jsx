@@ -1,5 +1,25 @@
 import { useEffect, useState } from "react";
 import api from "../../services/api";
+
+function getCustomerName(item) {
+  return item.customer?.user?.name || item.customer?.user?.phone || "N/A";
+}
+
+function getStaffName(item) {
+  return item.staff?.users?.name || item.staff?.user?.name || "N/A";
+}
+
+function getServiceNames(item) {
+  const details = item.invoice_details || item.invoiceDetails || [];
+
+  if (!details.length) return "N/A";
+
+  return details
+    .map((detail) => detail.service?.title)
+    .filter(Boolean)
+    .join(", ");
+}
+
 export default function Appointments() {
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -9,17 +29,20 @@ export default function Appointments() {
     total: 0,
   });
   const [error, setError] = useState("");
+
   const fetchAppointments = async (page = 1) => {
     try {
       setLoading(true);
       setError("");
-      const res = await api.get(`dashboard/appointments?page=${page}`);
-      setAppointments(res.data.data);
+
+      const res = await api.get(`/dashboard/appointments?page=${page}`);
+
+      setAppointments(res.data.data ?? []);
 
       setPagination({
-        current_page: res.data.current_page,
-        last_page: res.data.last_page,
-        total: res.data.total,
+        current_page: res.data.current_page ?? 1,
+        last_page: res.data.last_page ?? 1,
+        total: res.data.total ?? 0,
       });
     } catch (err) {
       console.error("Fetch appointments failed:", err);
@@ -39,6 +62,7 @@ export default function Appointments() {
   useEffect(() => {
     fetchAppointments();
   }, []);
+
   return (
     <div className="p-6">
       <div className="mb-6 flex items-center justify-between">
@@ -48,6 +72,12 @@ export default function Appointments() {
           + Add Appointment
         </button>
       </div>
+
+      {error && (
+        <div className="mb-4 rounded-lg bg-red-100 p-4 text-red-700">
+          {error}
+        </div>
+      )}
 
       <div className="overflow-hidden rounded-xl border border-zinc-700 bg-zinc-900 shadow-lg">
         <table className="w-full">
@@ -62,36 +92,52 @@ export default function Appointments() {
           </thead>
 
           <tbody>
-            {appointments.map((item) => (
-              <tr
-                key={item.id}
-                className="border-t border-zinc-700 hover:bg-zinc-800"
-              >
-                <td className="p-4 text-white">{item.customer}</td>
-                <td className="p-4 text-white">{item.staff}</td>
-                <td className="p-4 text-white">{item.service}</td>
-
-                <td className="p-4">
-                  <span className="rounded bg-yellow-600 px-3 py-1 text-white">
-                    {item.status}
-                  </span>
-                </td>
-
-                <td className="space-x-2 p-4 text-center">
-                  <button className="rounded bg-blue-600 px-3 py-1 text-white hover:bg-blue-700">
-                    Edit
-                  </button>
-
-                  <button className="rounded bg-red-600 px-3 py-1 text-white hover:bg-red-700">
-                    Delete
-                  </button>
+            {loading && (
+              <tr>
+                <td colSpan="5" className="p-4 text-center text-white">
+                  Loading appointments...
                 </td>
               </tr>
-            ))}
+            )}
+
+            {!loading &&
+              appointments.map((item) => (
+                <tr
+                  key={item.id}
+                  className="border-t border-zinc-700 hover:bg-zinc-800"
+                >
+                  <td className="p-4 text-white">{getCustomerName(item)}</td>
+                  <td className="p-4 text-white">{getStaffName(item)}</td>
+                  <td className="p-4 text-white">{getServiceNames(item)}</td>
+
+                  <td className="p-4">
+                    <span className="rounded bg-yellow-600 px-3 py-1 text-white">
+                      {item.status}
+                    </span>
+                  </td>
+
+                  <td className="space-x-2 p-4 text-center">
+                    <button className="rounded bg-blue-600 px-3 py-1 text-white hover:bg-blue-700">
+                      Edit
+                    </button>
+
+                    <button className="rounded bg-red-600 px-3 py-1 text-white hover:bg-red-700">
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))}
+
+            {!loading && appointments.length === 0 && (
+              <tr>
+                <td colSpan="5" className="p-4 text-center text-zinc-300">
+                  No appointments found.
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
-      {/* Pagination */}
 
       <div className="mt-4 flex justify-center gap-2">
         <button

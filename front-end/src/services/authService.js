@@ -1,36 +1,63 @@
-import axiosClient from "@/api/axiosClient";
+import api from "@/services/api";
 
-export async function loginApi(loginData) {
-  const response = await axiosClient.post("/login", loginData);
+function getAuthHeaders() {
+  const token = localStorage.getItem("zenstyle_access_token");
+
+  return {
+    Authorization: `Bearer ${token}`,
+  };
+}
+
+export async function registerApi(data) {
+  const response = await api.post("/register", data);
   return response.data;
 }
 
-export async function registerApi(registerData) {
-  const response = await axiosClient.post("/register", registerData);
+export async function loginApi(data) {
+  const response = await api.post("/login", data);
   return response.data;
 }
 
 export async function getMeApi() {
-  const response = await axiosClient.get("/me");
+  const response = await api.get("/me", {
+    headers: getAuthHeaders(),
+  });
+
   return response.data;
 }
 
-export async function updateProfileApi(profileData) {
-  const response = await axiosClient.post("/me/profile", profileData);
+export async function updateProfileApi(data) {
+  const response = await api.post("/me/profile", data, {
+    headers: getAuthHeaders(),
+  });
+
   return response.data;
 }
 
-export async function changePasswordApi(passwordData) {
-  const response = await axiosClient.post("/me/change-password", passwordData);
+export async function changePasswordApi(data) {
+  const response = await api.post("/me/change-password", data, {
+    headers: getAuthHeaders(),
+  });
+
   return response.data;
 }
 
 export async function logoutApi() {
-  const response = await axiosClient.post("/me/logout");
+  const response = await api.post(
+    "/me/logout",
+    {},
+    {
+      headers: getAuthHeaders(),
+    },
+  );
+
   return response.data;
 }
 
 export async function deleteMeApi() {
-  const response = await axiosClient.delete("/me/delete");
+  const response = await api.delete("/me/delete", {
+    headers: getAuthHeaders(),
+  });
+
   return response.data;
 }

@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import {
   Bell,
   CalendarDays,
@@ -16,7 +16,6 @@ import {
 } from "lucide-react";
 
 import { useAuth } from "@/context/AuthContext";
-
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -37,12 +36,20 @@ function UserDropdown() {
   const basePath = getBasePathByRole(role);
   const displayPhone = user?.phone || user?.email || "Account";
 
-  async function handleLogout() {
-    await logout();
-    navigate("/");
+  function goToPage(path = "") {
+    navigate(`${basePath}${path}`);
   }
 
-  async function handleRemoveAccount() {
+  async function handleLogout(event) {
+    event?.preventDefault();
+
+    await logout();
+    navigate("/", { replace: true });
+  }
+
+  async function handleRemoveAccount(event) {
+    event?.preventDefault();
+
     const confirmed = window.confirm(
       "Are you sure you want to remove your account? This action cannot be undone.",
     );
@@ -50,24 +57,15 @@ function UserDropdown() {
     if (!confirmed) return;
 
     await removeAccount();
-    navigate("/");
-  }
-
-  function goToPage(path = "") {
-    navigate(`${basePath}${path}`);
+    navigate("/", { replace: true });
   }
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger>
-        <span
-          variant="outline"
-          className="border-[#C2A26A] bg-[#FFFDF8] px-4 text-[#2B2115] shadow-sm hover:bg-[#FFF7E6] hover:text-[#9B7A3F]"
-        >
-          <UserRound className="mr-2 h-4 w-4 text-[#C2A26A]" />
-          Hi, {displayPhone}
-          <ChevronDown className="ml-2 h-4 w-4 text-[#C2A26A]" />
-        </span>
+      <DropdownMenuTrigger className="inline-flex items-center justify-center rounded-md border border-[#C2A26A] bg-[#FFFDF8] px-4 py-2 text-sm font-medium text-[#2B2115] shadow-sm transition hover:bg-[#FFF7E6] hover:text-[#9B7A3F] focus:outline-none">
+        <UserRound className="mr-2 h-4 w-4 text-[#C2A26A]" />
+        Hi, {displayPhone}
+        <ChevronDown className="ml-2 h-4 w-4 text-[#C2A26A]" />
       </DropdownMenuTrigger>
 
       <DropdownMenuContent
@@ -90,12 +88,13 @@ function UserDropdown() {
 
         <DropdownMenuSeparator className="my-2 bg-[#E8D7B3]" />
 
-        {role == "admin" ? (
-          <DropdownMenuItem className="cursor-pointer rounded-lg px-3 py-2 text-[#2B2115] focus:bg-[#FFF7E6] mb-2">
-            <Link to="/dashboard">
-              <ComputerIcon className="mr-3 h-4 w-4 text-[#C2A26A]" />
-              <span>Dashboard</span>
-            </Link>
+        {role === "admin" ? (
+          <DropdownMenuItem
+            onClick={() => navigate("/dashboard")}
+            className="mb-2 cursor-pointer rounded-lg px-3 py-2 text-[#2B2115] focus:bg-[#FFF7E6]"
+          >
+            <ComputerIcon className="mr-3 h-4 w-4 text-[#C2A26A]" />
+            Dashboard
           </DropdownMenuItem>
         ) : (
           <DropdownMenuItem
@@ -106,6 +105,7 @@ function UserDropdown() {
             Home
           </DropdownMenuItem>
         )}
+
         <DropdownMenuItem
           onClick={() => goToPage("/profile")}
           className="cursor-pointer rounded-lg px-3 py-2 text-[#2B2115] focus:bg-[#FFF7E6]"
