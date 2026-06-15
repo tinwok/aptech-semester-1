@@ -10,6 +10,7 @@ import OrdersPage from "./Pages/OrdersPage";
 import PromotionsPage from "./Pages/PromotionsPage";
 import NotificationsPage from "./Pages/NotificationsPage";
 import ChangePasswordPage from "./Pages/ChangePasswordPage";
+import { homeLoader } from "./loaders/homeLoader";
 
 import {
   publicUserLoader,
