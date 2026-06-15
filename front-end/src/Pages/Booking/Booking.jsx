@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import api from "@/services/api";
-import { AuthProvider, useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/context/AuthContext";
+import { ArrowLeftFromLine } from "lucide-react";
+import { Link } from "react-router-dom";
 import {
   Carousel,
   CarouselContent,
@@ -31,7 +33,6 @@ import { Button } from "@/components/ui/button";
 import {
   Card,
   CardAction,
-  CardDescription,
   CardHeader,
   CardTitle,
   CardFooter,
@@ -187,12 +188,19 @@ function Booking() {
   }, []);
   return (
     <div className="max-w-[1200px] mx-auto py-8">
-      <h1 className="text-3xl font-bold text-center text-blue-900 mb-6">
+      <h1 className="text-3xl font-bold text-center text-blue-900 mb-2">
         Booking
       </h1>
 
+      <Link
+        to="/"
+        className="flex items-center justify-center gap-2 text-blue-900 hover:text-red-900 font-semibold"
+      >
+        <ArrowLeftFromLine />
+        <span>Back to mainpage</span>
+      </Link>
       <div className="max-w-[700px] mx-auto bg-white shadow rounded-lg p-6">
-        <h2 className="font-semibold text-lg mb-4">
+        <h2 className="font-semibold text-blue-800 mb-4">
           1. Booking date and stylist
         </h2>
 
@@ -240,7 +248,9 @@ function Booking() {
 
         {/* Time slots */}
         <div className="mt-8">
-          <h3 className="font-semibold mb-3">Available Times</h3>
+          <h3 className="font-semibold mb-3 text-blue-800">
+            2. Available Times
+          </h3>
 
           {availableSlots.length === 0 ? (
             <p className="text-sm text-gray-500">
@@ -284,7 +294,9 @@ function Booking() {
         )}
         {/* chon service */}
         <div className="mb-6">
-          <h3 className="font-semibold mb-3">Choose Services</h3>
+          <h3 className="font-semibold mb-3 text-blue-800">
+            3. Choose Services
+          </h3>
           <Carousel
             opts={{
               align: "start",
@@ -301,10 +313,10 @@ function Booking() {
                 return (
                   <CarouselItem
                     key={service.id}
-                    className="md:basis-1/2 lg:basis-1/3 xl:basis-1/3 w-[90%] h-[400px]"
+                    className="md:basis-1/2 lg:basis-1/3 xl:basis-1/3 w-full h-[400px]  "
                   >
                     <Card
-                      className={`relative mx-auto w-full h-[350px] max-w-sm pt-0 mt-2   cursor-pointer transition-all duration-200 will-change-transform hover:scale-[1.02] ${selected ? "ring-2 ring-blue-600" : ""}`}
+                      className={`relative mx-auto w-full  max-w-sm pt-0 mt-2   cursor-pointer transition-all duration-200 will-change-transform hover:scale-[1.02] ${selected ? "ring-2 ring-blue-600" : ""}`}
                       onClick={() => toggleService(service)}
                     >
                       <div className="absolute inset-0 z-30 aspect-video " />
@@ -314,16 +326,13 @@ function Booking() {
                           "https://avatar.vercel.sh/shadcn1"
                         }
                         alt="Event cover"
-                        className="relative z-20 aspect-video w-full object-cover   "
+                        className="relative z-20 aspect-video w-full h-[200px] object-cover   "
                       />
                       <CardHeader className="flex-1 ">
                         <CardTitle className="w-full truncate">
                           {service.title}
                         </CardTitle>
                         <CardTitle>{formatVND(service.price)}</CardTitle>
-                        <CardDescription className="line-clamp-2">
-                          {service.description}
-                        </CardDescription>
                       </CardHeader>
                       <CardFooter className="flex flex-col justify-center ">
                         <CardAction className="text-center w-full">
@@ -365,6 +374,7 @@ function Booking() {
                 <TableHead className="w-[80px]">STT</TableHead>
 
                 <TableHead>Name</TableHead>
+
                 <TableHead className="text-right">Price</TableHead>
               </TableRow>
             </TableHeader>
@@ -376,6 +386,7 @@ function Booking() {
                     <TableCell>{index + 1}</TableCell>
 
                     <TableCell>{service?.title}</TableCell>
+
                     <TableCell className="text-right">
                       {Number(service?.price || 0).toLocaleString("vi-VN")} đ
                     </TableCell>
