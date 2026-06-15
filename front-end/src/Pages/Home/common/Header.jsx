@@ -20,7 +20,7 @@ const NAV_ITEMS = [
 
 export default function Header() {
   return (
-    <header className="top-0 z-50 border-b border-[var(--color-zen-accent-hover)] bg-white">
+    <header className="relative z-[100] border-b border-[var(--color-zen-accent-hover)] bg-white">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
         <NavLink to="/" className="shrink-0">
           <img

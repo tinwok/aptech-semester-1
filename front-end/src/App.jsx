@@ -10,6 +10,7 @@ import OrdersPage from "./Pages/OrdersPage";
 import PromotionsPage from "./Pages/PromotionsPage";
 import NotificationsPage from "./Pages/NotificationsPage";
 import ChangePasswordPage from "./Pages/ChangePasswordPage";
+import { homeLoader } from "./loaders/homeLoader";
 
 import {
   publicUserLoader,
@@ -36,7 +37,7 @@ const router = createBrowserRouter([
     path: "/",
     element: <Layout />,
     children: [
-      { index: true, element: <MainPage />, loader: publicUserLoader },
+      { index: true, element: <MainPage />, loader: homeLoader },
       { path: "services", element: <ServicesPage />, loader: publicUserLoader },
       { path: "booking", element: <Booking />, loader: publicUserLoader },
 
