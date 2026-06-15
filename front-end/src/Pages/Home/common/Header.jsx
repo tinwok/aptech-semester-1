@@ -17,7 +17,6 @@ const NAV_ITEMS = [
   { label: "STAFF", path: "/staff", type: "link" },
   { label: "BOOKING", path: "/booking", type: "link" },
 ];
-
 export default function Header() {
   return (
     <header className="relative z-[100] border-b border-[var(--color-zen-accent-hover)] bg-white">

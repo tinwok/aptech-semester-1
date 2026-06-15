@@ -56,6 +56,7 @@ function AppointmentsPage() {
         const data = await getMyAppointmentsApi(role);
 
         setAppointments(Array.isArray(data) ? data : []);
+        console.log(data);
       } catch (err) {
         setAppointments([]);
         setError(

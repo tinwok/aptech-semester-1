@@ -16,7 +16,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withSchedule(function ($schedule) {
         $schedule->call(function () {
             app(\App\Services\NotificationService::class)
-                ->testNotification();
+                ->sendAppointmentReminders();
         })->everyMinute();
 
         $schedule->call(function () {
