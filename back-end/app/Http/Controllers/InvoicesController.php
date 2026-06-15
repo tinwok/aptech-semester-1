@@ -82,9 +82,14 @@ class InvoicesController extends Controller
 
     public function getAvailableTimeOfStaff(Request $request)
     {
-        $appointments = Invoices::where('staff_id', $request->staff_id)
-            ->whereDate('appointment_date', $request->appointment_date)
-            ->get();
+        if ($request->staff_id) {
+            $appointments = Invoices::where('staff_id', $request->staff_id)
+                ->whereDate('appointment_date', $request->appointment_date)
+                ->get();
+        } else {
+            $appointments = Invoices::whereDate('appointment_date', $request->appointment_date)
+                ->get();
+        }
 
         $totalDuration = Services::whereIn(
             'id',
@@ -92,31 +97,37 @@ class InvoicesController extends Controller
         )->sum('duration_minutes');
 
         $start = Carbon::parse('08:00');
-        $end = Carbon::parse('18:00');
+        $end = Carbon::parse('20:00');
         $availableSlots = [];
 
         while ($start < $end) {
             $slotStart = $start->format('H:i:s');
+
             $slotEnd = Carbon::parse($slotStart)
                 ->addMinutes($totalDuration)
                 ->format('H:i:s');
+
+            if (Carbon::parse($slotEnd)->gt($end)) {
+                break;
+            }
 
             $isBooked = $appointments->contains(function ($appointment) use ($slotStart, $slotEnd) {
                 return $slotStart < $appointment->end_time
                     && $slotEnd > $appointment->start_time;
             });
 
-            if (!$isBooked) {
-                $availableSlots[] = [
-                    'time' => $slotStart,
-                    'available' => !$isBooked
-                ];
-            }
+            $availableSlots[] = [
+                'time' => $slotStart,
+                'available' => !$isBooked,
+            ];
 
             $start->addMinutes(20);
         }
 
-        return response()->json($availableSlots);
+        return response()->json([
+            'staff_id' => $request->staff_id,
+            'slots' => $availableSlots,
+        ]);
     }
 
     public function index()
@@ -124,7 +135,7 @@ class InvoicesController extends Controller
         $appointments = Invoices::with([
             'staff.users',
             'customer.user',
-            'invoiceDetails.service'
+            'invoiceDetails.service',
         ])
             ->latest()
             ->paginate(10);
@@ -147,7 +158,7 @@ class InvoicesController extends Controller
         )->sum('duration_minutes');
 
         $endTime = Carbon::parse($validated['start_time'])
-            ->addMinutes($totalDuration)
+            ->addMinutes((int) $totalDuration)
             ->format('H:i:s');
 
         if (empty($validated['staff_id'])) {
@@ -159,7 +170,7 @@ class InvoicesController extends Controller
 
             if (!$randomStaff) {
                 return response()->json([
-                    'message' => 'No staff available'
+                    'message' => 'No staff available',
                 ], 422);
             }
 
@@ -176,7 +187,7 @@ class InvoicesController extends Controller
 
         if ($isBooked) {
             return response()->json([
-                'message' => 'This staff is already booked during this time slot.'
+                'message' => 'This staff is already booked during this time slot.',
             ], 422);
         }
 
@@ -184,6 +195,7 @@ class InvoicesController extends Controller
             $invoice = Invoices::create([
                 'customer_id' => $validated['customer_id'],
                 'staff_id' => $validated['staff_id'],
+                'payment_id' => $validated['payment_id'] ?? null,
                 'appointment_date' => $validated['appointment_date'],
                 'start_time' => $validated['start_time'],
                 'end_time' => $endTime,
@@ -237,7 +249,7 @@ class InvoicesController extends Controller
     {
         DB::transaction(function () use ($invoice) {
             $invoice->update([
-                'status' => 'completed'
+                'status' => 'completed',
             ]);
 
             $invoice->load('invoiceDetails.service.serviceInventories');
@@ -261,7 +273,7 @@ class InvoicesController extends Controller
         });
 
         return response()->json([
-            'message' => 'Completed'
+            'message' => 'Completed',
         ]);
     }
 
@@ -305,7 +317,7 @@ class InvoicesController extends Controller
 
         if ($isBooked) {
             return response()->json([
-                'message' => 'This staff is already booked during this time slot.'
+                'message' => 'This staff is already booked during this time slot.',
             ], 422);
         }
 
@@ -318,7 +330,7 @@ class InvoicesController extends Controller
 
             if (!$randomStaff) {
                 return response()->json([
-                    'message' => 'No staff available'
+                    'message' => 'No staff available',
                 ], 422);
             }
 
@@ -329,6 +341,7 @@ class InvoicesController extends Controller
             $invoice->update([
                 'customer_id' => $validated['customer_id'],
                 'staff_id' => $validated['staff_id'],
+                'payment_id' => $validated['payment_id'] ?? null,
                 'appointment_date' => $validated['appointment_date'],
                 'start_time' => $validated['start_time'],
                 'end_time' => $endTime,
@@ -361,7 +374,7 @@ class InvoicesController extends Controller
         $invoice->delete();
 
         return response()->json([
-            'message' => 'Deleted successfully!'
+            'message' => 'Deleted successfully!',
         ]);
     }
 }

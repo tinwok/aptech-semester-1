@@ -28,7 +28,6 @@ import Layout from "./Layouts/mainLayouts";
 import DashBoardLayouts from "./Layouts/DashBoardLayouts";
 import DashBoardMain from "./Pages/Dashboard/DashBoardMain";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import AuthPage from "./Pages/Login/AuthPage";
 import { Toaster } from "sonner";
 import Booking from "./Pages/Booking/Booking";
 
@@ -129,10 +128,6 @@ const router = createBrowserRouter([
       { path: "customers", element: <Customers /> },
       { path: "appointments", element: <Appointments /> },
     ],
-  },
-  {
-    path: "login",
-    element: <AuthPage />,
   },
 ]);
 

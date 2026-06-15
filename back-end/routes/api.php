@@ -67,9 +67,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/me/appointments/history', [InvoicesController::class, 'getAppointmentsHistory']);
         Route::get('/appointments/{appointment}', [InvoicesController::class, 'show']);
         Route::post('/available-times', [InvoicesController::class, 'getAvailableTimeOfStaff']);
-        Route::get('/book', [InvoicesController::class, 'store']);
-        Route::put('/appointments/{invoice}
-        ', [InvoicesController::class, 'update']);
+        Route::post('/book', [InvoicesController::class, 'store']);
+        Route::put('/appointments/{invoice}', [InvoicesController::class, 'update']);
         Route::post('/appointments/book', [InvoicesController::class, 'store']);
         Route::apiResource('feedbacks', FeedBackController::class);
     });

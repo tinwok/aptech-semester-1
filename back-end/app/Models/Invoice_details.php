@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Invoice_details extends Model
 {
-    protected $fillable = ['invoice_id', 'service_id', 'unit_price', 'discount', 'quantity', 'subtotal'];
+    protected $fillable = ['invoice_id', 'service_id', 'unit_price', 'discount', 'subtotal'];
     public function invoice()
     {
         return $this->belongsTo(Invoices::class, 'invoice_id');
