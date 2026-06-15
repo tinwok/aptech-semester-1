@@ -2,6 +2,17 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 
+function getRole(user) {
+  return user?.role?.name || user?.role || user?.roles?.[0]?.name || "customer";
+}
+
+function getRedirectPathByRole(role) {
+  if (role === "admin") return "/dashboard";
+  if (role === "staff") return "/staff";
+
+  return "/user";
+}
+
 function LoginDialog({ open, onClose, onOpenRegister }) {
   const navigate = useNavigate();
   const { login } = useAuth();
@@ -30,14 +41,11 @@ function LoginDialog({ open, onClose, onOpenRegister }) {
 
     try {
       const loggedInUser = await login(formData.email, formData.password);
+      const role = getRole(loggedInUser);
+      const redirectPath = getRedirectPathByRole(role);
 
       onClose();
-
-      if (loggedInUser?.role === "staff") {
-        navigate("/staff");
-      } else {
-        navigate("/user");
-      }
+      navigate(redirectPath);
     } catch (err) {
       setError(
         err.response?.data?.message ||

@@ -58,12 +58,13 @@ Route::middleware('auth:sanctum')->group(function () {
     );
 
     Route::middleware('role:staff')->group(function () {
-        Route::get('/me/appointments', [InvoicesController::class, 'getStaffAppointments']);
-        Route::get('/me/appointments/history', [InvoicesController::class, 'getStaffAppointmentsHistory']);
+        Route::get('/staff/appointments', [InvoicesController::class, 'getStaffAppointments']);
+        Route::get('/staff/appointments/history', [InvoicesController::class, 'getAppointmentsHistory']);
     });
+
     Route::middleware('role:customer')->group(function () {
         Route::get('/me/appointments', [InvoicesController::class, 'getCustomerAppointments']);
-        Route::get('/me/appointments/history', [InvoicesController::class, 'getCustommerAppointmentsHistory']);
+        Route::get('/me/appointments/history', [InvoicesController::class, 'getAppointmentsHistory']);
         Route::get('/appointments/{appointment}', [InvoicesController::class, 'show']);
         Route::post('/available-times', [InvoicesController::class, 'getAvailableTimeOfStaff']);
         Route::post('/book', [InvoicesController::class, 'store']);

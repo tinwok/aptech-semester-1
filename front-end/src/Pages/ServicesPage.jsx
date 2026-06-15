@@ -47,11 +47,6 @@ function ServicesPage() {
           <h1 className="mt-2 text-3xl font-bold text-[#2B2115]">
             Dịch vụ làm đẹp
           </h1>
-
-          <p className="mt-2 text-[#7B684A]">
-            Dữ liệu lấy từ API <strong>/api/services</strong>. API này public,
-            không cần đăng nhập.
-          </p>
         </div>
 
         {isLoading && (
