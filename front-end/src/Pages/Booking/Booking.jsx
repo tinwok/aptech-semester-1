@@ -60,7 +60,14 @@ function Booking() {
   const selectedStaff = staffs.find(
     (staff) => String(staff.id) === String(staffId),
   );
-
+  const resetForm = () => {
+    setSelectedServices([]);
+    setSelectedTime(null);
+    setAvailableSlots([]);
+    setAppointmentDate("");
+    setStaffId("");
+    setSelectedServices([]);
+  };
   // -----------Format VND
   const formatVND = (value) => {
     return new Intl.NumberFormat("vi-VN", {
@@ -90,13 +97,13 @@ function Booking() {
       const res = await api.post("/book", payload);
 
       toast.success("Booking successful!");
+      resetForm();
       redirect("/");
     } catch (error) {
       console.log(error.response?.data || error);
       toast.warning("Booking failed!");
     }
   };
-  console.log(availableSlots);
 
   const toggleService = (service) => {
     setSelectedServices((prev) => {
@@ -158,7 +165,7 @@ function Booking() {
 
         setAvailableSlots(res.data.slots ?? res.data);
       } catch (error) {
-        console.log(error);
+        console.log(error.response?.data);
       }
     };
 
@@ -244,6 +251,7 @@ function Booking() {
               {availableSlots.map((slot) => (
                 <Button
                   key={slot.time}
+                  disabled={!slot.available}
                   variant={
                     selectedTime?.time === slot.time ? "default" : "outline"
                   }
