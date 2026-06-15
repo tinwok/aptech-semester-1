@@ -18,9 +18,14 @@ class RoleMiddleware
             ], 401);
         }
 
-        if ($user->role !== $role) {
+        $userRole = strtolower(trim((string) $user->role));
+        $requiredRole = strtolower(trim((string) $role));
+
+        if ($userRole !== $requiredRole) {
             return response()->json([
                 'message' => 'Forbidden.',
+                'current_role' => $userRole,
+                'required_role' => $requiredRole,
             ], 403);
         }
 

@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import {
   Bell,
   CalendarDays,
@@ -36,12 +36,20 @@ function UserDropdown() {
   const basePath = getBasePathByRole(role);
   const displayPhone = user?.phone || user?.email || "Account";
 
-  async function handleLogout() {
-    await logout();
-    navigate("/");
+  function goToPage(path = "") {
+    navigate(`${basePath}${path}`);
   }
 
-  async function handleRemoveAccount() {
+  async function handleLogout(event) {
+    event?.preventDefault();
+
+    await logout();
+    navigate("/", { replace: true });
+  }
+
+  async function handleRemoveAccount(event) {
+    event?.preventDefault();
+
     const confirmed = window.confirm(
       "Are you sure you want to remove your account? This action cannot be undone.",
     );
@@ -49,11 +57,7 @@ function UserDropdown() {
     if (!confirmed) return;
 
     await removeAccount();
-    navigate("/");
-  }
-
-  function goToPage(path = "") {
-    navigate(`${basePath}${path}`);
+    navigate("/", { replace: true });
   }
 
   return (
@@ -84,12 +88,13 @@ function UserDropdown() {
 
         <DropdownMenuSeparator className="my-2 bg-[#E8D7B3]" />
 
-        {role == "admin" ? (
-          <DropdownMenuItem className="cursor-pointer rounded-lg px-3 py-2 text-[#2B2115] focus:bg-[#FFF7E6] mb-2">
-            <Link to="/dashboard">
-              <ComputerIcon className="mr-3 h-4 w-4 text-[#C2A26A]" />
-              <span>Dashboard</span>
-            </Link>
+        {role === "admin" ? (
+          <DropdownMenuItem
+            onClick={() => navigate("/dashboard")}
+            className="mb-2 cursor-pointer rounded-lg px-3 py-2 text-[#2B2115] focus:bg-[#FFF7E6]"
+          >
+            <ComputerIcon className="mr-3 h-4 w-4 text-[#C2A26A]" />
+            Dashboard
           </DropdownMenuItem>
         ) : (
           <DropdownMenuItem
@@ -100,6 +105,7 @@ function UserDropdown() {
             Home
           </DropdownMenuItem>
         )}
+
         <DropdownMenuItem
           onClick={() => goToPage("/profile")}
           className="cursor-pointer rounded-lg px-3 py-2 text-[#2B2115] focus:bg-[#FFF7E6]"
