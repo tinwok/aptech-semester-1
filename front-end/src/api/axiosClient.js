@@ -7,7 +7,7 @@ const axiosClient = axios.create({
     "Content-Type": "application/json",
   },
 });
-console.log(axiosClient.data);
+
 axiosClient.interceptors.request.use((config) => {
   const token = localStorage.getItem("zenstyle_access_token");
 

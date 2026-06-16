@@ -272,8 +272,9 @@ class InvoicesController extends Controller
         return null;
     }
 
-    public function complete(Invoices $invoice)
+    public function complete(String $id)
     {
+        $invoice = Invoices::findOrFail($id);
         DB::transaction(function () use ($invoice) {
             $invoice->update([
                 'status' => 'completed',
@@ -396,12 +397,14 @@ class InvoicesController extends Controller
         ], 200);
     }
 
-    public function destroy(Invoices $invoice)
+    public function destroy(Invoices $appointment)
     {
-        $invoice->delete();
+        $appointment->update([
+            'status' => 'cancel',
+        ]);
 
         return response()->json([
-            'message' => 'Deleted successfully!',
+            'message' => 'Cancel successfully!',
         ]);
     }
 }

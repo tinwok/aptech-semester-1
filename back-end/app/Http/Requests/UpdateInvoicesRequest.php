@@ -26,7 +26,6 @@ class UpdateInvoicesRequest extends FormRequest
         return [
             'services' => 'sometimes|array|min:1',
             'services.*.service_id' => 'sometimes|integer|exists:services,id|distinct',
-            // 'services.*.quantity' => 'sometimes|integer|min:1',
             'services.*.discount' => 'nullable|numeric|between:0,100',
             'customer_id' => 'sometimes|exists:customers,id',
             'staff_id' => 'sometimes|exists:staffs,id',
