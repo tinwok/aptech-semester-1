@@ -38,18 +38,16 @@ import {
   CardFooter,
 } from "@/components/ui/card";
 import { toast } from "sonner";
-import { redirect } from "react-router-dom";
+
 function Booking() {
   const { user } = useAuth();
+
   const [staffs, setStaffs] = useState([]);
   const [staffId, setStaffId] = useState("");
   const [appointmentDate, setAppointmentDate] = useState("");
-
   const [availableSlots, setAvailableSlots] = useState([]);
   const [selectedTime, setSelectedTime] = useState(null);
   const [note, setNote] = useState("");
-
-  // Sau này lấy từ giỏ dịch vụ
   const [services, setServices] = useState([]);
   const [selectedServices, setSelectedServices] = useState([]);
 
@@ -57,39 +55,33 @@ function Booking() {
     const service = services.find((s) => s.id === item.service_id);
     return total + Number(service?.price || 0);
   }, 0);
-  console.log(availableSlots);
-  console.log("staffId" + staffId);
-  console.log(staffs);
 
   const selectedStaff = staffs.find(
     (staff) => String(staff.id) === String(staffId),
   );
+
   const resetForm = () => {
     setSelectedServices([]);
     setSelectedTime(null);
     setAvailableSlots([]);
     setAppointmentDate("");
     setStaffId("");
-    setSelectedServices([]);
+    setNote("");
   };
-  // -----------Format VND
+
   const formatVND = (value) => {
     return new Intl.NumberFormat("vi-VN", {
       style: "currency",
       currency: "VND",
     }).format(value);
   };
-  // ------------- Send Request
+
   const handleBooking = async () => {
     try {
-      const payload = {
-        customer_id: user.customer.id,
-        staff_id: selectedTime?.staff_id || staffId,
-        appointment_date: appointmentDate,
-        start_time: selectedTime.time.substring(0, 5),
-        note,
-        services: selectedServices,
-      };
+      if (!user?.customer?.id) {
+        return alert("Customer information not found. Please sign in again.");
+      }
+
       if (!selectedTime) {
         return alert("Please choose a time slot");
       }
@@ -98,14 +90,25 @@ function Booking() {
         return alert("Please choose at least one service");
       }
 
+      const payload = {
+        customer_id: user.customer.id,
+        staff_id: selectedTime?.staff_id || staffId || null,
+        payment_id: null,
+        appointment_date: appointmentDate,
+        start_time: selectedTime.time.substring(0, 5),
+        note,
+        services: selectedServices,
+      };
+
+      console.log("Booking payload:", payload);
+
       await api.post("/book", payload);
 
       toast.success("Booking successful!");
       resetForm();
-      redirect("/");
     } catch (error) {
-      console.log(error.response?.data || error);
-      toast.warning("Booking failed!");
+      console.log("Booking error:", error.response?.data || error);
+      toast.warning(error.response?.data?.message || "Booking failed!");
     }
   };
 
@@ -125,7 +128,7 @@ function Booking() {
       ];
     });
   };
-  // tạo 7 ngày tiếp theo
+
   const days = [...Array(7)].map((_, index) => {
     const date = new Date();
     date.setDate(date.getDate() + index);
@@ -140,27 +143,25 @@ function Booking() {
     };
   });
 
-  // load nhân viên
   useEffect(() => {
     const fetchStaffs = async () => {
       try {
         const res = await api.get("/staffs");
-
-        setStaffs(res.data.data);
+        setStaffs(res.data.data || res.data || []);
       } catch (error) {
-        console.log(error.response?.data?.message);
+        console.log(error.response?.data?.message || error);
       }
     };
 
     fetchStaffs();
   }, []);
-  // load giờ trống
+
   useEffect(() => {
     if (!appointmentDate || selectedServices.length === 0) return;
 
     const fetchAvailableTime = async () => {
       try {
-        const res = await api.post("available-times", {
+        const res = await api.post("/available-times", {
           staff_id: staffId ? staffId : null,
           appointment_date: appointmentDate,
           services: selectedServices,
@@ -168,72 +169,77 @@ function Booking() {
 
         setAvailableSlots(res.data.slots ?? res.data);
       } catch (error) {
-        console.log(error.response?.data);
+        console.log(error.response?.data || error);
       }
     };
 
     fetchAvailableTime();
   }, [staffId, appointmentDate, selectedServices]);
-  // chon dich vu
+
   useEffect(() => {
     const fetchServices = async () => {
       try {
         const res = await api.get("/services");
-
-        setServices(res.data.data);
+        setServices(res.data.data || res.data || []);
       } catch (error) {
-        console.log(error.response?.data);
+        console.log(error.response?.data || error);
       }
     };
 
     fetchServices();
   }, []);
+
   return (
-    <div className="max-w-[1200px] mx-auto py-8">
-      <h1 className="text-3xl font-bold text-center text-blue-900 mb-2">
+    <div className="mx-auto max-w-[1200px] py-8">
+      <h1 className="mb-2 text-center text-3xl font-bold text-blue-900">
         Booking
       </h1>
 
       <Link
         to="/"
-        className="flex items-center justify-center gap-2 text-blue-900 hover:text-red-900 font-semibold"
+        className="flex items-center justify-center gap-2 font-semibold text-blue-900 hover:text-red-900"
       >
         <ArrowLeftFromLine />
         <span>Back to mainpage</span>
       </Link>
-      <div className="max-w-[700px] mx-auto bg-white shadow rounded-lg p-6">
-        <h2 className="font-semibold text-blue-800 mb-4">
+
+      <div className="mx-auto max-w-[700px] rounded-lg bg-white p-6 shadow">
+        <h2 className="mb-4 font-semibold text-blue-800">
           1. Booking date and stylist
         </h2>
 
-        <div className="grid md:grid-cols-2 gap-4">
-          {/* Chọn nhân viên */}
+        <div className="grid gap-4 md:grid-cols-2">
           <Select
-            value={staffId || ""}
-            onValueChange={(value) => setStaffId(value)}
+            value={staffId || "any"}
+            onValueChange={(value) => {
+              setStaffId(value === "any" ? "" : value);
+              setSelectedTime(null);
+              setAvailableSlots([]);
+            }}
           >
             <SelectTrigger className="w-full max-w-48">
-              <SelectValue>
-                {staffId
-                  ? staffs.find((staff) => String(staff.id) === String(staffId))
-                      ?.users?.name
-                  : "Any Stylist (Random)"}
-              </SelectValue>
+              <SelectValue placeholder="Any Stylist (Random)" />
             </SelectTrigger>
 
             <SelectContent className="p-2">
-              <SelectItem value="">Any Stylist (Random)</SelectItem>
+              <SelectItem value="any">Any Stylist (Random)</SelectItem>
 
               {staffs.map((staff) => (
                 <SelectItem key={staff.id} value={String(staff.id)}>
-                  {staff.users.name}
+                  {staff.users?.name || staff.user?.name || "Unnamed Staff"}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
 
-          {/* Chọn ngày */}
-          <Select value={appointmentDate} onValueChange={setAppointmentDate}>
+          <Select
+            value={appointmentDate}
+            onValueChange={(value) => {
+              setAppointmentDate(value);
+              setSelectedTime(null);
+              setAvailableSlots([]);
+            }}
+          >
             <SelectTrigger>
               <SelectValue placeholder="Choose Date" />
             </SelectTrigger>
@@ -248,18 +254,17 @@ function Booking() {
           </Select>
         </div>
 
-        {/* Time slots */}
         <div className="mt-8">
-          <h3 className="font-semibold mb-3 text-blue-800">
+          <h3 className="mb-3 font-semibold text-blue-800">
             2. Available Times
           </h3>
 
           {availableSlots.length === 0 ? (
             <p className="text-sm text-gray-500">
-              Please choose stylist and date
+              Please choose stylist, date, and service.
             </p>
           ) : (
-            <div className="grid grid-cols-4 md:grid-cols-5 gap-3">
+            <div className="grid grid-cols-4 gap-3 md:grid-cols-5">
               {availableSlots.map((slot) => (
                 <Button
                   key={slot.time}
@@ -277,12 +282,13 @@ function Booking() {
           )}
         </div>
 
-        {/* Kết quả chọn */}
         {selectedTime && (
-          <div className="mt-6 p-4 bg-slate-100 rounded">
+          <div className="mt-6 rounded bg-slate-100 p-4">
             <p>
               <strong>Staff:</strong>{" "}
-              {selectedStaff?.users?.name || "Random Stylist"}
+              {selectedStaff?.users?.name ||
+                selectedStaff?.user?.name ||
+                "Random Stylist"}
             </p>
 
             <p>
@@ -294,11 +300,12 @@ function Booking() {
             </p>
           </div>
         )}
-        {/* chon service */}
-        <div className="mb-6">
-          <h3 className="font-semibold mb-3 text-blue-800">
+
+        <div className="mb-6 mt-8">
+          <h3 className="mb-3 font-semibold text-blue-800">
             3. Choose Services
           </h3>
+
           <Carousel
             opts={{
               align: "start",
@@ -315,36 +322,40 @@ function Booking() {
                 return (
                   <CarouselItem
                     key={service.id}
-                    className="md:basis-1/2 lg:basis-1/3 xl:basis-1/3 w-full h-[400px]  "
+                    className="h-[400px] w-full md:basis-1/2 lg:basis-1/3 xl:basis-1/3"
                   >
                     <Card
-                      className={`relative mx-auto w-full  max-w-sm pt-0 mt-2   cursor-pointer transition-all duration-200 will-change-transform hover:scale-[1.02] ${selected ? "ring-2 ring-blue-600" : ""}`}
+                      className={`relative mx-auto mt-2 w-full max-w-sm cursor-pointer pt-0 transition-all duration-200 will-change-transform hover:scale-[1.02] ${
+                        selected ? "ring-2 ring-blue-600" : ""
+                      }`}
                       onClick={() => toggleService(service)}
                     >
-                      <div className="absolute inset-0 z-30 aspect-video " />
+                      <div className="absolute inset-0 z-30 aspect-video" />
+
                       <img
                         src={
                           service.image_url ||
                           "https://avatar.vercel.sh/shadcn1"
                         }
-                        alt="Event cover"
-                        className="relative z-20 aspect-video w-full h-[200px] object-cover   "
+                        alt={service.title}
+                        className="relative z-20 aspect-video h-[200px] w-full object-cover"
                       />
-                      <CardHeader className="flex-1 ">
+
+                      <CardHeader className="flex-1">
                         <CardTitle className="w-full truncate">
                           {service.title}
                         </CardTitle>
                         <CardTitle>{formatVND(service.price)}</CardTitle>
                       </CardHeader>
-                      <CardFooter className="flex flex-col justify-center ">
-                        <CardAction className="text-center w-full">
+
+                      <CardFooter className="flex flex-col justify-center">
+                        <CardAction className="w-full text-center">
                           <Badge variant={selected ? "default" : "secondary"}>
                             {selected ? "Selected" : "Service"}
                           </Badge>
                         </CardAction>
-                        <Button className="">
-                          {service.duration_minutes} Minutes
-                        </Button>
+
+                        <Button>{service.duration_minutes} Minutes</Button>
                       </CardFooter>
                     </Card>
                   </CarouselItem>
@@ -353,42 +364,43 @@ function Booking() {
             </CarouselContent>
 
             <CarouselPrevious />
-
             <CarouselNext />
           </Carousel>
         </div>
+
         <div className="mt-6">
-          <label className="block mb-2 font-semibold">Note</label>
+          <label className="mb-2 block font-semibold">Note</label>
           <textarea
             value={note}
             onChange={(e) => setNote(e.target.value)}
-            className="w-full border rounded-md p-3"
+            className="w-full rounded-md border p-3"
             rows={3}
             placeholder="Enter booking note..."
           />
         </div>
+
         <div className="mt-4">
           <p className="font-semibold">Selected Services:</p>
+
           <Table>
-            <TableCaption>A list of your recent invoices.</TableCaption>
+            <TableCaption>A list of your selected services.</TableCaption>
+
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[80px]">STT</TableHead>
-
+                <TableHead className="w-[80px]">No.</TableHead>
                 <TableHead>Name</TableHead>
-
                 <TableHead className="text-right">Price</TableHead>
               </TableRow>
             </TableHeader>
+
             <TableBody>
               {selectedServices.map((item, index) => {
                 const service = services.find((s) => s.id === item.service_id);
+
                 return (
                   <TableRow key={item.service_id}>
                     <TableCell>{index + 1}</TableCell>
-
                     <TableCell>{service?.title}</TableCell>
-
                     <TableCell className="text-right">
                       {Number(service?.price || 0).toLocaleString("vi-VN")} đ
                     </TableCell>
@@ -396,9 +408,10 @@ function Booking() {
                 );
               })}
             </TableBody>
+
             <TableFooter>
               <TableRow>
-                <TableCell colSpan={2} className="font-bold text-left">
+                <TableCell colSpan={2} className="text-left font-bold">
                   Total
                 </TableCell>
                 <TableCell className="text-right font-bold">
@@ -407,6 +420,7 @@ function Booking() {
               </TableRow>
             </TableFooter>
           </Table>
+
           <div className="mt-6 flex justify-end">
             <Button
               onClick={handleBooking}

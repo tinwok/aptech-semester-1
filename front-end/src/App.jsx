@@ -31,7 +31,7 @@ import DashBoardMain from "./Pages/Dashboard/DashBoardMain";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { Toaster } from "sonner";
 import Booking from "./Pages/Booking/Booking";
-import { homeLoader } from "./loaders/homeLoader";
+
 
 const router = createBrowserRouter([
   {

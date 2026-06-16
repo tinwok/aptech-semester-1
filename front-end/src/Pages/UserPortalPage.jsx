@@ -102,7 +102,7 @@ function UserPortalPage() {
             </Link>
 
             <Link
-              to={`${basePath}/appointments`}
+              to="/booking"
               className="rounded-3xl border border-[#E8D7B3] bg-white p-8 shadow-sm transition hover:-translate-y-1 hover:shadow-md"
             >
               <CalendarDays className="h-9 w-9 text-[#B89555]" />
