@@ -1,22 +1,8 @@
 import { useEffect, useState } from "react";
 import api from "@/services/api";
 
-function getCustomerName(item) {
-  return item.customer?.user?.name || item.customer?.user?.phone || "N/A";
-}
-
-function getServiceNames(item) {
-  const details = item.invoice_details || item.invoiceDetails || [];
-
-  if (!details.length) return "N/A";
-
-  return details
-    .map((detail) => detail.service?.title)
-    .filter(Boolean)
-    .join(", ");
-}
-
 export default function DashBoardMain() {
+  const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [dashboardData, setDashboardData] = useState(null);
 
@@ -24,15 +10,8 @@ export default function DashBoardMain() {
     const fetchDashboard = async () => {
       try {
         setLoading(true);
-
-        const res = await api.get("/dashboard/appointments");
-
-        setDashboardData({
-          appointments: {
-            total: res.data.total ?? 0,
-          },
-          recentAppointments: res.data.data ?? [],
-        });
+        const res = await api.get("/dashboard");
+        setDashboardData(res.data);
       } catch (error) {
         console.error("Dashboard error:", error);
       } finally {
@@ -61,6 +40,14 @@ export default function DashBoardMain() {
 
   const stats = [
     {
+      title: "Staffs",
+      value: dashboardData.staffs?.total ?? 0,
+    },
+    {
+      title: "Customers",
+      value: dashboardData.customers?.total ?? 0,
+    },
+    {
       title: "Appointments",
       value: dashboardData.appointments?.total ?? 0,
     },
@@ -72,6 +59,7 @@ export default function DashBoardMain() {
     <div className="p-6">
       <h1 className="mb-6 text-3xl font-bold">Dashboard</h1>
 
+      {/* Stats */}
       <div className="mb-8 grid grid-cols-4 gap-4">
         {stats.map((item) => (
           <div
@@ -84,6 +72,7 @@ export default function DashBoardMain() {
         ))}
       </div>
 
+      {/* Recent */}
       <div className="rounded-xl border bg-white p-5 shadow">
         <h2 className="mb-4 text-xl font-bold">Recent Appointments</h2>
 
@@ -101,10 +90,18 @@ export default function DashBoardMain() {
             {recentAppointments.map((item) => (
               <tr key={item.id} className="border-b">
                 <td className="p-3">{item.id}</td>
-                <td className="p-3">{getCustomerName(item)}</td>
-                <td className="p-3">{getServiceNames(item)}</td>
+                <td className="p-3">{item.customer}</td>
+                <td className="p-3">{item.service}</td>
                 <td className="p-3">
-                  <span className="rounded-full bg-yellow-100 px-3 py-1 text-sm text-yellow-700">
+                  <span
+                    className={`rounded-full px-3 py-1 text-sm ${
+                      item.status === "Completed"
+                        ? "bg-green-100 text-green-700"
+                        : item.status === "Pending"
+                          ? "bg-yellow-100 text-yellow-700"
+                          : "bg-blue-100 text-blue-700"
+                    }`}
+                  >
                     {item.status}
                   </span>
                 </td>
@@ -112,6 +109,37 @@ export default function DashBoardMain() {
             ))}
           </tbody>
         </table>
+
+        {/* Pagination (fake UI) */}
+        <div className="mt-6 flex items-center justify-end gap-2">
+          <button
+            className="rounded border px-3 py-1 disabled:opacity-50"
+            disabled={currentPage === 1}
+            onClick={() => setCurrentPage((p) => p - 1)}
+          >
+            Prev
+          </button>
+
+          {[1, 2, 3, 4, 5].map((page) => (
+            <button
+              key={page}
+              onClick={() => setCurrentPage(page)}
+              className={`rounded border px-3 py-1 ${
+                currentPage === page ? "bg-zinc-900 text-white" : ""
+              }`}
+            >
+              {page}
+            </button>
+          ))}
+
+          <button
+            className="rounded border px-3 py-1 disabled:opacity-50"
+            disabled={currentPage === 5}
+            onClick={() => setCurrentPage((p) => p + 1)}
+          >
+            Next
+          </button>
+        </div>
       </div>
     </div>
   );
