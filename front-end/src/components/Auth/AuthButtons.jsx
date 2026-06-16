@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import LoginDialog from "./LoginDialog";
 import RegisterDialog from "./RegisterDialog";
 import UserDropdown from "./UserDropdown";
+import NotificationBell from "@/components/NotificationBell";
 
 function AuthButtons() {
   const { user, isAuthenticated, isLoadingUser } = useAuth();
@@ -20,7 +21,12 @@ function AuthButtons() {
   }
 
   if (isAuthenticated && user) {
-    return <UserDropdown />;
+    return (
+      <div className="flex items-center gap-3">
+        <NotificationBell />
+        <UserDropdown />
+      </div>
+    );
   }
 
   return (
@@ -30,7 +36,7 @@ function AuthButtons() {
           onClick={() => setIsLoginOpen(true)}
           className="bg-[#C2A26A] text-white hover:bg-[#9B7A3F]"
         >
-          Sign In
+          Sign In / Sign Up
         </Button>
       </div>
 

@@ -106,7 +106,7 @@ export default function Footer() {
           <div className="flex flex-col gap-4">
             <NavLink to="/" className="shrink-0">
               <img
-                src="/public/ZenStyle.jpg"
+                src="/ZenStyle.jpg"
                 alt="zenstyle"
                 className="h-12 w-auto object-contain"
                 onError={(e) => {

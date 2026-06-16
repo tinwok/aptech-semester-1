@@ -74,7 +74,7 @@ function UserPortalPage() {
               Account Security
             </h2>
             <p className="mt-3 text-[#7B684A]">
-              Change your password or manage your account.
+              Change your password.
             </p>
           </Link>
         </div>

@@ -20,10 +20,21 @@ class AuthController extends Controller
         $user = User::create([
             'email' => $request->email,
             'phone' => $request->phone,
-            'password' => Hash::make($request->password)
+            'password' => Hash::make($request->password),
+            'role' => 'customer',
+            'status' => 'active',
         ]);
+
+        Customers::create([
+            'user_id' => $user->id,
+            'preferences' => null,
+            'allergies' => null,
+            'preferred_staff_id' => null,
+            'status' => 'active',
+        ]);
+
         return response()->json([
-            'data' => $user,
+            'data' => $user->load(['customer', 'staff']),
             'message' => 'Register successfully!'
         ], 201);
     }
@@ -40,7 +51,14 @@ class AuthController extends Controller
 
         /** @var \App\Models\User $user */
         $user = Auth::user();
-        $user->load('customer');
+
+        if ($user->status !== 'active') {
+            return response()->json([
+                'message' => 'This account is not active.'
+            ], 403);
+        }
+
+        $user->load(['customer', 'staff']);
 
         $token = $user->createToken('auth_token')->plainTextToken;
 
@@ -63,7 +81,7 @@ class AuthController extends Controller
 
     public function me(Request $request)
     {
-        $user = $request->user()->load('customer');
+        $user = $request->user()->load(['customer', 'staff']);
 
         return response()->json([
             'success' => true,
@@ -82,14 +100,16 @@ class AuthController extends Controller
                 'dob' => $request->dob,
             ]);
 
-            Customers::updateOrCreate(
-                ['user_id' => $user->id],
-                [
-                    'preferred_staff_id' => $request->preferred_staff_id,
-                    'preferences' => $request->preferences,
-                    'allergies' => $request->allergies,
-                ]
-            );
+            if ($user->role === 'customer') {
+                Customers::updateOrCreate(
+                    ['user_id' => $user->id],
+                    [
+                        'preferred_staff_id' => $request->preferred_staff_id,
+                        'preferences' => $request->preferences,
+                        'allergies' => $request->allergies,
+                    ]
+                );
+            }
         });
 
         return response()->json([
@@ -112,7 +132,13 @@ class AuthController extends Controller
             ], 401);
         }
 
-        if (!$user->must_change_password) {
+        if (isset($user->must_change_password) && !$user->must_change_password) {
+            if (!Hash::check($request->current_password, $user->password)) {
+                throw ValidationException::withMessages([
+                    'current_password' => ['The current password is incorrect.'],
+                ]);
+            }
+        } elseif (!isset($user->must_change_password)) {
             if (!Hash::check($request->current_password, $user->password)) {
                 throw ValidationException::withMessages([
                     'current_password' => ['The current password is incorrect.'],
@@ -120,10 +146,15 @@ class AuthController extends Controller
             }
         }
 
-        $user->update([
+        $updateData = [
             'password' => Hash::make($request->password),
-            'must_change_password' => false,
-        ]);
+        ];
+
+        if (array_key_exists('must_change_password', $user->getAttributes())) {
+            $updateData['must_change_password'] = false;
+        }
+
+        $user->update($updateData);
 
         return response()->json([
             'message' => 'Password changed successfully!'
@@ -145,6 +176,10 @@ class AuthController extends Controller
 
             if ($user->customer) {
                 $user->customer()->delete();
+            }
+
+            if ($user->staff) {
+                $user->staff()->delete();
             }
 
             $user->forceDelete();

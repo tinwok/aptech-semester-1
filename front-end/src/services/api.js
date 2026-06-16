@@ -46,4 +46,21 @@ export const getServices = async (params = {}) => {
 
 export const getAllServices = () => getServices({ per_page: 50 });
 
+// ── Products ──
+
+const mapProduct = (item) => ({
+  id: item.id,
+  name: item.name,
+  price: Number(item.retail_price),
+  unit: item.unit,
+  status: item.status,
+  image: item.image_url ?? null,
+});
+
+export const getAllProducts = async () => {
+  const res = await api.get("/products", { params: { per_page: 50 } });
+  const items = res.data?.data?.data ?? [];
+  return items.map(mapProduct);
+};
+
 export default api;

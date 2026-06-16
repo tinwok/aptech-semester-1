@@ -48,6 +48,7 @@ export async function protectedUserLoader({ params }) {
 
   try {
     const response = await getMeApi();
+
     const user = getUserFromResponse(response);
 
     localStorage.setItem("zenstyle_user", JSON.stringify(user));

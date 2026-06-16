@@ -7,19 +7,18 @@ const axiosClient = axios.create({
     "Content-Type": "application/json",
   },
 });
+console.log(axiosClient.data);
+axiosClient.interceptors.request.use((config) => {
+  const token = localStorage.getItem("zenstyle_access_token");
 
-axiosClient.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem("token");
+  console.log("Token:", token);
 
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
 
-    return config;
-  },
-  (error) => Promise.reject(error),
-);
+  return config;
+});
 
 axiosClient.interceptors.response.use(
   (response) => response,
