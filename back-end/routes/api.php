@@ -81,6 +81,7 @@ Route::prefix('dashboard')->group(function () {
     Route::get('/stats/inventoryReport', [StatsController::class, 'inventoryReport']);
     Route::get('/stats/report', [StatsController::class, 'salesReport']);
 
+    Route::apiResource('/feedbacks', FeedBackController::class);
     Route::apiResource('/customers', CustomersController::class);
     Route::apiResource('/staffs', StaffsController::class);
     Route::apiResource('users', UserController::class);
