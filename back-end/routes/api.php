@@ -25,7 +25,6 @@ Route::apiResource('/products', ProductsController::class);
 // quản lí kho
 Route::post('inventory/import', [InventoryTransactionController::class, 'importStock']);
 Route::post('inventory/wastage', [InventoryTransactionController::class, 'wastage']);
-Route::post('invoice/{id}/complete', [InvoicesController::class, 'complete']);
 // Quản lí nhà cung cấp
 Route::apiResource('/suppliers', SuppliersController::class);
 Route::get('staffs', [StaffsController::class, 'index']);
@@ -88,6 +87,8 @@ Route::prefix('dashboard')->group(function () {
     Route::patch('users/{id}/restore', [UserController::class, 'restore']);
     Route::apiResource('services', ServicesController::class);
     Route::apiResource('/appointments', InvoicesController::class);
+    Route::post('appointments/{id}/complete', [InvoicesController::class, 'complete']);
+
     Route::apiResource('/notification', NotificationsController::class);
     // Route notification for admin
     Route::get('/notifications', [NotificationsController::class, 'adminIndex']);

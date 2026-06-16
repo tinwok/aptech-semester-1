@@ -13,7 +13,6 @@ import ChangePasswordPage from "./Pages/ChangePasswordPage";
 import { homeLoader } from "./loaders/homeLoader";
 
 import {
-  publicUserLoader,
   protectedUserLoader,
   changePasswordAction,
   updateProfileAction,
@@ -31,7 +30,6 @@ import DashBoardMain from "./Pages/Dashboard/DashBoardMain";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { Toaster } from "sonner";
 import Booking from "./Pages/Booking/Booking";
-
 
 const router = createBrowserRouter([
   {

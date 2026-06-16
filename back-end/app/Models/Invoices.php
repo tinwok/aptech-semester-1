@@ -39,7 +39,7 @@ class Invoices extends Model
 
     public function payment()
     {
-        return $this->belongsTo(Payments::class, 'payment_id');
+        return $this->hasOne(Payments::class, 'payment_id');
     }
 
     public function feedbacks()

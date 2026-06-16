@@ -32,7 +32,7 @@ export default function Header() {
           />
         </NavLink>
 
-        <nav className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-[3px] md:flex">
+        <nav className="absolute left-1/2 hidden -translate-x-1/2 items-center md:flex">
           {NAV_ITEMS.map((item) =>
             item.type === "dropdown" ? (
               <NavDropdown key={item.label} item={item} />
