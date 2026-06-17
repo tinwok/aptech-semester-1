@@ -1,14 +1,8 @@
 import { useEffect, useState } from "react";
 import api from "../../services/api";
-import { Button } from "@/components/ui/button";
+
 import BookingForm from "../Booking/BookingForm";
-import {
-  CheckCircle,
-  XCircle,
-  TimerResetIcon,
-  PencilIcon,
-  PlusCircleIcon,
-} from "lucide-react";
+import { CheckCircle, XCircle, TimerResetIcon, PencilIcon } from "lucide-react";
 
 import {
   Table,
@@ -150,14 +144,11 @@ export default function Appointments() {
         <h1 className="text-3xl font-bold ">Appointments</h1>
 
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogTrigger asChild>
-            <Button variant="default">
-              Create Appointment
-              <PlusCircleIcon />
-            </Button>
+          <DialogTrigger className="px-3 flex py-2 rounded bg-green-700 text-sm text-white border border-transparent cursor-pointer hover:bg-blue-900 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            Create Appointment
           </DialogTrigger>
 
-          <DialogContent className="w-full max-h-[90vh] bg-red-600 overflow-y-auto">
+          <DialogContent className="sm:max-w-[1200px] max-h-[90vh] overflow-y-auto bg-trans border-trans text-black-500">
             <BookingForm
               isAdmin
               endpoint="/dashboard/appointments"
@@ -235,8 +226,8 @@ export default function Appointments() {
 
                   <TableCell className="space-x-2 p-4 text-center">
                     <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="outline">Actions</Button>
+                      <DropdownMenuTrigger className="px-2 rounded bg-white border border-transparent cursor-pointer hover:bg-blue-900 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        ...
                       </DropdownMenuTrigger>
                       <DropdownMenuContent>
                         <DropdownMenuGroup>

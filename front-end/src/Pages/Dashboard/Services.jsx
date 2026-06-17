@@ -170,6 +170,7 @@ export default function Services() {
         <table className="w-full text-center">
           <thead>
             <tr>
+              <th className="py-3">STT</th>
               <th className="py-3">Title</th>
               <th className="py-3">Duration</th>
               <th className="py-3">Price</th>
@@ -180,8 +181,9 @@ export default function Services() {
           </thead>
 
           <tbody>
-            {services.map((s) => (
+            {services.map((s, index) => (
               <tr key={s.id} className="border-t">
+                <td className="py-3">{index + 1}</td>
                 <td className="py-3">{s.title}</td>
                 <td className="py-3">{s.duration_minutes} min</td>
                 <td className="py-3">{s.price} </td>
