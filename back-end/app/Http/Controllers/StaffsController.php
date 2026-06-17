@@ -10,6 +10,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Auth;
 
 class StaffsController extends Controller
 {
@@ -18,7 +19,9 @@ class StaffsController extends Controller
      */
     public function index(Request $request)
     {
-        //show staff đang hoạt động cho khách thấy
+
+
+
         $query = Staffs::with([
             'users',
             'customers'
@@ -27,7 +30,7 @@ class StaffsController extends Controller
         if ($request->filled('search')) {
             $search = $request->search;
             $query->whereHas('users', function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")->orWhere('email', 'like', "%{$search}%");
+                $q->where('name', 'like', "%{$search}%")->orWhere('email', 'like', "%{$search}%")->orWhere('phone', 'like', "%{$search}%");
             });
         }
         if ($request->filled('min_salary')) {
@@ -44,7 +47,9 @@ class StaffsController extends Controller
                 $request->max_salary
             );
         }
-        $staffs =  $query->where('status', 'active')->paginate(10);
+
+        $staffs =  $query->paginate(10);
+        // $staffs = $user?->role === 'admin' ? $query->paginate(10) : $query->where('status', 'active')->paginate(10);
         return response()->json($staffs);
     }
 
@@ -131,8 +136,9 @@ class StaffsController extends Controller
      */
     public function destroy(Staffs $staff)
     {
-        return response()->json($staff->update([
-            'status' => 'inactive'
-        ]));
+        $staff->delete();
+        return response()->json([
+            'message' => 'Deleted successfuly!'
+        ]);
     }
 }
