@@ -14,7 +14,7 @@ class InventoryTransactionController extends Controller
      */
     public function getInventoryHistory()
     {
-        $data = Inventory_transactions::latest()->with('supliers', 'products')->paginate(10);
+        $data = Inventory_transactions::latest()->with('supliers', 'products', 'invoice ')->paginate(10);
         return response()->json($data);
     }
 
@@ -82,29 +82,6 @@ class InventoryTransactionController extends Controller
         ], 201);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Inventory_transactions $inventory_transactions)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Inventory_transactions $inventory_transactions)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Inventory_transactions $inventory_transactions)
-    {
-        //
-    }
 
     /**
      * Remove the specified resource from storage.

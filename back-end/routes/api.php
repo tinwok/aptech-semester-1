@@ -20,10 +20,7 @@ Route::post('register', [AuthController::class, 'register']);
 Route::post('login', [AuthController::class, 'login']);
 
 Route::get('services/{service}', [ServicesController::class, 'show']);
-Route::apiResource('/products', ProductsController::class);
-
-Route::post('inventory/import', [InventoryTransactionController::class, 'importStock']);
-Route::post('inventory/wastage', [InventoryTransactionController::class, 'wastage']);
+Route::get('/products', [ProductsController::class, 'index']);
 
 Route::apiResource('/suppliers', SuppliersController::class);
 
@@ -48,7 +45,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/staff/appointments/history', [InvoicesController::class, 'getAppointmentsHistory']);
     });
 
-    Route::middleware('role:customer')->group(function () {
+    Route::middleware('role:customer,admin')->group(function () {
         Route::get('/me/appointments', [InvoicesController::class, 'getCustomerAppointments']);
         Route::get('/me/appointments/history', [InvoicesController::class, 'getAppointmentsHistory']);
 
@@ -68,50 +65,53 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 });
 
-Route::prefix('dashboard')->group(function () {
-    Route::get('/stats/salereport', [StatsController::class, 'salesReport']);
-    Route::get('/stats/inventoryReport', [StatsController::class, 'inventoryReport']);
-    Route::get('/stats/report', [StatsController::class, 'salesReport']);
+Route::prefix('dashboard')
+    ->middleware(['auth:sanctum', 'role:admin'])
+    ->group(function () {
+        Route::get('/stats/sales-report', [StatsController::class, 'salesReport']);
+        Route::get('/stats/inventory-report', [StatsController::class, 'inventoryReport']);
+        Route::get('/stats/service-trend', [StatsController::class, 'serviceTrend']);
 
-    Route::get('/customer-preferences', function () {
-        $staffs = Staffs::with('users')->get()->keyBy('id');
+        Route::get('/customer-preferences', function () {
+            $staffs = Staffs::with('users')->get()->keyBy('id');
 
-        $customers = Customers::with('user')
-            ->latest()
-            ->get()
-            ->map(function ($customer) use ($staffs) {
-                $preferredStaff = $customer->preferred_staff_id
-                    ? $staffs->get($customer->preferred_staff_id)
-                    : null;
+            $customers = Customers::with('user')
+                ->latest()
+                ->get()
+                ->map(function ($customer) use ($staffs) {
+                    $preferredStaff = $customer->preferred_staff_id
+                        ? $staffs->get($customer->preferred_staff_id)
+                        : null;
 
-                return [
-                    'id' => $customer->id,
-                    'status' => $customer->status,
-                    'preferences' => $customer->preferences,
-                    'allergies' => $customer->allergies,
-                    'preferred_staff_id' => $customer->preferred_staff_id,
-                    'preferred_staff_name' => $preferredStaff?->users?->name,
-                    'user' => $customer->user,
-                ];
-            });
+                    return [
+                        'id' => $customer->id,
+                        'status' => $customer->status,
+                        'preferences' => $customer->preferences,
+                        'allergies' => $customer->allergies,
+                        'preferred_staff_id' => $customer->preferred_staff_id,
+                        'preferred_staff_name' => $preferredStaff?->users?->name,
+                        'user' => $customer->user,
+                    ];
+                });
 
-        return response()->json($customers);
+            return response()->json($customers);
+        });
+
+        Route::apiResource('/feedbacks', FeedBackController::class);
+        Route::apiResource('/customers', CustomersController::class);
+        Route::apiResource('/staffs', StaffsController::class);
+        Route::apiResource('users', UserController::class);
+        Route::patch('users/{id}/restore', [UserController::class, 'restore']);
+
+        Route::apiResource('services', ServicesController::class);
+
+        Route::apiResource('/appointments', InvoicesController::class);
+        Route::post('appointments/{id}/complete', [InvoicesController::class, 'complete']);
+
+        Route::apiResource('/notification', NotificationsController::class);
+
+        Route::post('inventory', [InventoryTransactionController::class, 'getInventoryHistory']);
+        Route::post('inventory/import', [InventoryTransactionController::class, 'importStock']);
+        Route::post('inventory/wastage', [InventoryTransactionController::class, 'wastage']);
+        Route::apiResource('/products', ProductsController::class);
     });
-
-    Route::apiResource('/feedbacks', FeedBackController::class);
-    Route::apiResource('/customers', CustomersController::class);
-    Route::apiResource('/staffs', StaffsController::class);
-    Route::apiResource('users', UserController::class);
-    Route::patch('users/{id}/restore', [UserController::class, 'restore']);
-
-    Route::apiResource('services', ServicesController::class);
-
-    Route::apiResource('/appointments', InvoicesController::class);
-    Route::post('appointments/{id}/complete', [InvoicesController::class, 'complete']);
-
-    Route::apiResource('/notification', NotificationsController::class);
-
-    Route::get('/notifications', [NotificationsController::class, 'adminIndex']);
-    Route::get('/notifications/{notification}', [NotificationsController::class, 'adminShow']);
-    Route::delete('/notifications/{notification}', [NotificationsController::class, 'adminDelete']);
-});

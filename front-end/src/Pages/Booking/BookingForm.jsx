@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import api from "@/services/api";
+import Customers from "../Dashboard/Customers";
 import {
   Carousel,
   CarouselContent,
@@ -36,18 +37,15 @@ import {
 } from "@/components/ui/card";
 import { toast } from "sonner";
 
-//
-// Admin dialog:
-// <BookingForm
-//   customerId={selectedCustomerId}
-//   isAdmin
-//   onSuccess={() => {
-//     setOpen(false);
-//     fetchAppointments();
-//   }}
-// />
-function BookingForm({ customerId, onSuccess, endpoint, isAdmin = false }) {
+import { useAuth } from "@/context/AuthContext";
+function BookingForm({
+  onSuccess,
+  endpoint,
+  isAdmin = false,
+  appointment = null,
+}) {
   const showHeader = !isAdmin;
+  const isEdit = !!appointment;
 
   const [staffs, setStaffs] = useState([]);
   const [staffId, setStaffId] = useState("");
@@ -55,10 +53,14 @@ function BookingForm({ customerId, onSuccess, endpoint, isAdmin = false }) {
   const [availableSlots, setAvailableSlots] = useState([]);
   const [selectedTime, setSelectedTime] = useState(null);
   const [note, setNote] = useState("");
+  const { user } = useAuth();
 
   // Sau này lấy từ giỏ dịch vụ
   const [services, setServices] = useState([]);
   const [selectedServices, setSelectedServices] = useState([]);
+  const [selectedCustomerId, setSelectedCustomerId] = useState(
+    user?.customer?.id || null,
+  );
 
   const totalPrice = selectedServices.reduce((total, item) => {
     const service = services.find((s) => s.id === item.service_id);
@@ -83,11 +85,24 @@ function BookingForm({ customerId, onSuccess, endpoint, isAdmin = false }) {
       currency: "VND",
     }).format(value);
   };
+  //   load du lieu khi Edit
+  useEffect(() => {
+    if (!appointment) return;
+    setSelectedServices(
+      appointment.invoice_details.map((detail) => ({
+        service_id: detail.service_id,
+      })),
+    );
+    setSelectedCustomerId(appointment.customer_id);
+    setStaffId(String(appointment.staff_id));
+    setAppointmentDate(appointment.appointment_date);
+    setNote(appointment.note || "");
+  }, [appointment]);
   // ------------- Send Request
   const handleBooking = async () => {
     try {
       const payload = {
-        customer_id: customerId,
+        customer_id: selectedCustomerId,
         staff_id: selectedTime?.staff_id || staffId,
         appointment_date: appointmentDate,
         start_time: selectedTime.time.substring(0, 5),
@@ -95,11 +110,11 @@ function BookingForm({ customerId, onSuccess, endpoint, isAdmin = false }) {
         services: selectedServices,
       };
       if (!selectedTime) {
-        return alert("Please choose a time slot");
+        return toast.dismiss("Please choose a time slot");
       }
 
       if (selectedServices.length === 0) {
-        return alert("Please choose at least one service");
+        return toast.dismiss("Please choose at least one service");
       }
 
       await api.post(endpoint, payload);
@@ -198,14 +213,25 @@ function BookingForm({ customerId, onSuccess, endpoint, isAdmin = false }) {
   return (
     <div className={`${isAdmin ? "w-full" : "max-w-[1200px] mx-auto py-8"}`}>
       {showHeader && (
-        <>
-          <h1 className="text-3xl font-bold text-center text-blue-900 mb-2">
-            Booking
-          </h1>
-        </>
+        <h1 className="text-3xl font-bold text-center text-blue-900 mb-2">
+          Booking
+        </h1>
       )}
-      <div className="max-w-[700px] mx-auto bg-white shadow rounded-lg p-6">
-        <h2 className="font-semibold text-blue-800 mb-4">
+      <div className="max-w-[1000px] mx-auto bg-white shadow rounded-lg p-6">
+        {isAdmin && !isEdit && (
+          <Customers
+            onCustomerCreated={(customer) => {
+              setSelectedCustomerId(customer ? customer.id : null);
+            }}
+            selectedCustomerId={selectedCustomerId}
+          ></Customers>
+        )}
+        {isEdit && (
+          <div className="mb-4 rounded border p-3">
+            <strong>Customer:</strong> {appointment.customer?.user?.name}
+          </div>
+        )}
+        <h2 className="font-semibo ld text-blue-800 mb-4">
           1. Booking date and stylist
         </h2>
 
@@ -216,7 +242,7 @@ function BookingForm({ customerId, onSuccess, endpoint, isAdmin = false }) {
             onValueChange={(value) => setStaffId(value)}
           >
             <SelectTrigger className="w-full max-w-48">
-              <SelectValue>
+              <SelectValue className="text-black-500">
                 {staffId
                   ? staffs.find((staff) => String(staff.id) === String(staffId))
                       ?.users?.name
@@ -419,7 +445,7 @@ function BookingForm({ customerId, onSuccess, endpoint, isAdmin = false }) {
                 selectedServices.length === 0
               }
             >
-              Book Appointment
+              {isEdit ? " Save Appointment" : "Book Appointment"}
             </Button>
           </div>
         </div>

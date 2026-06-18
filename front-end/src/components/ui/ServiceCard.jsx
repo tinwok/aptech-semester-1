@@ -8,7 +8,7 @@ export default function ServiceCard({ item, moreInfoLink, size }) {
 
   return (
     <div
-      className={`flex flex-col border-2 border-[var(--color-zen-accent)] overflow-hidden hover:shadow-xl hover:shadow-black/20 transition-all duration-300 group ${isSmall ? "w-44" : "w-full"}`}
+      className={`relative flex flex-col border-2 border-[var(--color-zen-accent)] overflow-hidden hover:shadow-xl hover:shadow-black/20 hover:scale-[1.03] hover:z-10 transition-all duration-300 group ${isSmall ? "w-44" : "w-full"}`}
     >
       {/* Image */}
       <div className={`w-full overflow-hidden ${isSmall ? "h-36" : "h-52"}`}>
@@ -43,12 +43,6 @@ export default function ServiceCard({ item, moreInfoLink, size }) {
         ) : null}
 
         {/* Duration — chỉ hiện với services */}
-        <p
-          className={`font-[var(--font-sans)] text-sm text-[var(--color-zen-primary)]/70 flex-1 ${isSmall ? "text-sm line-clamp-2" : "text-lg"} `}
-        >
-          {item.description}
-        </p>
-
         {item.duration_minutes && (
           <div className="flex items-center gap-1 text-[var(--color-zen-text-muted)]">
             <svg

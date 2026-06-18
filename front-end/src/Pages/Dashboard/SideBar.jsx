@@ -19,7 +19,14 @@ function SideBar() {
       label: "Customer Preferences",
       path: "/dashboard/customer-preferences",
     },
-    { label: "Feedback Reports", path: "/dashboard/feedbacks" },
+    {
+      label: "Inventory",
+      path: "/dashboard/inventory",
+    },
+    {
+      label: "Feedback Reports",
+      path: "/dashboard/feedbacks",
+    },
   ];
 
   const handleLogout = async () => {
