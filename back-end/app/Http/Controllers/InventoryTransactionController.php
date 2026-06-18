@@ -14,7 +14,7 @@ class InventoryTransactionController extends Controller
      */
     public function getInventoryHistory()
     {
-        $data = Inventory_transactions::latest()->with('supliers', 'products')->paginate(10);
+        $data = Inventory_transactions::latest()->with('supliers', 'products', 'invoice ')->paginate(10);
         return response()->json($data);
     }
 

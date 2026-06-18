@@ -21,10 +21,8 @@ Route::post('register', [AuthController::class, 'register']);
 Route::post('login', [AuthController::class, 'login']);
 // Route::get('services', [ServicesController::class, 'index']);
 Route::get('services/{service}', [ServicesController::class, 'show']);
-Route::apiResource('/products', ProductsController::class);
-// quản lí kho
-Route::post('inventory/import', [InventoryTransactionController::class, 'importStock']);
-Route::post('inventory/wastage', [InventoryTransactionController::class, 'wastage']);
+Route::get('/products', [ProductsController::class, 'index']);
+
 // Quản lí nhà cung cấp
 Route::apiResource('/suppliers', SuppliersController::class);
 Route::get('staffs', [StaffsController::class, 'index']);
@@ -88,10 +86,11 @@ Route::prefix('dashboard')->middleware(['auth:sanctum', 'role:admin'])->group(fu
     Route::apiResource('/appointments', InvoicesController::class);
     Route::post('appointments/{id}/complete', [InvoicesController::class, 'complete']);
 
-
     Route::apiResource('/notification', NotificationsController::class);
-    // Route notification for admin
-    Route::get('/notifications', [NotificationsController::class, 'adminIndex']);
-    Route::get('/notifications/{notification}', [NotificationsController::class, 'adminShow']);
-    Route::delete('/notifications/{notification}', [NotificationsController::class, 'adminDelete']);
+
+    // quản lí kho
+    Route::post('inventory', [InventoryTransactionController::class, 'getInventoryHistory']);
+    Route::post('inventory/import', [InventoryTransactionController::class, 'importStock']);
+    Route::post('inventory/wastage', [InventoryTransactionController::class, 'wastage']);
+    Route::apiResource('/products', ProductsController::class);
 });
