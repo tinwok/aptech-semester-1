@@ -11,7 +11,6 @@ import PromotionsPage from "./Pages/PromotionsPage";
 import NotificationsPage from "./Pages/NotificationsPage";
 import ChangePasswordPage from "./Pages/ChangePasswordPage";
 import { homeLoader } from "./loaders/homeLoader";
-
 import AboutPage from "./Pages/About";
 
 import {
@@ -32,7 +31,7 @@ import DashBoardMain from "./Pages/Dashboard/DashBoardMain";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { Toaster } from "sonner";
 import Booking from "./Pages/Booking/Booking";
-
+import DashBoard from "./Pages/Dashboard/DashBoard";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -40,7 +39,6 @@ const router = createBrowserRouter([
     children: [
       { index: true, element: <MainPage />, loader: homeLoader },
       { path: "services", element: <ServicesPage />, loader: homeLoader },
-
       { path: "booking", element: <Booking />, loader: homeLoader },
       {
         path: "about-us",
@@ -130,7 +128,7 @@ const router = createBrowserRouter([
     element: <DashBoardLayouts />,
     loader: protectedUserLoader,
     children: [
-      { index: true, element: <DashBoardMain /> },
+      { index: true, element: <DashBoard /> },
       { path: "services", element: <Services /> },
       { path: "staffs", element: <Staffs /> },
       {
