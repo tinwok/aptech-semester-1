@@ -36,11 +36,17 @@ import {
   CardFooter,
 } from "@/components/ui/card";
 import { toast } from "sonner";
-import AddCustomer from "./AddCustomer";
+
 import { useAuth } from "@/context/AuthContext";
-function BookingForm({ onSuccess, endpoint, isAdmin = false }) {
+function BookingForm({
+  onSuccess,
+  endpoint,
+  isAdmin = false,
+  appointment = null,
+}) {
   const showHeader = !isAdmin;
-  const [isOpen, setIsOpen] = useState(false);
+  const isEdit = !!appointment;
+
   const [staffs, setStaffs] = useState([]);
   const [staffId, setStaffId] = useState("");
   const [appointmentDate, setAppointmentDate] = useState("");
@@ -60,7 +66,6 @@ function BookingForm({ onSuccess, endpoint, isAdmin = false }) {
     const service = services.find((s) => s.id === item.service_id);
     return total + Number(service?.price || 0);
   }, 0);
-  console.log(selectedCustomerId);
 
   const selectedStaff = staffs.find(
     (staff) => String(staff.id) === String(staffId),
@@ -80,6 +85,19 @@ function BookingForm({ onSuccess, endpoint, isAdmin = false }) {
       currency: "VND",
     }).format(value);
   };
+  //   load du lieu khi Edit
+  useEffect(() => {
+    if (!appointment) return;
+    setSelectedServices(
+      appointment.invoice_details.map((detail) => ({
+        service_id: detail.service_id,
+      })),
+    );
+    setSelectedCustomerId(appointment.customer_id);
+    setStaffId(String(appointment.staff_id));
+    setAppointmentDate(appointment.appointment_date);
+    setNote(appointment.note || "");
+  }, [appointment]);
   // ------------- Send Request
   const handleBooking = async () => {
     try {
@@ -92,11 +110,11 @@ function BookingForm({ onSuccess, endpoint, isAdmin = false }) {
         services: selectedServices,
       };
       if (!selectedTime) {
-        return alert("Please choose a time slot");
+        return toast.dismiss("Please choose a time slot");
       }
 
       if (selectedServices.length === 0) {
-        return alert("Please choose at least one service");
+        return toast.dismiss("Please choose at least one service");
       }
 
       await api.post(endpoint, payload);
@@ -195,35 +213,23 @@ function BookingForm({ onSuccess, endpoint, isAdmin = false }) {
   return (
     <div className={`${isAdmin ? "w-full" : "max-w-[1200px] mx-auto py-8"}`}>
       {showHeader && (
-        <>
-          <h1 className="text-3xl font-bold text-center text-blue-900 mb-2">
-            Booking
-          </h1>
-        </>
+        <h1 className="text-3xl font-bold text-center text-blue-900 mb-2">
+          Booking
+        </h1>
       )}
       <div className="max-w-[1000px] mx-auto bg-white shadow rounded-lg p-6">
-        {/* {isAdmin && (
-          <div>
-            <Button onClick={() => setIsOpen(!isOpen)} className="mb-5">
-              Create Customer
-            </Button>
-          </div>
-        )} */}
-        {/* {isOpen && (
-          <AddCustomer
-            onCustomerCreated={(customer) => {
-              setSelectedCustomerId(customer.customer.id);
-            }}
-            setSelectedCustomerId={setSelectedCustomerId}
-          />
-        )} */}
-        {isAdmin && (
+        {isAdmin && !isEdit && (
           <Customers
             onCustomerCreated={(customer) => {
               setSelectedCustomerId(customer ? customer.id : null);
             }}
             selectedCustomerId={selectedCustomerId}
           ></Customers>
+        )}
+        {isEdit && (
+          <div className="mb-4 rounded border p-3">
+            <strong>Customer:</strong> {appointment.customer?.user?.name}
+          </div>
         )}
         <h2 className="font-semibo ld text-blue-800 mb-4">
           1. Booking date and stylist
@@ -439,7 +445,7 @@ function BookingForm({ onSuccess, endpoint, isAdmin = false }) {
                 selectedServices.length === 0
               }
             >
-              Book Appointment
+              {isEdit ? " Save Appointment" : "Book Appointment"}
             </Button>
           </div>
         </div>
