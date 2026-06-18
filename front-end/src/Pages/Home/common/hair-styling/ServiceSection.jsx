@@ -28,7 +28,7 @@ export default function ServicesSection({ services = [] }) {
   const isLoading = services.length === 0;
 
   return (
-    <section className="py-16 px-6 max-w-7xl mx-auto overflow-visible">
+    <section className="py-16 px-6 max-w-7xl mx-auto">
       {/* ── Header ── */}
       <div className="text-center mb-10">
         <p className="font-[var(--font-sans)] text-sm tracking-[0.3em] uppercase text-[var(--color-zen-accent)] mb-3">
@@ -50,7 +50,7 @@ export default function ServicesSection({ services = [] }) {
       ) : (
         <Carousel
           opts={{ align: "start", loop: true }}
-          className="w-full overflow-visible [&_[data-slot=carousel-content]]:overflow-visible"
+          className="w-full"
         >
           <CarouselContent className="-ml-4 py-6">
             {services.map((item) => (
