@@ -8,7 +8,7 @@ export default function ServiceCard({ item, moreInfoLink, size }) {
 
   return (
     <div
-      className={`flex flex-col border-2 border-[var(--color-zen-accent)] overflow-hidden hover:shadow-xl hover:shadow-black/20 transition-all duration-300 group ${isSmall ? "w-44" : "w-full"}`}
+      className={`relative flex flex-col border-2 border-[var(--color-zen-accent)] overflow-hidden hover:shadow-xl hover:shadow-black/20 hover:scale-[1.03] hover:z-10 transition-all duration-300 group ${isSmall ? "w-44" : "w-full"}`}
     >
       {/* Image */}
       <div className={`w-full overflow-hidden ${isSmall ? "h-36" : "h-52"}`}>
