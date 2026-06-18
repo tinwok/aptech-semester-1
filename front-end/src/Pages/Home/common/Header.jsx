@@ -14,7 +14,7 @@ const NAV_ITEMS = [
       { label: "Beauty Treatment", path: "/services/beauty-treatment" },
     ],
   },
-  { label: "STAFF", path: "/staff", type: "link" },
+  { label: "STAFF", path: "/staffs", type: "link" },
   { label: "BOOKING", path: "/booking", type: "link" },
 ];
 export default function Header() {

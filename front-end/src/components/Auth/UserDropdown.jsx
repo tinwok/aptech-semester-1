@@ -3,9 +3,10 @@ import {
   Bell,
   CalendarDays,
   ChevronDown,
+  ComputerIcon,
+  FileText,
   Gift,
   Heart,
-  ComputerIcon,
   History,
   Home,
   KeyRound,
@@ -142,6 +143,14 @@ function UserDropdown() {
 
         {role !== "staff" && (
           <>
+            <DropdownMenuItem
+              onClick={() => goToPage("/invoices")}
+              className="cursor-pointer rounded-lg px-3 py-2 text-[#2B2115] focus:bg-[#FFF7E6]"
+            >
+              <FileText className="mr-3 h-4 w-4 text-[#C2A26A]" />
+              Receipt
+            </DropdownMenuItem>
+
             <DropdownMenuItem
               onClick={() => goToPage("/orders")}
               className="cursor-pointer rounded-lg px-3 py-2 text-[#2B2115] focus:bg-[#FFF7E6]"

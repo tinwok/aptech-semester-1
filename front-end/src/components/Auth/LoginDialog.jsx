@@ -16,11 +16,13 @@ function getRedirectPathByRole(role) {
 function LoginDialog({ open, onClose, onOpenRegister }) {
   const navigate = useNavigate();
   const { login } = useAuth();
-  const [phone, setPhone] = useState(false);
+
+  const [usePhoneLogin, setUsePhoneLogin] = useState(false);
+
   const [formData, setFormData] = useState({
     email: "",
-    password: "",
     phone: "",
+    password: "",
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -41,7 +43,14 @@ function LoginDialog({ open, onClose, onOpenRegister }) {
     setIsSubmitting(true);
 
     try {
-      const loggedInUser = await login(formData.email, formData.password);
+      const loginEmail = usePhoneLogin ? "" : formData.email;
+      const loginPhone = usePhoneLogin ? formData.phone : "";
+
+      const loggedInUser = await login(
+        loginEmail || loginPhone,
+        formData.password,
+      );
+
       const role = getRole(loggedInUser);
       const redirectPath = getRedirectPathByRole(role);
 
@@ -50,7 +59,7 @@ function LoginDialog({ open, onClose, onOpenRegister }) {
     } catch (err) {
       setError(
         err.response?.data?.message ||
-          "Sign in failed. Please check your email and password.",
+          "Sign in failed. Please check your account and password.",
       );
     } finally {
       setIsSubmitting(false);
@@ -67,17 +76,41 @@ function LoginDialog({ open, onClose, onOpenRegister }) {
         </p>
 
         <form onSubmit={handleSubmit} className="mt-6 space-y-4">
-          {phone ? (
-            <label className="grid gap-2 ">
+          {usePhoneLogin ? (
+            <label className="grid gap-2">
               <div className="flex gap-2">
-                {" "}
-                <span className="font-medium text-[#2B2115]">Email</span>
-                <p
-                  className="text-xs text-blue-800 cursor-pointer"
-                  onClick={() => setPhone(!phone)}
+                <span className="font-medium text-[#2B2115]">Phone</span>
+
+                <button
+                  type="button"
+                  className="cursor-pointer text-xs text-blue-800 hover:underline"
+                  onClick={() => setUsePhoneLogin(false)}
                 >
-                  Signin with your phone ?
-                </p>
+                  Sign in with email?
+                </button>
+              </div>
+
+              <input
+                name="phone"
+                type="text"
+                value={formData.phone}
+                onChange={handleChange}
+                placeholder="Enter your phone"
+                className="rounded-xl border border-[#E8D7B3] px-4 py-3 outline-none focus:border-[#B89555]"
+              />
+            </label>
+          ) : (
+            <label className="grid gap-2">
+              <div className="flex gap-2">
+                <span className="font-medium text-[#2B2115]">Email</span>
+
+                <button
+                  type="button"
+                  className="cursor-pointer text-xs text-blue-800 hover:underline"
+                  onClick={() => setUsePhoneLogin(true)}
+                >
+                  Sign in with phone?
+                </button>
               </div>
 
               <input
@@ -86,29 +119,6 @@ function LoginDialog({ open, onClose, onOpenRegister }) {
                 value={formData.email}
                 onChange={handleChange}
                 placeholder="Enter your email"
-                className="rounded-xl border border-[#E8D7B3] px-4 py-3 outline-none focus:border-[#B89555]"
-              />
-            </label>
-          ) : (
-            <label className="grid gap-2">
-              <div className="flex gap-2">
-                {" "}
-                <span className="font-medium text-[#2B2115]">Phone</span>
-                <p
-                  className="text-xs text-blue-800 cursor-pointer"
-                  onClick={() => setPhone(!phone)}
-                >
-                  {" "}
-                  Signin with your email ?
-                </p>
-              </div>
-
-              <input
-                name="phone"
-                type="phone"
-                value={formData.phone}
-                onChange={handleChange}
-                placeholder="Enter your phone"
                 className="rounded-xl border border-[#E8D7B3] px-4 py-3 outline-none focus:border-[#B89555]"
               />
             </label>
@@ -137,7 +147,7 @@ function LoginDialog({ open, onClose, onOpenRegister }) {
             <button
               type="button"
               onClick={onClose}
-              className="rounded-xl border border-gray-200 bg-white px-5 py-3 font-semibold text-[#2B2115] hover:bg-gray-50 cursor-pointer"
+              className="cursor-pointer rounded-xl border border-gray-200 bg-white px-5 py-3 font-semibold text-[#2B2115] hover:bg-gray-50"
             >
               Cancel
             </button>
@@ -145,14 +155,14 @@ function LoginDialog({ open, onClose, onOpenRegister }) {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="rounded-xl bg-[#B89555] px-5 py-3 font-semibold text-white hover:bg-[#9B7A3F] disabled:opacity-60 cursor-pointer"
+              className="cursor-pointer rounded-xl bg-[#B89555] px-5 py-3 font-semibold text-white hover:bg-[#9B7A3F] disabled:opacity-60"
             >
               {isSubmitting ? "Signing in..." : "Sign In"}
             </button>
           </div>
         </form>
 
-        <p className="mt-6 text-center text-[#7B684A]  ">
+        <p className="mt-6 text-center text-[#7B684A]">
           Do not have an account?{" "}
           <button
             type="button"
@@ -160,7 +170,7 @@ function LoginDialog({ open, onClose, onOpenRegister }) {
               onClose();
               onOpenRegister();
             }}
-            className="font-bold text-[#B89555] transition hover:text-[#9B7A3F] hover:no-underline cursor-pointer "
+            className="cursor-pointer font-bold text-[#B89555] transition hover:text-[#9B7A3F]"
           >
             Sign Up
           </button>

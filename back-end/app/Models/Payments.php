@@ -6,9 +6,14 @@ use Illuminate\Database\Eloquent\Model;
 
 class Payments extends Model
 {
-    protected $fillable = ['invoice_id', 'total_amount', 'payment_method', 'payment_status', 'payment_status'];
+    protected $fillable = [
+        'total_amount',
+        'payment_method',
+        'payment_status',
+    ];
+
     public function invoice()
     {
-        return $this->belongsTo(Invoices::class, 'payment_id');
+        return $this->hasOne(Invoices::class, 'payment_id');
     }
 }

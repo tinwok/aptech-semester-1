@@ -1,6 +1,17 @@
 import { useEffect, useState } from "react";
-import { CalendarDays, Clock, Scissors, UserRound } from "lucide-react";
-import { getMyAppointmentsApi } from "@/services/appointmentService";
+import {
+  CalendarDays,
+  Clock,
+  CreditCard,
+  Scissors,
+  UserRound,
+} from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+import {
+  cancelAppointmentApi,
+  getMyAppointmentsApi,
+} from "@/services/appointmentService";
 import { useAuth } from "@/context/AuthContext";
 
 function formatMoney(value) {
@@ -40,36 +51,64 @@ function getCustomerName(appointment) {
 }
 
 function AppointmentsPage() {
+  const navigate = useNavigate();
   const { user, role } = useAuth();
 
   const [appointments, setAppointments] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isCancellingId, setIsCancellingId] = useState(null);
   const [error, setError] = useState("");
-  console.log(appointments);
+
+  async function loadAppointments() {
+    try {
+      setIsLoading(true);
+      setError("");
+
+      const data = await getMyAppointmentsApi(role);
+
+      setAppointments(Array.isArray(data) ? data : []);
+    } catch (err) {
+      setAppointments([]);
+      setError(
+        err.response?.data?.message ||
+          "Unable to load appointments. Please try again later.",
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  }
 
   useEffect(() => {
-    async function loadAppointments() {
-      try {
-        setIsLoading(true);
-        setError("");
-
-        const data = await getMyAppointmentsApi(role);
-
-        setAppointments(Array.isArray(data) ? data : []);
-        console.log(data);
-      } catch (err) {
-        setAppointments([]);
-        setError(
-          err.response?.data?.message ||
-            "Unable to load appointments. Please try again later.",
-        );
-      } finally {
-        setIsLoading(false);
-      }
-    }
-
     loadAppointments();
   }, [role]);
+
+  async function handleCancelAppointment(appointmentId) {
+    const confirmed = window.confirm(
+      "Are you sure you want to cancel this appointment?",
+    );
+
+    if (!confirmed) return;
+
+    try {
+      setIsCancellingId(appointmentId);
+
+      await cancelAppointmentApi(appointmentId);
+
+      setAppointments((currentAppointments) =>
+        currentAppointments.filter(
+          (appointment) => appointment.id !== appointmentId,
+        ),
+      );
+
+      toast.success("Appointment cancelled successfully.");
+    } catch (err) {
+      toast.error(
+        err.response?.data?.message || "Unable to cancel appointment.",
+      );
+    } finally {
+      setIsCancellingId(null);
+    }
+  }
 
   if (!user) {
     return <div className="p-8 text-[#8A6A35]">Please sign in first.</div>;
@@ -109,11 +148,11 @@ function AppointmentsPage() {
             <CalendarDays className="mx-auto h-12 w-12 text-[#B89555]" />
 
             <h2 className="mt-4 text-xl font-bold text-[#2B2115]">
-              No appointments found
+              No upcoming appointments found
             </h2>
 
             <p className="mt-2 text-[#7B684A]">
-              Your upcoming appointments will appear here.
+              Your future appointments will appear here.
             </p>
           </div>
         )}
@@ -126,6 +165,10 @@ function AppointmentsPage() {
               const staffPosition = formatPosition(appointment.staff?.position);
               const staffName = getStaffName(appointment);
               const customerName = getCustomerName(appointment);
+              const canCustomerCancel =
+                role === "customer" && appointment.status !== "cancel";
+              const canCustomerPay =
+                role === "customer" && appointment.status !== "completed";
 
               return (
                 <div
@@ -221,6 +264,38 @@ function AppointmentsPage() {
                     <p className="mt-4 rounded-xl bg-[#FFF7E6] p-4 text-[#7B684A]">
                       Note: {appointment.note}
                     </p>
+                  )}
+
+                  {role === "customer" && (
+                    <div className="mt-5 flex flex-wrap justify-end gap-3">
+                      {canCustomerPay && (
+                        <button
+                          type="button"
+                          onClick={() =>
+                            navigate(`/user/payment/${appointment.id}`)
+                          }
+                          className="inline-flex items-center gap-2 rounded-full bg-[#B89555] px-5 py-2 text-sm font-semibold text-white transition hover:bg-[#9B7A3F]"
+                        >
+                          <CreditCard className="h-4 w-4" />
+                          Pay Now
+                        </button>
+                      )}
+
+                      {canCustomerCancel && (
+                        <button
+                          type="button"
+                          onClick={() =>
+                            handleCancelAppointment(appointment.id)
+                          }
+                          disabled={isCancellingId === appointment.id}
+                          className="rounded-full bg-red-500 px-5 py-2 text-sm font-semibold text-white transition hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-60"
+                        >
+                          {isCancellingId === appointment.id
+                            ? "Cancelling..."
+                            : "Cancel Appointment"}
+                        </button>
+                      )}
+                    </div>
                   )}
                 </div>
               );

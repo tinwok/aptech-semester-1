@@ -1,14 +1,26 @@
-import { useState } from "react";
-import { Calendar, Mail, Phone, ShieldCheck, UserRound } from "lucide-react";
+import { useEffect, useState } from "react";
+import {
+  Calendar,
+  Mail,
+  Phone,
+  ShieldCheck,
+  UserRound,
+  UsersRound,
+} from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { updateProfileApi } from "@/services/authService";
+import { getStaffsApi } from "@/services/staffService";
 
 function ProfilePage() {
   const { user, role, refreshUser } = useAuth();
 
+  const [staffs, setStaffs] = useState([]);
   const [name, setName] = useState(user?.name || "");
   const [phone, setPhone] = useState(user?.phone || "");
   const [dob, setDob] = useState(user?.dob || "");
+  const [preferredStaffId, setPreferredStaffId] = useState(
+    user?.customer?.preferred_staff_id || "",
+  );
   const [preferences, setPreferences] = useState(
     user?.customer?.preferences || "",
   );
@@ -16,6 +28,21 @@ function ProfilePage() {
 
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    async function loadStaffs() {
+      try {
+        const data = await getStaffsApi();
+        setStaffs(Array.isArray(data) ? data : data.data || []);
+      } catch {
+        setStaffs([]);
+      }
+    }
+
+    if (role === "customer") {
+      loadStaffs();
+    }
+  }, [role]);
 
   async function handleSubmit(event) {
     event.preventDefault();
@@ -27,6 +54,7 @@ function ProfilePage() {
         name,
         phone,
         dob,
+        preferred_staff_id: preferredStaffId || null,
         preferences,
         allergies,
       });
@@ -140,6 +168,33 @@ function ProfilePage() {
                   className="rounded-xl border border-[#E8D7B3] px-4 py-3 outline-none focus:border-[#B89555]"
                 />
               </label>
+
+              {role === "customer" && (
+                <label className="grid gap-2">
+                  <span className="flex items-center gap-2 text-sm font-medium text-[#2B2115]">
+                    <UsersRound className="h-4 w-4 text-[#B89555]" />
+                    Preferred Staff
+                  </span>
+
+                  <select
+                    value={preferredStaffId}
+                    onChange={(event) =>
+                      setPreferredStaffId(event.target.value)
+                    }
+                    className="rounded-xl border border-[#E8D7B3] bg-white px-4 py-3 outline-none focus:border-[#B89555]"
+                  >
+                    <option value="">No preferred staff</option>
+
+                    {staffs.map((staff) => (
+                      <option key={staff.id} value={staff.id}>
+                        {staff.users?.name ||
+                          staff.user?.name ||
+                          `Staff #${staff.id}`}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              )}
 
               <label className="grid gap-2">
                 <span className="text-sm font-medium text-[#2B2115]">

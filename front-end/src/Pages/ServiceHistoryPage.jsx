@@ -35,7 +35,9 @@ function ServiceHistoryPage() {
   async function loadHistory() {
     try {
       setIsLoading(true);
-      const data = await getMyAppointmentHistoryApi();
+
+      const data = await getMyAppointmentHistoryApi(role);
+
       setItems(Array.isArray(data) ? data : []);
     } catch (error) {
       console.log(error.response?.data || error);
@@ -46,8 +48,10 @@ function ServiceHistoryPage() {
   }
 
   useEffect(() => {
-    loadHistory();
-  }, []);
+    if (role) {
+      loadHistory();
+    }
+  }, [role]);
 
   const openFeedbackForm = (invoice) => {
     setSelectedInvoice(invoice);
@@ -124,6 +128,7 @@ function ServiceHistoryPage() {
           {items.map((item) => {
             const details = item.invoice_details || [];
             const feedback = getFeedback(item);
+
             const total = details.reduce(
               (sum, detail) => sum + Number(detail.subtotal || 0),
               0,
@@ -166,9 +171,11 @@ function ServiceHistoryPage() {
                   <div className="flex items-center gap-3">
                     <UserRound className="h-5 w-5 text-[#B89555]" />
                     <span>
-                      {item.staff?.users?.name ||
-                        item.staff?.user?.name ||
-                        "Staff not assigned"}
+                      {role === "staff"
+                        ? item.customer?.user?.name || "Unknown customer"
+                        : item.staff?.users?.name ||
+                          item.staff?.user?.name ||
+                          "Staff not assigned"}
                     </span>
                   </div>
                 </div>
@@ -219,6 +226,7 @@ function ServiceHistoryPage() {
                         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#C2A26A]">
                           Total
                         </p>
+
                         <p className="mt-1 text-lg font-bold text-[#2B2115]">
                           {formatMoney(total)}
                         </p>
@@ -233,7 +241,7 @@ function ServiceHistoryPage() {
                   </p>
                 )}
 
-                {feedback && (
+                {role === "customer" && feedback && (
                   <div className="mt-4 rounded-2xl border border-[#E8D7B3] bg-[#FFFDF8] p-4">
                     <h4 className="font-semibold text-[#2B2115]">
                       Your Feedback
@@ -252,13 +260,9 @@ function ServiceHistoryPage() {
                       ))}
                     </div>
 
-                    {feedback.comment ? (
-                      <p className="mt-3 text-[#7B684A]">{feedback.comment}</p>
-                    ) : (
-                      <p className="mt-3 text-[#7B684A]">
-                        No comment provided.
-                      </p>
-                    )}
+                    <p className="mt-3 text-[#7B684A]">
+                      {feedback.comment || "No comment provided."}
+                    </p>
                   </div>
                 )}
 

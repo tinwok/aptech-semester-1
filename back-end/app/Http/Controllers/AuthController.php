@@ -6,6 +6,7 @@ use App\Http\Requests\AuthLoginRequest;
 use App\Http\Requests\AuthRegisterRequest;
 use App\Http\Requests\UpdateProfile;
 use App\Models\Customers;
+use App\Models\Notifications;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -17,25 +18,38 @@ class AuthController extends Controller
 {
     public function register(AuthRegisterRequest $request)
     {
-        $user = User::create([
-            'email' => $request->email,
-            'phone' => $request->phone,
-            'password' => Hash::make($request->password),
-            'role' => 'customer',
-            'status' => 'active',
-        ]);
+        $user = null;
 
-        Customers::create([
-            'user_id' => $user->id,
-            'preferences' => null,
-            'allergies' => null,
-            'preferred_staff_id' => null,
-            'status' => 'active',
-        ]);
+        DB::transaction(function () use ($request, &$user) {
+            $user = User::create([
+                'email' => $request->email,
+                'phone' => $request->phone,
+                'password' => Hash::make($request->password),
+                'role' => 'customer',
+                'status' => 'active',
+            ]);
+
+            Customers::create([
+                'user_id' => $user->id,
+                'preferences' => null,
+                'allergies' => null,
+                'preferred_staff_id' => null,
+                'status' => 'active',
+            ]);
+
+            Notifications::create([
+                'user_id' => $user->id,
+                'title' => 'Welcome to ZenStyle',
+                'message' => 'Your account has been created successfully. Welcome to ZenStyle!',
+                'type' => 'welcome',
+                'url' => '/user',
+                'is_read' => false,
+            ]);
+        });
 
         return response()->json([
             'data' => $user->load(['customer', 'staff']),
-            'message' => 'Register successfully!'
+            'message' => 'Register successfully!',
         ], 201);
     }
 
@@ -45,7 +59,7 @@ class AuthController extends Controller
 
         if (!Auth::attempt($credentials)) {
             return response()->json([
-                'message' => 'Invalid account!'
+                'message' => 'Invalid account!',
             ], 401);
         }
 
@@ -54,7 +68,7 @@ class AuthController extends Controller
 
         if ($user->status !== 'active') {
             return response()->json([
-                'message' => 'This account is not active.'
+                'message' => 'This account is not active.',
             ], 403);
         }
 
@@ -65,7 +79,7 @@ class AuthController extends Controller
         return response()->json([
             'access_token' => $token,
             'token_type' => 'Bearer',
-            'user' => $user
+            'user' => $user,
         ]);
     }
 
@@ -75,7 +89,7 @@ class AuthController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Logged out successfully.'
+            'message' => 'Logged out successfully.',
         ]);
     }
 
@@ -85,7 +99,7 @@ class AuthController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $user
+            'data' => $user,
         ]);
     }
 
@@ -113,7 +127,7 @@ class AuthController extends Controller
         });
 
         return response()->json([
-            'message' => 'Profile updated successfully!'
+            'message' => 'Profile updated successfully!',
         ]);
     }
 
@@ -128,7 +142,7 @@ class AuthController extends Controller
 
         if (!$user) {
             return response()->json([
-                'message' => 'Unauthorized'
+                'message' => 'Unauthorized',
             ], 401);
         }
 
@@ -157,7 +171,7 @@ class AuthController extends Controller
         $user->update($updateData);
 
         return response()->json([
-            'message' => 'Password changed successfully!'
+            'message' => 'Password changed successfully!',
         ]);
     }
 
@@ -167,7 +181,7 @@ class AuthController extends Controller
 
         if (!$user) {
             return response()->json([
-                'message' => 'Unauthorized'
+                'message' => 'Unauthorized',
             ], 401);
         }
 
@@ -186,7 +200,7 @@ class AuthController extends Controller
         });
 
         return response()->json([
-            'message' => 'Account removed permanently!'
+            'message' => 'Account removed permanently!',
         ]);
     }
 }

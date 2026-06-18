@@ -10,6 +10,9 @@ import OrdersPage from "./Pages/OrdersPage";
 import PromotionsPage from "./Pages/PromotionsPage";
 import NotificationsPage from "./Pages/NotificationsPage";
 import ChangePasswordPage from "./Pages/ChangePasswordPage";
+import PaymentPage from "./Pages/PaymentPage";
+import InvoicesPage from "./Pages/InvoicesPage";
+import InvoiceDetailPage from "./Pages/InvoiceDetailPage";
 import { homeLoader } from "./loaders/homeLoader";
 
 import {
@@ -22,6 +25,8 @@ import Staffs from "./Pages/Dashboard/Staffs";
 import Customers from "./Pages/Dashboard/Customers";
 import Appointments from "./Pages/Dashboard/Appointments";
 import Services from "./Pages/Dashboard/Services";
+import Feedbacks from "./Pages/Dashboard/Feedbacks";
+import CustomerPreferences from "./Pages/Dashboard/CustomerPreferences";
 
 import MainPage from "./Pages/MainPage";
 import Layout from "./Layouts/mainLayouts";
@@ -59,6 +64,21 @@ const router = createBrowserRouter([
       {
         path: "user/appointments",
         element: <AppointmentsPage />,
+        loader: protectedUserLoader,
+      },
+      {
+        path: "user/payment/:appointmentId",
+        element: <PaymentPage />,
+        loader: protectedUserLoader,
+      },
+      {
+        path: "user/invoices",
+        element: <InvoicesPage />,
+        loader: protectedUserLoader,
+      },
+      {
+        path: "user/invoices/:invoiceId",
+        element: <InvoiceDetailPage />,
         loader: protectedUserLoader,
       },
       {
@@ -126,7 +146,9 @@ const router = createBrowserRouter([
       { path: "services", element: <Services /> },
       { path: "staffs", element: <Staffs /> },
       { path: "customers", element: <Customers /> },
+      { path: "customer-preferences", element: <CustomerPreferences /> },
       { path: "appointments", element: <Appointments /> },
+      { path: "feedbacks", element: <Feedbacks /> },
     ],
   },
 ]);
