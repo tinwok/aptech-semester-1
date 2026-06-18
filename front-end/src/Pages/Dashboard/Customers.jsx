@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
+import { useDebounce } from "use-debounce";
 import {
   getCustomers,
   deleteCustomer,
   createCustomer,
   updateCustomer,
 } from "@/services/customerApi";
-
+import { SearchIcon } from "lucide-react";
 import {
   Pagination,
   PaginationContent,
@@ -32,6 +33,7 @@ export default function Customers({ onCustomerCreated, selectedCustomerId }) {
   const [editingId, setEditingId] = useState(null);
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
+  const [debouncedSearch] = useDebounce(search, 500);
   const emtyData = {
     name: "",
     phone: "",
@@ -39,7 +41,7 @@ export default function Customers({ onCustomerCreated, selectedCustomerId }) {
     email: "",
   };
   const [formData, setFormData] = useState(emtyData);
-
+  // pagination
   const [pagination, setPagination] = useState({
     current_page: 1,
     last_page: 1,
@@ -77,9 +79,10 @@ export default function Customers({ onCustomerCreated, selectedCustomerId }) {
       }
     }
   };
-  const handleSearch = () => {
-    fetchCustomers(1, search);
-  };
+
+  useEffect(() => {
+    fetchCustomers(1, debouncedSearch);
+  }, [debouncedSearch]);
   const handleDelete = async (id) => {
     if (!confirm("Delete this customer?")) return;
 
@@ -232,20 +235,22 @@ export default function Customers({ onCustomerCreated, selectedCustomerId }) {
           </DialogContent>
         </Dialog>
       </div>
-      <Field orientation="horizontal" className="mb-5">
-        <Input
-          type="search"
-          placeholder="Search by name or phone..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              handleSearch();
-            }
-          }}
-        />
+      <Field orientation="horizontal" className="mb-5 w-full max-w-md">
+        <div className="relative w-full">
+          <SearchIcon
+            size={18}
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+          />
 
-        <Button onClick={handleSearch}>Search</Button>
+          <Input
+            id="search"
+            type="search"
+            placeholder="Search by name, phone or email..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="pl-10 h-11 w-fullrounded-xl border border-gray-200bg-white shadow-sm transition-all focus:border-blue-500 focus:ring-2 focus:ring-blue-200 "
+          />
+        </div>
       </Field>
 
       <CustomerTable

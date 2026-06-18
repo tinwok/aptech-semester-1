@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Pencil, Trash2 } from "lucide-react";
+import { useDebounce } from "use-debounce";
+
 import {
   Dialog,
   DialogContent,
@@ -24,12 +26,28 @@ export default function Staffs() {
   const [staffs, setStaffs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [debouncedSearch] = useDebounce(search, 500);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
   const [open, setOpen] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
   const [editingId, setEditingId] = useState(null);
+  // pagitanion
+  const [pagination, setPagination] = useState({
+    current_page: 1,
+    last_page: 1,
+    total: 0,
+  });
+  const pages = [];
+
+  for (
+    let i = Math.max(1, pagination.current_page - 2);
+    i <= Math.min(pagination.last_page, pagination.current_page + 2);
+    i++
+  ) {
+    pages.push(i);
+  }
   const emtyData = {
     name: "",
     email: "",
@@ -41,23 +59,29 @@ export default function Staffs() {
     status: "active",
   };
   const [formData, setFormData] = useState(emtyData);
-  console.log(staffs);
 
   const filteredStaffs = (staffs || []).filter((staff) =>
     staff.users?.name?.toLowerCase().includes(search.toLowerCase()),
   );
-
-  const totalPages = Math.ceil(filteredStaffs.length / itemsPerPage);
 
   const paginatedStaffs = filteredStaffs.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage,
   );
 
-  const fetchStaffs = async () => {
+  const fetchStaffs = async (page = 1, search = " ") => {
     try {
-      const response = await axiosClient.get("/dashboard/staffs");
-
+      const response = await axiosClient.get("/dashboard/staffs", {
+        params: {
+          search,
+          page,
+        },
+      });
+      setPagination({
+        current_page: response.data.current_page ?? 1,
+        last_page: response.data.last_page ?? 1,
+        total: response.data.total ?? 0,
+      });
       setStaffs(response.data.data || response.data || []);
     } catch (err) {
       console.error("Error:", err);
@@ -66,6 +90,9 @@ export default function Staffs() {
       setLoading(false);
     }
   };
+  useEffect(() => {
+    fetchStaffs(1, debouncedSearch);
+  }, [debouncedSearch]);
   useEffect(() => {
     const loadData = async () => {
       await fetchStaffs();
@@ -119,15 +146,9 @@ export default function Staffs() {
         setFormData(emtyData);
 
         fetchStaffs();
-      } else {
-        alert(data.message || "Add Staff Failed");
       }
     } catch (error) {
-      console.error(error);
-
       console.log("FULL ERROR:", error.response?.data);
-
-      alert(JSON.stringify(error.response?.data, null, 2));
     }
   };
   const handleDelete = async (id) => {
@@ -139,14 +160,14 @@ export default function Staffs() {
       const response = await axiosClient.delete(`/dashboard/staffs/${id}`);
 
       if (response.status === 200) {
-        alert("Delete Success!");
+        toast.success("Delete Success!");
         fetchStaffs();
       } else {
-        alert("Delete Failed!");
+        toast.warning("Delete Failed!");
       }
     } catch (error) {
       console.error(error);
-      alert("Something went wrong!");
+      toast.warning("Something went wrong!");
     }
   };
   if (loading) {
@@ -223,6 +244,7 @@ export default function Staffs() {
               <th className="p-4 text-left">Email</th>
               <th className="p-4 text-left">Phone</th>
               <th className="p-4 text-left">Position</th>
+              <th className="p-4 text-left">Salary</th>
               <th className="p-4 text-left">Status</th>
               <th className="p-4 text-center">Action</th>
             </tr>
@@ -245,7 +267,12 @@ export default function Staffs() {
                     {staff.position}
                   </span>
                 </td>
-
+                <td className="p-4">
+                  {new Intl.NumberFormat("vi-VN", {
+                    style: "currency",
+                    currency: "VND",
+                  }).format(staff.salary)}
+                </td>
                 <td className="p-4">
                   <span
                     className={`rounded-full px-3 py-1 text-sm text-gray-800 ${
@@ -279,45 +306,45 @@ export default function Staffs() {
         </table>
       </div>
       <div className="mt-6 flex justify-center">
-        <Pagination>
+        <Pagination className="mt-6">
           <PaginationContent>
             <PaginationItem>
               <PaginationPrevious
+                className="hover:text-white"
                 href="#"
                 onClick={(e) => {
                   e.preventDefault();
-                  if (currentPage > 1) setCurrentPage(currentPage - 1);
+                  if (pagination.current_page > 1) {
+                    fetchStaffs(pagination.current_page - 1);
+                  }
                 }}
               />
             </PaginationItem>
 
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+            {pages.map((page) => (
               <PaginationItem key={page}>
                 <PaginationLink
+                  className="hover:text-white"
                   href="#"
-                  isActive={currentPage === page}
+                  isActive={page === pagination.current_page}
                   onClick={(e) => {
                     e.preventDefault();
-                    setCurrentPage(page);
+                    fetchStaffs(page);
                   }}
                 >
                   {page}
                 </PaginationLink>
               </PaginationItem>
             ))}
-
-            {totalPages > 5 && (
-              <PaginationItem>
-                <PaginationEllipsis />
-              </PaginationItem>
-            )}
-
             <PaginationItem>
               <PaginationNext
+                className="hover:text-white"
                 href="#"
                 onClick={(e) => {
                   e.preventDefault();
-                  if (currentPage < totalPages) setCurrentPage(currentPage + 1);
+                  if (pagination.current_page < pagination.last_page) {
+                    fetchStaffs(pagination.current_page + 1);
+                  }
                 }}
               />
             </PaginationItem>
