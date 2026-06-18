@@ -74,11 +74,11 @@ Route::middleware('auth:sanctum')->group(function () {
 });
 // middleware(['auth:sanctum', 'role:admin'])->
 // Can phai la admin
-Route::prefix('dashboard')->group(function () {
+Route::prefix('dashboard')->middleware(['auth:sanctum', 'role:admin'])->group(function () {
     // Stats
-    Route::get('/stats/salereport', [StatsController::class, 'salesReport']);
-    Route::get('/stats/inventoryReport', [StatsController::class, 'inventoryReport']);
-    Route::get('/stats/report', [StatsController::class, 'salesReport']);
+    Route::get('/stats/sales-report', [StatsController::class, 'salesReport']);
+    Route::get('/stats/inventory-report', [StatsController::class, 'inventoryReport']);
+    Route::get('/stats/service-trend', [StatsController::class, 'serviceTrend']);
 
     Route::apiResource('/customers', CustomersController::class);
     Route::apiResource('/staffs', StaffsController::class);
