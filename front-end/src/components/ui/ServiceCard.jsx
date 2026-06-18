@@ -43,12 +43,6 @@ export default function ServiceCard({ item, moreInfoLink, size }) {
         ) : null}
 
         {/* Duration — chỉ hiện với services */}
-        <p
-          className={`font-[var(--font-sans)] text-sm text-[var(--color-zen-primary)]/70 flex-1 ${isSmall ? "text-sm line-clamp-2" : "text-lg"} `}
-        >
-          {item.description}
-        </p>
-
         {item.duration_minutes && (
           <div className="flex items-center gap-1 text-[var(--color-zen-text-muted)]">
             <svg
