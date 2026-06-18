@@ -11,8 +11,6 @@ const axiosClient = axios.create({
 axiosClient.interceptors.request.use((config) => {
   const token = localStorage.getItem("zenstyle_access_token");
 
-  console.log("Token:", token);
-
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }

@@ -8,7 +8,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 class RoleMiddleware
 {
-    public function handle(Request $request, Closure $next, string $role): Response
+    public function handle(Request $request, Closure $next, ...$roles): Response
     {
         $user = $request->user();
 
@@ -19,13 +19,15 @@ class RoleMiddleware
         }
 
         $userRole = strtolower(trim((string) $user->role));
-        $requiredRole = strtolower(trim((string) $role));
 
-        if ($userRole !== $requiredRole) {
+        // normalize roles
+        $roles = array_map(fn($r) => strtolower(trim($r)), $roles);
+
+        if (!in_array($userRole, $roles)) {
             return response()->json([
                 'message' => 'Forbidden.',
                 'current_role' => $userRole,
-                'required_role' => $requiredRole,
+                'required_role' => $roles,
             ], 403);
         }
 

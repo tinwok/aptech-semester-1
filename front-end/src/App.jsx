@@ -11,6 +11,7 @@ import PromotionsPage from "./Pages/PromotionsPage";
 import NotificationsPage from "./Pages/NotificationsPage";
 import ChangePasswordPage from "./Pages/ChangePasswordPage";
 import { homeLoader } from "./loaders/homeLoader";
+
 import AboutPage from "./Pages/About";
 
 import {
@@ -39,6 +40,7 @@ const router = createBrowserRouter([
     children: [
       { index: true, element: <MainPage />, loader: homeLoader },
       { path: "services", element: <ServicesPage />, loader: homeLoader },
+
       { path: "booking", element: <Booking />, loader: homeLoader },
       {
         path: "about-us",
@@ -131,7 +133,10 @@ const router = createBrowserRouter([
       { index: true, element: <DashBoardMain /> },
       { path: "services", element: <Services /> },
       { path: "staffs", element: <Staffs /> },
-      { path: "customers", element: <Customers /> },
+      {
+        path: "customers",
+        element: <Customers />,
+      },
       { path: "appointments", element: <Appointments /> },
     ],
   },

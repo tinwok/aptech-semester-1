@@ -9,33 +9,54 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
+import { toast } from "sonner";
 
 export default function Staffs() {
   const [staffs, setStaffs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   const [open, setOpen] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
   const [editingId, setEditingId] = useState(null);
-
-  const [formData, setFormData] = useState({
+  const emtyData = {
     name: "",
     email: "",
     phone: "",
-    password: "",
+    salarypassword: "",
     position: "",
     salary: "",
     shift: "",
     status: "active",
-  });
+  };
+  const [formData, setFormData] = useState(emtyData);
+  console.log(staffs);
+
+  const filteredStaffs = (staffs || []).filter((staff) =>
+    staff.users?.name?.toLowerCase().includes(search.toLowerCase()),
+  );
+
+  const totalPages = Math.ceil(filteredStaffs.length / itemsPerPage);
+
+  const paginatedStaffs = filteredStaffs.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage,
+  );
 
   const fetchStaffs = async () => {
     try {
       const response = await axiosClient.get("/dashboard/staffs");
-
-      console.log(JSON.stringify(response.data, null, 2));
-      console.log("FIRST STAFF:", response.data.data?.[0]);
 
       setStaffs(response.data.data || response.data || []);
     } catch (err) {
@@ -77,8 +98,6 @@ export default function Staffs() {
   };
   const handleSubmit = async () => {
     try {
-      console.log("FORM DATA:", formData);
-
       let response;
 
       if (isEdit) {
@@ -92,23 +111,12 @@ export default function Staffs() {
 
       const data = response.data;
 
-      console.log(data);
-
       if (response.status === 200 || response.status === 201) {
-        alert("Add Staff Success!");
+        toast.success("Created staff successfuly");
 
         setOpen(false);
 
-        setFormData({
-          name: "",
-          email: "",
-          phone: "",
-          password: "",
-          position: "",
-          salary: "",
-          shift: "",
-          status: "active",
-        });
+        setFormData(emtyData);
 
         fetchStaffs();
       } else {
@@ -183,7 +191,10 @@ export default function Staffs() {
           <Input
             placeholder="🔍 Search staff..."
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setCurrentPage(1);
+            }}
             className="w-80 bg-white"
           />
         </div>
@@ -194,16 +205,7 @@ export default function Staffs() {
             setIsEdit(false);
             setEditingId(null);
 
-            setFormData({
-              name: "",
-              email: "",
-              phone: "",
-              password: "",
-              position: "",
-              salary: "",
-              shift: "",
-              status: "active",
-            });
+            setFormData(emtyData);
 
             setOpen(true);
           }}
@@ -216,7 +218,7 @@ export default function Staffs() {
         <table className="w-full">
           <thead className="bg-gradient-to-r from-indigo-600 to-purple-600 text-gray-800">
             <tr>
-              <th className="p-4 text-left">ID</th>
+              <th className="p-4 text-left">Stt</th>
               <th className="p-4 text-left">Name</th>
               <th className="p-4 text-left">Email</th>
               <th className="p-4 text-left">Phone</th>
@@ -227,58 +229,100 @@ export default function Staffs() {
           </thead>
 
           <tbody>
-            {(staffs || [])
-              .filter((staff) =>
-                staff.users?.name?.toLowerCase().includes(search.toLowerCase()),
-              )
-              .map((staff) => (
-                <tr
-                  key={staff.id}
-                  className="border-t border-gray-200 text-gray-800 hover:bg-gray-50"
-                >
-                  <td className="p-4">{staff.id}</td>
-                  <td className="p-4">{staff.users?.name}</td>
-                  <td className="p-4">{staff.users?.email}</td>
-                  <td className="p-4">{staff.users?.phone}</td>
-                  <td className="p-4">
-                    <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm">
-                      {staff.position}
-                    </span>
-                  </td>
+            {paginatedStaffs.map((staff, index) => (
+              <tr
+                key={staff.id}
+                className="border-t border-gray-200 text-gray-800 hover:bg-gray-50"
+              >
+                <td className="p-4">
+                  {(currentPage - 1) * itemsPerPage + index + 1}
+                </td>
+                <td className="p-4">{staff.users?.name}</td>
+                <td className="p-4">{staff.users?.email}</td>
+                <td className="p-4">{staff.users?.phone}</td>
+                <td className="p-4">
+                  <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm">
+                    {staff.position}
+                  </span>
+                </td>
 
-                  <td className="p-4">
-                    <span
-                      className={`rounded-full px-3 py-1 text-sm text-gray-800 ${
-                        staff.status === "active"
-                          ? "bg-green-500"
-                          : "bg-red-500"
-                      }`}
-                    >
-                      {staff.status}
-                    </span>
-                  </td>
+                <td className="p-4">
+                  <span
+                    className={`rounded-full px-3 py-1 text-sm text-gray-800 ${
+                      staff.status === "active" ? "bg-green-500" : "bg-red-500"
+                    }`}
+                  >
+                    {staff.status}
+                  </span>
+                </td>
 
-                  <td className="p-4 text-center">
-                    <Button
-                      size="sm"
-                      className="mr-2 bg-blue-600 hover:bg-blue-700"
-                      onClick={() => handleEdit(staff)}
-                    >
-                      <Pencil size={16} />
-                    </Button>
+                <td className="p-4 text-center">
+                  <Button
+                    size="sm"
+                    className="mr-2 bg-blue-600 hover:bg-blue-700"
+                    onClick={() => handleEdit(staff)}
+                  >
+                    <Pencil size={16} />
+                  </Button>
 
-                    <Button
-                      size="sm"
-                      variant="destructive"
-                      onClick={() => handleDelete(staff.id)}
-                    >
-                      <Trash2 size={16} />
-                    </Button>
-                  </td>
-                </tr>
-              ))}
+                  <Button
+                    size="sm"
+                    variant="destructive"
+                    onClick={() => handleDelete(staff.id)}
+                  >
+                    <Trash2 size={16} />
+                  </Button>
+                </td>
+              </tr>
+            ))}
           </tbody>
         </table>
+      </div>
+      <div className="mt-6 flex justify-center">
+        <Pagination>
+          <PaginationContent>
+            <PaginationItem>
+              <PaginationPrevious
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  if (currentPage > 1) setCurrentPage(currentPage - 1);
+                }}
+              />
+            </PaginationItem>
+
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+              <PaginationItem key={page}>
+                <PaginationLink
+                  href="#"
+                  isActive={currentPage === page}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setCurrentPage(page);
+                  }}
+                >
+                  {page}
+                </PaginationLink>
+              </PaginationItem>
+            ))}
+
+            {totalPages > 5 && (
+              <PaginationItem>
+                <PaginationEllipsis />
+              </PaginationItem>
+            )}
+
+            <PaginationItem>
+              <PaginationNext
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  if (currentPage < totalPages) setCurrentPage(currentPage + 1);
+                }}
+              />
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
       </div>
 
       <Dialog open={open} onOpenChange={setOpen}>
@@ -288,61 +332,106 @@ export default function Staffs() {
           </DialogHeader>
 
           <div className="space-y-3">
-            <Input
-              placeholder="Name"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-            />
+            <div>
+              <label htmlFor="name">Name</label>
+              <Input
+                id="name"
+                placeholder="Input staff name"
+                className="bg-zinc-600"
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
+              />
+            </div>
+            <div>
+              <label htmlFor="email">Email</label>
+              <Input
+                id="email"
+                placeholder="Input staff email"
+                className="bg-zinc-600 "
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+              />
+            </div>
+            <div>
+              <label htmlFor="phone">Phone</label>
+              <Input
+                id="phone"
+                className="bg-zinc-600 "
+                placeholder="Input staff phone"
+                name="phone"
+                value={formData.phone}
+                onChange={handleChange}
+              />
+            </div>
 
-            <Input
-              placeholder="Email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-            />
+            <div>
+              <label htmlFor="password">Password</label>
+              <Input
+                id="password"
+                className="bg-zinc-600 "
+                placeholder="Input staff password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+              />
+            </div>
 
-            <Input
-              placeholder="Phone"
-              name="phone"
-              value={formData.phone}
-              onChange={handleChange}
-            />
+            <div>
+              <label htmlFor="position">Position</label>
+              <select
+                id="position"
+                name="position"
+                value={formData.position}
+                onChange={handleChange}
+                className="w-full rounded-md border border-gray-300 p-2"
+              >
+                <option value="">Select Position</option>
+                <option value="baber">Barber</option>
+                <option value="stylist">Stylist</option>
+                <option value="manager">Manager</option>
+                <option value="receptionist">Receptionist</option>
+              </select>
+            </div>
+            <div>
+              {" "}
+              <label htmlFor="status">Status</label>{" "}
+              <select
+                id="status"
+                name="status"
+                value={formData.status}
+                onChange={handleChange}
+                className="w-full rounded-md border border-gray-300 p-2"
+              >
+                <option value="">Select Status</option>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+              </select>
+            </div>
 
-            <Input
-              placeholder="Password"
-              name="password"
-              type="password"
-              value={formData.password}
-              onChange={handleChange}
-            />
-
-            <select
-              name="position"
-              value={formData.position}
-              onChange={handleChange}
-              className="w-full rounded-md border border-gray-300 p-2"
-            >
-              <option value="">Select Position</option>
-              <option value="baber">Barber</option>
-              <option value="stylist">Stylist</option>
-              <option value="manager">Manager</option>
-              <option value="receptionist">Receptionist</option>
-            </select>
-
-            <Input
-              placeholder="Salary"
-              name="salary"
-              value={formData.salary}
-              onChange={handleChange}
-            />
-
-            <Input
-              placeholder="Shift"
-              name="shift"
-              value={formData.shift}
-              onChange={handleChange}
-            />
+            <div>
+              <label htmlFor="salary">Salary</label>
+              <Input
+                id="salary"
+                className="bg-zinc-600 "
+                placeholder="Input staff salary"
+                name="salary"
+                value={formData.salary}
+                onChange={handleChange}
+              />
+            </div>
+            <div>
+              <label htmlFor="shift"></label>
+              <Input
+                className="bg-zinc-600 "
+                id="shift"
+                placeholder="Shift"
+                name="shift"
+                value={formData.shift}
+                onChange={handleChange}
+              />
+            </div>
 
             <Button
               className="w-full bg-green-600 hover:bg-green-700"

@@ -9,9 +9,9 @@ const NAV_ITEMS = [
     label: "SERVICES",
     type: "dropdown",
     children: [
-      { label: "Hair Styling", path: "/services/hair-styling" },
-      { label: "Skin Care", path: "/services/skin-care" },
-      { label: "Beauty Treatment", path: "/services/beauty-treatment" },
+      { label: "Hair Styling", path: "/services" },
+      { label: "Skin Care", path: "/services" },
+      { label: "Beauty Treatment", path: "/services" },
     ],
   },
   { label: "STAFF", path: "/staff", type: "link" },

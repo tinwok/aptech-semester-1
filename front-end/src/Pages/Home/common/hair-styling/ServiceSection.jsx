@@ -1,17 +1,21 @@
-import { useState } from "react";
 import ServiceCard from "@/components/ui/ServiceCard";
-
-const VISIBLE = 4;
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
 
 function ServiceSkeleton() {
   return (
-    <div className="flex-1 flex flex-col border border-[var(--color-zen-accent)]/20 overflow-hidden animate-pulse">
+    <div className="flex flex-col border border-[var(--color-zen-accent)]/20 overflow-hidden animate-pulse h-full">
       <div className="w-full h-52 bg-[var(--color-zen-accent)]/10" />
-      <div className="flex flex-col p-4 gap-3 bg-white">
+      <div className="flex flex-col p-4 gap-3 bg-white flex-1">
         <div className="h-5 w-3/4 bg-[var(--color-zen-accent)]/10 rounded" />
         <div className="h-3 w-full bg-[var(--color-zen-accent)]/10 rounded" />
         <div className="h-3 w-2/3 bg-[var(--color-zen-accent)]/10 rounded" />
-        <div className="flex items-center justify-between pt-2 border-t border-[var(--color-zen-accent)]/20">
+        <div className="flex items-center justify-between pt-2 border-t border-[var(--color-zen-accent)]/20 mt-auto">
           <div className="h-4 w-1/4 bg-[var(--color-zen-accent)]/20 rounded" />
           <div className="h-8 w-20 bg-[var(--color-zen-accent)]/20 rounded" />
         </div>
@@ -21,97 +25,49 @@ function ServiceSkeleton() {
 }
 
 export default function ServicesSection({ services = [] }) {
-  const [startIndex, setStartIndex] = useState(0);
   const isLoading = services.length === 0;
 
-  const visibleServices = services.slice(startIndex, startIndex + VISIBLE);
-  const canGoLeft = startIndex > 0;
-  const canGoRight = startIndex + VISIBLE < services.length;
-
-  const goLeft = () => setStartIndex((i) => Math.max(0, i - VISIBLE));
-  const goRight = () =>
-    setStartIndex((i) => Math.min(services.length - VISIBLE, i + VISIBLE));
-
   return (
-    <section className="py-16 px-6 max-w-7xl mx-auto">
+    <section className="py-16 px-6 max-w-7xl mx-auto overflow-visible">
       {/* ── Header ── */}
-      <div className="text-center mb-8">
-        <h2 className="font-[var(--font-logo)] text-4xl font-semibold text-[var(--color-zen-primary)] tracking-wide mb-3">
+      <div className="text-center mb-10">
+        <p className="font-[var(--font-sans)] text-sm tracking-[0.3em] uppercase text-[var(--color-zen-accent)] mb-3">
+          What We Offer
+        </p>
+        <h2 className="font-[var(--font-logo)] text-5xl font-semibold text-[var(--color-zen-primary)] tracking-wide mb-4">
           Our Services
         </h2>
         <div className="w-16 h-0.5 bg-[var(--color-zen-accent)] mx-auto" />
       </div>
 
-      {/* ── Slider ── */}
-      <div className="relative px-12">
-        {/* Arrow Left */}
-        <button
-          onClick={goLeft}
-          disabled={!canGoLeft}
-          className={`absolute left-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 flex items-center justify-center bg-[var(--color-zen-accent)] text-[var(--color-zen-primary)] transition-all duration-200 shadow-md ${!canGoLeft ? "opacity-30 cursor-not-allowed" : "hover:bg-[var(--color-zen-accent-hover)]"}`}
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="w-5 h-5"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            strokeWidth={2}
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M15 19l-7-7 7-7"
-            />
-          </svg>
-        </button>
-
-        {/* Cards */}
-        <div className="flex gap-4">
-          {isLoading
-            ? [...Array(VISIBLE)].map((_, i) => <ServiceSkeleton key={i} />)
-            : visibleServices.map((item) => (
-                <div key={item.id} className="flex-1">
-                  <ServiceCard item={item} moreInfoLink="/services" />
-                </div>
-              ))}
+      {/* ── Carousel ── */}
+      {isLoading ? (
+        <div className="grid grid-cols-4 gap-4">
+          {[...Array(4)].map((_, i) => (
+            <ServiceSkeleton key={i} />
+          ))}
         </div>
-
-        {/* Arrow Right */}
-        <button
-          onClick={goRight}
-          disabled={!canGoRight}
-          className={`absolute right-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 flex items-center justify-center bg-[var(--color-zen-accent)] text-[var(--color-zen-primary)] transition-all duration-200 shadow-md ${!canGoRight ? "opacity-30 cursor-not-allowed" : "hover:bg-[var(--color-zen-accent-hover)]"}`}
+      ) : (
+        <Carousel
+          opts={{ align: "start", loop: true }}
+          className="w-full overflow-visible [&_[data-slot=carousel-content]]:overflow-visible"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="w-5 h-5"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            strokeWidth={2}
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M9 5l7 7-7 7"
-            />
-          </svg>
-        </button>
-      </div>
+          <CarouselContent className="-ml-4 py-6">
+            {services.map((item) => (
+              <CarouselItem
+                key={item.id}
+                className="pl-4 basis-full sm:basis-1/2 lg:basis-1/4 overflow-visible transition-[z-index] hover:z-20"
+              >
+                <ServiceCard item={item} moreInfoLink="/services" />
+              </CarouselItem>
+            ))}
+          </CarouselContent>
 
-      {/* ── Dots ── */}
-      <div className="flex justify-center gap-2 mt-6">
-        {Array.from({ length: Math.ceil(services.length / VISIBLE) }).map(
-          (_, i) => (
-            <button
-              key={i}
-              onClick={() => setStartIndex(i * VISIBLE)}
-              className={`h-2 transition-all duration-200 ${startIndex / VISIBLE === i ? "bg-[var(--color-zen-accent)] w-4" : "bg-[var(--color-zen-accent)]/30 w-2"}`}
-            />
-          ),
-        )}
-      </div>
+          {/* Arrows */}
+          <CarouselPrevious className="left-0 rounded-none bg-[var(--color-zen-accent)] text-[var(--color-zen-primary)] border-none hover:bg-[var(--color-zen-accent-hover)] hover:text-[var(--color-zen-primary)]" />
+          <CarouselNext className="right-0 rounded-none bg-[var(--color-zen-accent)] text-[var(--color-zen-primary)] border-none hover:bg-[var(--color-zen-accent-hover)] hover:text-[var(--color-zen-primary)]" />
+        </Carousel>
+      )}
     </section>
   );
 }

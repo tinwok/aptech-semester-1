@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import api from "@/services/api";
+import Customers from "../Dashboard/Customers";
 import {
   Carousel,
   CarouselContent,
@@ -35,35 +36,31 @@ import {
   CardFooter,
 } from "@/components/ui/card";
 import { toast } from "sonner";
-
-//
-// Admin dialog:
-// <BookingForm
-//   customerId={selectedCustomerId}
-//   isAdmin
-//   onSuccess={() => {
-//     setOpen(false);
-//     fetchAppointments();
-//   }}
-// />
-function BookingForm({ customerId, onSuccess, endpoint, isAdmin = false }) {
+import AddCustomer from "./AddCustomer";
+import { useAuth } from "@/context/AuthContext";
+function BookingForm({ onSuccess, endpoint, isAdmin = false }) {
   const showHeader = !isAdmin;
-
+  const [isOpen, setIsOpen] = useState(false);
   const [staffs, setStaffs] = useState([]);
   const [staffId, setStaffId] = useState("");
   const [appointmentDate, setAppointmentDate] = useState("");
   const [availableSlots, setAvailableSlots] = useState([]);
   const [selectedTime, setSelectedTime] = useState(null);
   const [note, setNote] = useState("");
+  const { user } = useAuth();
 
   // Sau này lấy từ giỏ dịch vụ
   const [services, setServices] = useState([]);
   const [selectedServices, setSelectedServices] = useState([]);
+  const [selectedCustomerId, setSelectedCustomerId] = useState(
+    user?.customer?.id || null,
+  );
 
   const totalPrice = selectedServices.reduce((total, item) => {
     const service = services.find((s) => s.id === item.service_id);
     return total + Number(service?.price || 0);
   }, 0);
+  console.log(selectedCustomerId);
 
   const selectedStaff = staffs.find(
     (staff) => String(staff.id) === String(staffId),
@@ -87,7 +84,7 @@ function BookingForm({ customerId, onSuccess, endpoint, isAdmin = false }) {
   const handleBooking = async () => {
     try {
       const payload = {
-        customer_id: customerId,
+        customer_id: selectedCustomerId,
         staff_id: selectedTime?.staff_id || staffId,
         appointment_date: appointmentDate,
         start_time: selectedTime.time.substring(0, 5),
@@ -204,8 +201,31 @@ function BookingForm({ customerId, onSuccess, endpoint, isAdmin = false }) {
           </h1>
         </>
       )}
-      <div className="max-w-[700px] mx-auto bg-white shadow rounded-lg p-6">
-        <h2 className="font-semibold text-blue-800 mb-4">
+      <div className="max-w-[1000px] mx-auto bg-white shadow rounded-lg p-6">
+        {/* {isAdmin && (
+          <div>
+            <Button onClick={() => setIsOpen(!isOpen)} className="mb-5">
+              Create Customer
+            </Button>
+          </div>
+        )} */}
+        {/* {isOpen && (
+          <AddCustomer
+            onCustomerCreated={(customer) => {
+              setSelectedCustomerId(customer.customer.id);
+            }}
+            setSelectedCustomerId={setSelectedCustomerId}
+          />
+        )} */}
+        {isAdmin && (
+          <Customers
+            onCustomerCreated={(customer) => {
+              setSelectedCustomerId(customer ? customer.id : null);
+            }}
+            selectedCustomerId={selectedCustomerId}
+          ></Customers>
+        )}
+        <h2 className="font-semibo ld text-blue-800 mb-4">
           1. Booking date and stylist
         </h2>
 
@@ -216,7 +236,7 @@ function BookingForm({ customerId, onSuccess, endpoint, isAdmin = false }) {
             onValueChange={(value) => setStaffId(value)}
           >
             <SelectTrigger className="w-full max-w-48">
-              <SelectValue>
+              <SelectValue className="text-black-500">
                 {staffId
                   ? staffs.find((staff) => String(staff.id) === String(staffId))
                       ?.users?.name
