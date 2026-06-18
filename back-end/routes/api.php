@@ -61,7 +61,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/staff/appointments/history', [InvoicesController::class, 'getAppointmentsHistory']);
     });
 
-    Route::middleware('role:customer')->group(function () {
+    Route::middleware('role:customer,admin')->group(function () {
         Route::get('/me/appointments', [InvoicesController::class, 'getCustomerAppointments']);
         Route::get('/me/appointments/history', [InvoicesController::class, 'getAppointmentsHistory']);
         Route::get('/appointments/{appointment}', [InvoicesController::class, 'show']);
@@ -87,6 +87,7 @@ Route::prefix('dashboard')->group(function () {
     Route::apiResource('services', ServicesController::class);
     Route::apiResource('/appointments', InvoicesController::class);
     Route::post('appointments/{id}/complete', [InvoicesController::class, 'complete']);
+
 
     Route::apiResource('/notification', NotificationsController::class);
     // Route notification for admin

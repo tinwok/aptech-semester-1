@@ -1,5 +1,6 @@
 import { useAuth } from "@/context/AuthContext";
 import BookingForm from "./BookingForm";
+
 function Booking() {
   const { user } = useAuth();
   console.log(user.customer.id);

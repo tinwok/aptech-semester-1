@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
 import api from "../../services/api";
-import { Button } from "@/components/ui/button";
+
 import BookingForm from "../Booking/BookingForm";
 import {
   CheckCircle,
   XCircle,
   TimerResetIcon,
   PencilIcon,
-  PlusCircleIcon,
+  Plus,
 } from "lucide-react";
 
 import {
@@ -35,7 +35,7 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
-
+import { Button } from "@/components/ui/button";
 function getCustomerName(item) {
   return item.customer?.user?.name || item.customer?.user?.phone || "N/A";
 }
@@ -75,6 +75,7 @@ export default function Appointments() {
     total: 0,
   });
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [editingAppointment, setEditingAppointment] = useState(null);
 
   const pages = [];
 
@@ -96,7 +97,14 @@ export default function Appointments() {
       alert(err.response?.data?.message || "Complete failed");
     }
   };
-
+  const handleEdit = (appointment) => {
+    setEditingAppointment(appointment);
+    setDialogOpen(true);
+  };
+  const handleCreate = () => {
+    setEditingAppointment(null);
+    setDialogOpen(true);
+  };
   const handleCancel = async (id) => {
     if (!window.confirm("Are you sure you want to cancel this appointment?")) {
       return;
@@ -148,26 +156,17 @@ export default function Appointments() {
     <div className="p-6">
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-3xl font-bold ">Appointments</h1>
+        {/* <DialogTrigger className="px-3 flex py-2 rounded bg-green-700 text-sm text-white border border-transparent cursor-pointer hover:bg-blue-900 focus:outline-none focus:ring-2 focus:ring-blue-500">
+          Create Appointment
+        </DialogTrigger>
+        */}
 
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogTrigger asChild>
-            <Button variant="default">
-              Create Appointment
-              <PlusCircleIcon />
-            </Button>
-          </DialogTrigger>
-
-          <DialogContent className="w-full max-h-[90vh] bg-red-600 overflow-y-auto">
-            <BookingForm
-              isAdmin
-              endpoint="/dashboard/appointments"
-              onSuccess={() => {
-                setDialogOpen(false);
-                fetchAppointments();
-              }}
-            />
-          </DialogContent>
-        </Dialog>
+        <Button
+          onClick={() => handleCreate()}
+          className="bg-green-700 hover:bg-green-800 text-white"
+        >
+          Create Appointment <Plus></Plus>
+        </Button>
       </div>
 
       {error && (
@@ -208,45 +207,50 @@ export default function Appointments() {
             )}
 
             {!loading &&
-              appointments.map((item) => (
+              appointments.map((appointment) => (
                 <TableRow
-                  key={item.id}
+                  key={appointment.id}
                   className="border-t border-zinc-700 hover:bg-zinc-800"
                 >
                   <TableCell className="p-4 text-white">
-                    {getCustomerName(item)}
+                    {getCustomerName(appointment)}
                   </TableCell>
                   <TableCell className="p-4 text-white">
-                    {getStaffName(item)}
+                    {getStaffName(appointment)}
                   </TableCell>
                   <TableCell className="p-4 text-white">
-                    {getServiceNames(item)}
+                    {getServiceNames(appointment)}
                   </TableCell>
 
                   <TableCell className="p-4">
                     <span
                       className={`  ${
-                        statusStyles[item.status] || "text-white-500"
+                        statusStyles[appointment.status] || "text-white-500"
                       }`}
                     >
-                      {IconStyles[item.status]}
+                      {IconStyles[appointment.status]}
                     </span>
                   </TableCell>
 
                   <TableCell className="space-x-2 p-4 text-center">
                     <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="outline">Actions</Button>
+                      <DropdownMenuTrigger className="px-2 rounded bg-white border border-transparent cursor-pointer hover:bg-blue-900 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        ...
                       </DropdownMenuTrigger>
                       <DropdownMenuContent>
                         <DropdownMenuGroup>
                           <DropdownMenuItem
-                            onClick={() => handleComplete(item.id)}
+                            onClick={() => handleComplete(appointment.id)}
                           >
                             <CheckCircle />
                             Completed
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleEdit(item)}>
+                          <DropdownMenuItem
+                            onSelect={(e) => {
+                              e.preventDefault();
+                              handleEdit(appointment);
+                            }}
+                          >
                             <PencilIcon />
                             Edit
                           </DropdownMenuItem>
@@ -254,7 +258,7 @@ export default function Appointments() {
                         <DropdownMenuSeparator />
                         <DropdownMenuGroup>
                           <DropdownMenuItem
-                            onClick={() => handleCancel(item.id)}
+                            onClick={() => handleCancel(appointment.id)}
                             variant="destructive"
                           >
                             <XCircle />
@@ -325,6 +329,19 @@ export default function Appointments() {
           </PaginationItem>
         </PaginationContent>
       </Pagination>
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent className="sm:max-w-[1200px] max-h-[90vh] overflow-y-auto bg-trans border-trans text-black-500">
+          <BookingForm
+            isAdmin
+            endpoint="/dashboard/appointments"
+            appointment={editingAppointment}
+            onSuccess={() => {
+              setDialogOpen(false);
+              fetchAppointments();
+            }}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

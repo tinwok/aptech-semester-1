@@ -3,40 +3,85 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Pencil, Trash2 } from "lucide-react";
+import { useDebounce } from "use-debounce";
+
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
+import { toast } from "sonner";
 
 export default function Staffs() {
   const [staffs, setStaffs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [debouncedSearch] = useDebounce(search, 500);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   const [open, setOpen] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
   const [editingId, setEditingId] = useState(null);
+  // pagitanion
+  const [pagination, setPagination] = useState({
+    current_page: 1,
+    last_page: 1,
+    total: 0,
+  });
+  const pages = [];
 
-  const [formData, setFormData] = useState({
+  for (
+    let i = Math.max(1, pagination.current_page - 2);
+    i <= Math.min(pagination.last_page, pagination.current_page + 2);
+    i++
+  ) {
+    pages.push(i);
+  }
+  const emtyData = {
     name: "",
     email: "",
     phone: "",
-    password: "",
+    salarypassword: "",
     position: "",
     salary: "",
     shift: "",
     status: "active",
-  });
+  };
+  const [formData, setFormData] = useState(emtyData);
 
-  const fetchStaffs = async () => {
+  const filteredStaffs = (staffs || []).filter((staff) =>
+    staff.users?.name?.toLowerCase().includes(search.toLowerCase()),
+  );
+
+  const paginatedStaffs = filteredStaffs.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage,
+  );
+
+  const fetchStaffs = async (page = 1, search = " ") => {
     try {
-      const response = await axiosClient.get("/dashboard/staffs");
-
-      console.log(JSON.stringify(response.data, null, 2));
-      console.log("FIRST STAFF:", response.data.data?.[0]);
-
+      const response = await axiosClient.get("/dashboard/staffs", {
+        params: {
+          search,
+          page,
+        },
+      });
+      setPagination({
+        current_page: response.data.current_page ?? 1,
+        last_page: response.data.last_page ?? 1,
+        total: response.data.total ?? 0,
+      });
       setStaffs(response.data.data || response.data || []);
     } catch (err) {
       console.error("Error:", err);
@@ -45,6 +90,9 @@ export default function Staffs() {
       setLoading(false);
     }
   };
+  useEffect(() => {
+    fetchStaffs(1, debouncedSearch);
+  }, [debouncedSearch]);
   useEffect(() => {
     const loadData = async () => {
       await fetchStaffs();
@@ -77,8 +125,6 @@ export default function Staffs() {
   };
   const handleSubmit = async () => {
     try {
-      console.log("FORM DATA:", formData);
-
       let response;
 
       if (isEdit) {
@@ -92,34 +138,17 @@ export default function Staffs() {
 
       const data = response.data;
 
-      console.log(data);
-
       if (response.status === 200 || response.status === 201) {
-        alert("Add Staff Success!");
+        toast.success("Created staff successfuly");
 
         setOpen(false);
 
-        setFormData({
-          name: "",
-          email: "",
-          phone: "",
-          password: "",
-          position: "",
-          salary: "",
-          shift: "",
-          status: "active",
-        });
+        setFormData(emtyData);
 
         fetchStaffs();
-      } else {
-        alert(data.message || "Add Staff Failed");
       }
     } catch (error) {
-      console.error(error);
-
       console.log("FULL ERROR:", error.response?.data);
-
-      alert(JSON.stringify(error.response?.data, null, 2));
     }
   };
   const handleDelete = async (id) => {
@@ -131,14 +160,14 @@ export default function Staffs() {
       const response = await axiosClient.delete(`/dashboard/staffs/${id}`);
 
       if (response.status === 200) {
-        alert("Delete Success!");
+        toast.success("Delete Success!");
         fetchStaffs();
       } else {
-        alert("Delete Failed!");
+        toast.warning("Delete Failed!");
       }
     } catch (error) {
       console.error(error);
-      alert("Something went wrong!");
+      toast.warning("Something went wrong!");
     }
   };
   if (loading) {
@@ -183,7 +212,10 @@ export default function Staffs() {
           <Input
             placeholder="🔍 Search staff..."
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setCurrentPage(1);
+            }}
             className="w-80 bg-white"
           />
         </div>
@@ -194,16 +226,7 @@ export default function Staffs() {
             setIsEdit(false);
             setEditingId(null);
 
-            setFormData({
-              name: "",
-              email: "",
-              phone: "",
-              password: "",
-              position: "",
-              salary: "",
-              shift: "",
-              status: "active",
-            });
+            setFormData(emtyData);
 
             setOpen(true);
           }}
@@ -216,69 +239,117 @@ export default function Staffs() {
         <table className="w-full">
           <thead className="bg-gradient-to-r from-indigo-600 to-purple-600 text-gray-800">
             <tr>
-              <th className="p-4 text-left">ID</th>
+              <th className="p-4 text-left">Stt</th>
               <th className="p-4 text-left">Name</th>
               <th className="p-4 text-left">Email</th>
               <th className="p-4 text-left">Phone</th>
               <th className="p-4 text-left">Position</th>
+              <th className="p-4 text-left">Salary</th>
               <th className="p-4 text-left">Status</th>
               <th className="p-4 text-center">Action</th>
             </tr>
           </thead>
 
           <tbody>
-            {(staffs || [])
-              .filter((staff) =>
-                staff.users?.name?.toLowerCase().includes(search.toLowerCase()),
-              )
-              .map((staff) => (
-                <tr
-                  key={staff.id}
-                  className="border-t border-gray-200 text-gray-800 hover:bg-gray-50"
-                >
-                  <td className="p-4">{staff.id}</td>
-                  <td className="p-4">{staff.users?.name}</td>
-                  <td className="p-4">{staff.users?.email}</td>
-                  <td className="p-4">{staff.users?.phone}</td>
-                  <td className="p-4">
-                    <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm">
-                      {staff.position}
-                    </span>
-                  </td>
+            {paginatedStaffs.map((staff, index) => (
+              <tr
+                key={staff.id}
+                className="border-t border-gray-200 text-gray-800 hover:bg-gray-50"
+              >
+                <td className="p-4">
+                  {(currentPage - 1) * itemsPerPage + index + 1}
+                </td>
+                <td className="p-4">{staff.users?.name}</td>
+                <td className="p-4">{staff.users?.email}</td>
+                <td className="p-4">{staff.users?.phone}</td>
+                <td className="p-4">
+                  <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm">
+                    {staff.position}
+                  </span>
+                </td>
+                <td className="p-4">
+                  {new Intl.NumberFormat("vi-VN", {
+                    style: "currency",
+                    currency: "VND",
+                  }).format(staff.salary)}
+                </td>
+                <td className="p-4">
+                  <span
+                    className={`rounded-full px-3 py-1 text-sm text-gray-800 ${
+                      staff.status === "active" ? "bg-green-500" : "bg-red-500"
+                    }`}
+                  >
+                    {staff.status}
+                  </span>
+                </td>
 
-                  <td className="p-4">
-                    <span
-                      className={`rounded-full px-3 py-1 text-sm text-gray-800 ${
-                        staff.status === "active"
-                          ? "bg-green-500"
-                          : "bg-red-500"
-                      }`}
-                    >
-                      {staff.status}
-                    </span>
-                  </td>
+                <td className="p-4 text-center">
+                  <Button
+                    size="sm"
+                    className="mr-2 bg-blue-600 hover:bg-blue-700"
+                    onClick={() => handleEdit(staff)}
+                  >
+                    <Pencil size={16} />
+                  </Button>
 
-                  <td className="p-4 text-center">
-                    <Button
-                      size="sm"
-                      className="mr-2 bg-blue-600 hover:bg-blue-700"
-                      onClick={() => handleEdit(staff)}
-                    >
-                      <Pencil size={16} />
-                    </Button>
-
-                    <Button
-                      size="sm"
-                      variant="destructive"
-                      onClick={() => handleDelete(staff.id)}
-                    >
-                      <Trash2 size={16} />
-                    </Button>
-                  </td>
-                </tr>
-              ))}
+                  <Button
+                    size="sm"
+                    variant="destructive"
+                    onClick={() => handleDelete(staff.id)}
+                  >
+                    <Trash2 size={16} />
+                  </Button>
+                </td>
+              </tr>
+            ))}
           </tbody>
         </table>
+      </div>
+      <div className="mt-6 flex justify-center">
+        <Pagination className="mt-6">
+          <PaginationContent>
+            <PaginationItem>
+              <PaginationPrevious
+                className="hover:text-white"
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  if (pagination.current_page > 1) {
+                    fetchStaffs(pagination.current_page - 1);
+                  }
+                }}
+              />
+            </PaginationItem>
+
+            {pages.map((page) => (
+              <PaginationItem key={page}>
+                <PaginationLink
+                  className="hover:text-white"
+                  href="#"
+                  isActive={page === pagination.current_page}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    fetchStaffs(page);
+                  }}
+                >
+                  {page}
+                </PaginationLink>
+              </PaginationItem>
+            ))}
+            <PaginationItem>
+              <PaginationNext
+                className="hover:text-white"
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  if (pagination.current_page < pagination.last_page) {
+                    fetchStaffs(pagination.current_page + 1);
+                  }
+                }}
+              />
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
       </div>
 
       <Dialog open={open} onOpenChange={setOpen}>
@@ -288,61 +359,106 @@ export default function Staffs() {
           </DialogHeader>
 
           <div className="space-y-3">
-            <Input
-              placeholder="Name"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-            />
+            <div>
+              <label htmlFor="name">Name</label>
+              <Input
+                id="name"
+                placeholder="Input staff name"
+                className="bg-zinc-600"
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
+              />
+            </div>
+            <div>
+              <label htmlFor="email">Email</label>
+              <Input
+                id="email"
+                placeholder="Input staff email"
+                className="bg-zinc-600 "
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+              />
+            </div>
+            <div>
+              <label htmlFor="phone">Phone</label>
+              <Input
+                id="phone"
+                className="bg-zinc-600 "
+                placeholder="Input staff phone"
+                name="phone"
+                value={formData.phone}
+                onChange={handleChange}
+              />
+            </div>
 
-            <Input
-              placeholder="Email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-            />
+            <div>
+              <label htmlFor="password">Password</label>
+              <Input
+                id="password"
+                className="bg-zinc-600 "
+                placeholder="Input staff password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+              />
+            </div>
 
-            <Input
-              placeholder="Phone"
-              name="phone"
-              value={formData.phone}
-              onChange={handleChange}
-            />
+            <div>
+              <label htmlFor="position">Position</label>
+              <select
+                id="position"
+                name="position"
+                value={formData.position}
+                onChange={handleChange}
+                className="w-full rounded-md border border-gray-300 p-2"
+              >
+                <option value="">Select Position</option>
+                <option value="baber">Barber</option>
+                <option value="stylist">Stylist</option>
+                <option value="manager">Manager</option>
+                <option value="receptionist">Receptionist</option>
+              </select>
+            </div>
+            <div>
+              {" "}
+              <label htmlFor="status">Status</label>{" "}
+              <select
+                id="status"
+                name="status"
+                value={formData.status}
+                onChange={handleChange}
+                className="w-full rounded-md border border-gray-300 p-2"
+              >
+                <option value="">Select Status</option>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+              </select>
+            </div>
 
-            <Input
-              placeholder="Password"
-              name="password"
-              type="password"
-              value={formData.password}
-              onChange={handleChange}
-            />
-
-            <select
-              name="position"
-              value={formData.position}
-              onChange={handleChange}
-              className="w-full rounded-md border border-gray-300 p-2"
-            >
-              <option value="">Select Position</option>
-              <option value="baber">Barber</option>
-              <option value="stylist">Stylist</option>
-              <option value="manager">Manager</option>
-              <option value="receptionist">Receptionist</option>
-            </select>
-
-            <Input
-              placeholder="Salary"
-              name="salary"
-              value={formData.salary}
-              onChange={handleChange}
-            />
-
-            <Input
-              placeholder="Shift"
-              name="shift"
-              value={formData.shift}
-              onChange={handleChange}
-            />
+            <div>
+              <label htmlFor="salary">Salary</label>
+              <Input
+                id="salary"
+                className="bg-zinc-600 "
+                placeholder="Input staff salary"
+                name="salary"
+                value={formData.salary}
+                onChange={handleChange}
+              />
+            </div>
+            <div>
+              <label htmlFor="shift"></label>
+              <Input
+                className="bg-zinc-600 "
+                id="shift"
+                placeholder="Shift"
+                name="shift"
+                value={formData.shift}
+                onChange={handleChange}
+              />
+            </div>
 
             <Button
               className="w-full bg-green-600 hover:bg-green-700"

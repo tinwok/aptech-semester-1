@@ -15,34 +15,34 @@ class CustomersController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function getCustommers(Request $request)
+    public function index(Request $request)
     {
-        $query =  Customers::with('users');
+        $query = Customers::with('user');
+
         if ($request->filled('search')) {
-            $search = request('search');
+            $search = $request->search;
+
             $query->whereHas('user', function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")->orWhere('phone', 'like', "%{$search}%");
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('phone', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%");
             });
         }
 
+        $customers = $query->latest()->paginate(10);
 
-        return response()->json($query->latest()->paginate(10));
+        return response()->json($customers);
     }
-
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
-    {
-        //
-    }
 
     /**
      * Store a newly created resource in storage.
      */
     public function store(StoreCustomerRequest $request)
     {
-        DB::transaction(function () use ($request) {
+        $customer = DB::transaction(function () use ($request) {
             $user = User::create([
                 'name' => $request->name,
                 'dob' => $request->dob,
@@ -52,7 +52,7 @@ class CustomersController extends Controller
                 'role' => 'customer'
             ]);
 
-            Customers::create([
+            return  Customers::create([
                 'user_id' => $user->id,
                 'preferred_staff_id' => $request->preferred_staff_id,
                 'preferences' => $request->preferences,
@@ -60,6 +60,7 @@ class CustomersController extends Controller
             ]);
         });
         return response()->json([
+            'data' =>  $customer,
             'message' => 'Created customer!'
         ], 201);
     }
@@ -87,20 +88,23 @@ class CustomersController extends Controller
     {
 
         DB::transaction(function () use ($request, $customer) {
-            $data = $request->validated();
-            $userData = $customer->user->update([
-                'name' =>  $data['name'],
-                'dob' =>  $data['dob'],
-                'email' =>  $data['email'],
-                'phone' =>  $data['phone']
-            ]);
+            // $data = $request->validated();
+            $userUpdateData = [
+                'name' => $request['name'],
+                'dob' => $request['dob'] ?? null,
+                'email' => $request['email'],
+                'phone' => $request['phone'],
+            ];
+
             if ($request->filled('password')) {
-                $userData['password'] = Hash::make($request->password);
+                $userUpdateData['password'] = Hash::make($request->password);
             }
+
+            $customer->user->update($userUpdateData);
             $customer->update([
-                'preferred_staff_id' => $data['preferred_staff_id'],
-                'preferences' => $data['preferences'],
-                'allergies' => $data['allergies'],
+                'preferred_staff_id' => $request['preferred_staff_id'],
+                'preferences' => $request['preferences'],
+                'allergies' => $request['allergies'],
             ]);
         });
 

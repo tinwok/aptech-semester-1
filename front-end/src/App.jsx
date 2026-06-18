@@ -31,7 +31,7 @@ import DashBoardMain from "./Pages/Dashboard/DashBoardMain";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { Toaster } from "sonner";
 import Booking from "./Pages/Booking/Booking";
-
+import DashBoard from "./Pages/Dashboard/DashBoard";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -128,10 +128,13 @@ const router = createBrowserRouter([
     element: <DashBoardLayouts />,
     loader: protectedUserLoader,
     children: [
-      { index: true, element: <DashBoardMain /> },
+      { index: true, element: <DashBoard /> },
       { path: "services", element: <Services /> },
       { path: "staffs", element: <Staffs /> },
-      { path: "customers", element: <Customers /> },
+      {
+        path: "customers",
+        element: <Customers />,
+      },
       { path: "appointments", element: <Appointments /> },
     ],
   },
