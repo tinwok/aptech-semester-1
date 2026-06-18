@@ -13,45 +13,85 @@ function ProductFormDialog({ onSubmit, formData, setFormData }) {
     e.preventDefault();
 
     if (onSubmit) {
-      onSubmit();
+      onSubmit(formData);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form
+      onSubmit={handleSubmit}
+      className="space-y-5 p-2  bg-stone-700 rounded p-5 text-white "
+    >
       <div>
-        <label htmlFor="name" className="mb-2 block text-sm font-medium">
+        <label htmlFor="name" className="mb-2 block text-sm font-semibold ">
           Product Name
         </label>
         <Input
           placeholder="Enter product name"
           id="name"
-          value={formData.name}
-          onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+          value={formData.name || ""}
+          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
         />
       </div>
 
       <div>
-        <label className="mb-2 block text-sm font-medium">
+        <label className="mb-2 block text-sm font-semibold ">
           Current Quantity
         </label>
-        <Input type="number" placeholder="Enter quantity" />
+        <Input
+          type="number"
+          placeholder="Enter quantity"
+          value={formData.current_quantity || ""}
+          onChange={(e) =>
+            setFormData({
+              ...formData,
+              current_quantity: Number(e.target.value),
+            })
+          }
+        />
       </div>
 
       <div>
-        <label className="mb-2 block text-sm font-medium">Import Price</label>
-        <Input type="number" placeholder="Enter import price" />
+        <label className="mb-2 block text-sm font-semibold ">
+          Import Price
+        </label>
+        <Input
+          type="number"
+          placeholder="Enter import price"
+          value={formData.import_price || ""}
+          onChange={(e) =>
+            setFormData({
+              ...formData,
+              import_price: Number(e.target.value),
+            })
+          }
+        />
       </div>
 
       <div>
-        <label className="mb-2 block text-sm font-medium">Retail Price</label>
-        <Input type="number" placeholder="Enter retail price" />
+        <label className="mb-2 block text-sm font-semibold ">
+          Retail Price
+        </label>
+        <Input
+          type="number"
+          placeholder="Enter retail price"
+          value={formData.retail_price || ""}
+          onChange={(e) =>
+            setFormData({
+              ...formData,
+              retail_price: Number(e.target.value),
+            })
+          }
+        />
       </div>
 
       <div>
-        <label className="mb-2 block text-sm font-medium">Unit</label>
-        <Select>
-          <SelectTrigger>
+        <label className="mb-2 block text-sm font-semibold ">Unit</label>
+        <Select
+          value={formData.unit || ""}
+          onValueChange={(value) => setFormData({ ...formData, unit: value })}
+        >
+          <SelectTrigger className="w-full">
             <SelectValue placeholder="Select unit" />
           </SelectTrigger>
 
@@ -67,9 +107,14 @@ function ProductFormDialog({ onSubmit, formData, setFormData }) {
       </div>
 
       <div>
-        <label className="mb-2 block text-sm font-medium">Status</label>
-        <Select>
-          <SelectTrigger>
+        <label className="mb-2 block text-sm font-semibold text-slate-700">
+          Status
+        </label>
+        <Select
+          value={formData.status || ""}
+          onValueChange={(value) => setFormData({ ...formData, status: value })}
+        >
+          <SelectTrigger className="w-full">
             <SelectValue placeholder="Select status" />
           </SelectTrigger>
 
@@ -81,7 +126,9 @@ function ProductFormDialog({ onSubmit, formData, setFormData }) {
       </div>
 
       <div className="flex justify-end gap-2 pt-4">
-        <Button type="submit">Save Product</Button>
+        <Button type="submit" className="min-w-32">
+          Save Product
+        </Button>
       </div>
     </form>
   );
