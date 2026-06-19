@@ -38,7 +38,7 @@ class AppointmentSeeder extends Seeder
             $upcoming = Invoices::create([
                 'customer_id' => $customer->id,
                 'staff_id' => $staff->id,
-                'payment_id' => $upcomingPayment->id,
+                
                 'appointment_date' => now()->addDays($index + 1)->toDateString(),
                 'start_time' => '09:00:00',
                 'end_time' => '10:00:00',
@@ -61,7 +61,7 @@ class AppointmentSeeder extends Seeder
             $history = Invoices::create([
                 'customer_id' => $customer->id,
                 'staff_id' => $staff->id,
-                'payment_id' => $historyPayment->id,
+                
                 'appointment_date' => now()->subDays($index + 3)->toDateString(),
                 'start_time' => '14:00:00',
                 'end_time' => '15:30:00',

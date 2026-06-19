@@ -228,7 +228,7 @@ class InvoicesController extends Controller
                 'end_time' => $endTime,
                 'note' => $validated['note'] ?? null,
                 'status' => 'pending',
-                'payment_id' => null,
+                
             ]);
             foreach ($validated['services'] as $item) {
                 $discount = $item['discount'] ?? 0;
@@ -369,7 +369,7 @@ class InvoicesController extends Controller
             $invoice->update([
                 'customer_id' => $validated['customer_id'],
                 'staff_id' => $validated['staff_id'],
-                'payment_id' => $validated['payment_id'] ?? null,
+                
                 'appointment_date' => $validated['appointment_date'],
                 'start_time' => $validated['start_time'],
                 'end_time' => $endTime,
