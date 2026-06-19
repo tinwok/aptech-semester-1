@@ -12,6 +12,8 @@ import NotificationsPage from "./Pages/NotificationsPage";
 import ChangePasswordPage from "./Pages/ChangePasswordPage";
 import { homeLoader } from "./loaders/homeLoader";
 import AboutPage from "./Pages/About";
+import StaffPage from "./Pages/Staff";
+import { staffLoader } from "./loaders/staffLoader";
 
 import {
   protectedUserLoader,
@@ -44,6 +46,11 @@ const router = createBrowserRouter([
         path: "about-us",
         element: <AboutPage />,
         loader: homeLoader,
+      },
+      {
+        path: "staff",
+        element: <StaffPage />,
+        loader: staffLoader,
       },
 
       {

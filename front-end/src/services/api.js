@@ -63,4 +63,21 @@ export const getAllProducts = async () => {
   return items.map(mapProduct);
 };
 
+// ── Staffs ──
+const mapStaff = (item) => ({
+  id: item.id,
+  name: item.users.name,
+  phone: item.users.phone,
+  email: item.users.email,
+  position: item.position === "baber" ? "baber" : item.position,
+  shift: item.shift,
+  status: item.status,
+  image: item.image_url ?? null,
+});
+
+export const getAllStaffs = async () => {
+  const res = await api.get("/staffs", { params: { per_page: 50 } });
+  const items = res.data?.data ?? [];
+  return items.map(mapStaff);
+};
 export default api;

@@ -21,12 +21,12 @@ export default function NavDropdown({ item }) {
       <Button
         onClick={() => setOpen(!open)}
         variant="link"
-        className="text-[var(--color-zen-primary)]"
+        className="gap-0 px-0 text-[var(--color-zen-primary)]"
       >
         {item.label}
         <svg
           xmlns="http://www.w3.org/2000/svg"
-          className={`w-3.52 h-3.5 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+          className={`ml-0.5 h-3.5 w-3.5 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
@@ -35,7 +35,7 @@ export default function NavDropdown({ item }) {
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
-            d="M19 91-7 7-7-7"
+            d="m19 9-7 7-7-7"
           />
         </svg>
       </Button>
