@@ -3,6 +3,7 @@ import {
   Bell,
   CalendarDays,
   ChevronDown,
+  FileText,
   Gift,
   Heart,
   ComputerIcon,
@@ -42,7 +43,6 @@ function UserDropdown() {
 
   async function handleLogout(event) {
     event?.preventDefault();
-
     await logout();
     navigate("/", { replace: true });
   }
@@ -141,32 +141,23 @@ function UserDropdown() {
         </DropdownMenuItem>
 
         {role !== "staff" && (
-          <>
-            <DropdownMenuItem
-              onClick={() => goToPage("/orders")}
-              className="cursor-pointer rounded-lg px-3 py-2 text-[#2B2115] focus:bg-[#FFF7E6]"
-            >
-              <Package className="mr-3 h-4 w-4 text-[#C2A26A]" />
-              Orders
-            </DropdownMenuItem>
-
-            <DropdownMenuItem
-              onClick={() => goToPage("/promotions")}
-              className="cursor-pointer rounded-lg px-3 py-2 text-[#2B2115] focus:bg-[#FFF7E6]"
-            >
-              <Gift className="mr-3 h-4 w-4 text-[#C2A26A]" />
-              Promotions
-            </DropdownMenuItem>
-
-            <DropdownMenuItem
-              onClick={() => goToPage("/notifications")}
-              className="cursor-pointer rounded-lg px-3 py-2 text-[#2B2115] focus:bg-[#FFF7E6]"
-            >
-              <Bell className="mr-3 h-4 w-4 text-[#C2A26A]" />
-              Notifications
-            </DropdownMenuItem>
-          </>
+          <DropdownMenuItem
+            onClick={() => goToPage("/invoice-details")}
+            className="cursor-pointer rounded-lg px-3 py-2 text-[#2B2115] focus:bg-[#FFF7E6]"
+          >
+            <FileText className="mr-3 h-4 w-4 text-[#C2A26A]" />
+            Invoice Details
+          </DropdownMenuItem>
         )}
+
+      
+        <DropdownMenuItem
+          onClick={() => goToPage("/notifications")}
+          className="cursor-pointer rounded-lg px-3 py-2 text-[#2B2115] focus:bg-[#FFF7E6]"
+        >
+          <Bell className="mr-3 h-4 w-4 text-[#C2A26A]" />
+          Notifications
+        </DropdownMenuItem>
 
         <DropdownMenuItem
           onClick={() => goToPage("/change-password")}

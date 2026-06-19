@@ -4,9 +4,13 @@ import {
   Clock,
   History,
   Scissors,
+  Star,
   UserRound,
 } from "lucide-react";
+import { toast } from "sonner";
+import api from "@/services/api";
 import { getMyAppointmentHistoryApi } from "@/services/appointmentService";
+import { createFeedbackApi } from "@/services/feedbackService";
 import { useAuth } from "@/context/AuthContext";
 
 function formatMoney(value) {
@@ -33,31 +37,106 @@ function ServiceHistoryPage() {
   const { role } = useAuth();
 
   const [items, setItems] = useState([]);
+  const [staffs, setStaffs] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isSubmittingFeedback, setIsSubmittingFeedback] = useState(false);
   const [error, setError] = useState("");
 
-  useEffect(() => {
-    async function loadHistory() {
-      try {
-        setIsLoading(true);
-        setError("");
+  const [activeFeedbackId, setActiveFeedbackId] = useState(null);
+  const [rating, setRating] = useState(5);
+  const [comment, setComment] = useState("");
+  const [preferredStaffId, setPreferredStaffId] = useState("");
 
-        const data = await getMyAppointmentHistoryApi(role);
+  async function loadHistory() {
+    try {
+      setIsLoading(true);
+      setError("");
 
-        setItems(Array.isArray(data) ? data : []);
-      } catch (err) {
-        setItems([]);
-        setError(
-          err.response?.data?.message ||
-            "Unable to load service history. Please try again later.",
-        );
-      } finally {
-        setIsLoading(false);
-      }
+      const data = await getMyAppointmentHistoryApi(role);
+
+      setItems(Array.isArray(data) ? data : []);
+    } catch (err) {
+      setItems([]);
+      setError(
+        err.response?.data?.message ||
+          "Unable to load service history. Please try again later.",
+      );
+    } finally {
+      setIsLoading(false);
     }
+  }
 
+  async function loadStaffs() {
+    try {
+      const response = await api.get("/staffs");
+      const data = response.data?.data || response.data || [];
+
+      setStaffs(Array.isArray(data) ? data : []);
+    } catch {
+      setStaffs([]);
+    }
+  }
+
+  useEffect(() => {
     loadHistory();
+    loadStaffs();
   }, [role]);
+
+  function openFeedbackForm(item) {
+    setActiveFeedbackId(item.id);
+    setRating(5);
+    setComment("");
+    setPreferredStaffId(item.staff_id ? String(item.staff_id) : "");
+  }
+
+  function closeFeedbackForm() {
+    setActiveFeedbackId(null);
+    setRating(5);
+    setComment("");
+    setPreferredStaffId("");
+  }
+
+  function getPreferredStaffName() {
+    const selectedStaff = staffs.find(
+      (staff) => String(staff.id) === String(preferredStaffId),
+    );
+
+    return (
+      selectedStaff?.users?.name ||
+      selectedStaff?.user?.name ||
+      selectedStaff?.name ||
+      ""
+    );
+  }
+
+  async function handleSubmitFeedback(invoiceId) {
+    try {
+      setIsSubmittingFeedback(true);
+
+      const preferredStaffName = getPreferredStaffName();
+
+      const finalComment = preferredStaffName
+        ? `Preferred staff: ${preferredStaffName}\n${comment || ""}`.trim()
+        : comment;
+
+      await createFeedbackApi({
+        invoice_id: invoiceId,
+        rating,
+        comment: finalComment || null,
+      });
+
+      toast.success("Feedback submitted successfully.");
+      closeFeedbackForm();
+      await loadHistory();
+    } catch (err) {
+      toast.error(
+        err.response?.data?.message ||
+          "Unable to submit feedback. Please try again.",
+      );
+    } finally {
+      setIsSubmittingFeedback(false);
+    }
+  }
 
   return (
     <section className="min-h-screen bg-[#FFFCF6] px-6 py-10">
@@ -108,6 +187,9 @@ function ServiceHistoryPage() {
               const total = details.reduce((sum, detail) => {
                 return sum + Number(detail.subtotal || 0);
               }, 0);
+
+              const canLeaveFeedback =
+                role === "customer" && item.status === "completed";
 
               return (
                 <div
@@ -212,6 +294,108 @@ function ServiceHistoryPage() {
                     <p className="mt-4 rounded-xl bg-[#FFF7E6] p-4 text-[#7B684A]">
                       Note: {item.note}
                     </p>
+                  )}
+
+                  {canLeaveFeedback && activeFeedbackId !== item.id && (
+                    <div className="mt-5 flex justify-end">
+                      <button
+                        type="button"
+                        onClick={() => openFeedbackForm(item)}
+                        className="inline-flex items-center gap-2 rounded-xl bg-[#B89555] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#9B7A3F]"
+                      >
+                        <Star className="h-4 w-4" />
+                        Leave Feedback
+                      </button>
+                    </div>
+                  )}
+
+                  {canLeaveFeedback && activeFeedbackId === item.id && (
+                    <div className="mt-5 rounded-2xl border border-[#E8D7B3] bg-[#FFFDF8] p-5">
+                      <h3 className="text-lg font-bold text-[#2B2115]">
+                        Leave Feedback
+                      </h3>
+
+                      <div className="mt-4 grid gap-4">
+                        <label className="grid gap-2">
+                          <span className="text-sm font-semibold text-[#2B2115]">
+                            Rating
+                          </span>
+
+                          <select
+                            value={rating}
+                            onChange={(event) =>
+                              setRating(Number(event.target.value))
+                            }
+                            className="rounded-xl border border-[#E8D7B3] bg-white px-4 py-3 text-[#2B2115] outline-none focus:border-[#B89555]"
+                          >
+                            <option value={5}>5 - Excellent</option>
+                            <option value={4}>4 - Good</option>
+                            <option value={3}>3 - Average</option>
+                            <option value={2}>2 - Poor</option>
+                            <option value={1}>1 - Very Poor</option>
+                          </select>
+                        </label>
+
+                        <label className="grid gap-2">
+                          <span className="text-sm font-semibold text-[#2B2115]">
+                            Preferred Staff
+                          </span>
+
+                          <select
+                            value={preferredStaffId}
+                            onChange={(event) =>
+                              setPreferredStaffId(event.target.value)
+                            }
+                            className="rounded-xl border border-[#E8D7B3] bg-white px-4 py-3 text-[#2B2115] outline-none focus:border-[#B89555]"
+                          >
+                            <option value="">No preferred staff</option>
+
+                            {staffs.map((staff) => (
+                              <option key={staff.id} value={String(staff.id)}>
+                                {staff.users?.name ||
+                                  staff.user?.name ||
+                                  staff.name ||
+                                  `Staff #${staff.id}`}
+                              </option>
+                            ))}
+                          </select>
+                        </label>
+
+                        <label className="grid gap-2">
+                          <span className="text-sm font-semibold text-[#2B2115]">
+                            Comment
+                          </span>
+
+                          <textarea
+                            value={comment}
+                            onChange={(event) => setComment(event.target.value)}
+                            className="min-h-28 rounded-xl border border-[#E8D7B3] bg-white px-4 py-3 text-[#2B2115] outline-none focus:border-[#B89555]"
+                            placeholder="Share your experience..."
+                          />
+                        </label>
+                      </div>
+
+                      <div className="mt-5 flex justify-end gap-3">
+                        <button
+                          type="button"
+                          onClick={closeFeedbackForm}
+                          className="rounded-xl border border-[#E8D7B3] px-5 py-3 text-sm font-semibold text-[#8A6A35] transition hover:bg-[#FFF7E6]"
+                        >
+                          Cancel
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => handleSubmitFeedback(item.id)}
+                          disabled={isSubmittingFeedback}
+                          className="rounded-xl bg-[#B89555] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#9B7A3F] disabled:cursor-not-allowed disabled:opacity-60"
+                        >
+                          {isSubmittingFeedback
+                            ? "Submitting..."
+                            : "Submit Feedback"}
+                        </button>
+                      </div>
+                    </div>
                   )}
                 </div>
               );

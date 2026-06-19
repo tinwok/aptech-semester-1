@@ -1,10 +1,64 @@
 import { useEffect, useState } from "react";
-import { Bell, CheckCheck } from "lucide-react";
+import { Bell, CheckCheck, Trash2 } from "lucide-react";
 import {
+  deleteNotificationApi,
   getNotificationsApi,
   markAllNotificationsAsReadApi,
   markNotificationAsReadApi,
 } from "@/services/notificationService";
+
+function normalizeNotifications(response) {
+  if (Array.isArray(response)) {
+    return {
+      items: response,
+      pagination: null,
+    };
+  }
+
+  if (Array.isArray(response?.data)) {
+    return {
+      items: response.data,
+      pagination: response,
+    };
+  }
+
+  return {
+    items: [],
+    pagination: null,
+  };
+}
+
+function formatNotificationTime(value) {
+  if (!value) return "Just now";
+
+  const date = new Date(value);
+  const now = new Date();
+
+  if (Number.isNaN(date.getTime())) return "Just now";
+
+  const diffMs = now.getTime() - date.getTime();
+  const diffSeconds = Math.floor(diffMs / 1000);
+  const diffMinutes = Math.floor(diffSeconds / 60);
+  const diffHours = Math.floor(diffMinutes / 60);
+
+  if (diffSeconds < 60) return "Just now";
+
+  if (diffMinutes < 60) {
+    return `${diffMinutes} minute${diffMinutes > 1 ? "s" : ""} ago`;
+  }
+
+  if (diffHours < 24) {
+    return `${diffHours} hour${diffHours > 1 ? "s" : ""} ago`;
+  }
+
+  return date.toLocaleString("en-US", {
+    month: "short",
+    day: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
 
 function NotificationsPage() {
   const [notifications, setNotifications] = useState([]);
@@ -17,9 +71,10 @@ function NotificationsPage() {
       setIsLoading(true);
 
       const response = await getNotificationsApi(page);
+      const normalized = normalizeNotifications(response);
 
-      setNotifications(response.data || []);
-      setPagination(response);
+      setNotifications(normalized.items);
+      setPagination(normalized.pagination);
     } catch {
       setNotifications([]);
       setPagination(null);
@@ -35,6 +90,17 @@ function NotificationsPage() {
 
   async function handleMarkAllRead() {
     await markAllNotificationsAsReadApi();
+    await loadNotifications();
+  }
+
+  async function handleDeleteNotification(notificationId) {
+    const confirmed = window.confirm(
+      "Are you sure you want to delete this notification?",
+    );
+
+    if (!confirmed) return;
+
+    await deleteNotificationApi(notificationId);
     await loadNotifications();
   }
 
@@ -98,7 +164,7 @@ function NotificationsPage() {
               }`}
             >
               <div className="flex flex-wrap items-start justify-between gap-4">
-                <div>
+                <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-3">
                     <h2 className="text-xl font-bold text-[#2B2115]">
                       {notification.title}
@@ -113,20 +179,33 @@ function NotificationsPage() {
 
                   <p className="mt-2 text-[#7B684A]">{notification.message}</p>
 
-                  <p className="mt-3 text-sm capitalize text-[#8A6A35]">
-                    Type: {notification.type?.replaceAll("_", " ")}
+                  <p className="mt-3 text-sm text-[#8A6A35]">
+                    {formatNotificationTime(
+                      notification.created_at || notification.send_at,
+                    )}
                   </p>
                 </div>
 
-                {!notification.is_read && (
+                <div className="flex items-center gap-2">
+                  {!notification.is_read && (
+                    <button
+                      type="button"
+                      onClick={() => handleMarkAsRead(notification.id)}
+                      className="rounded-xl border border-[#C2A26A] px-4 py-2 text-sm font-semibold text-[#9B7A3F] transition hover:bg-[#FFF2D8]"
+                    >
+                      Mark as read
+                    </button>
+                  )}
+
                   <button
                     type="button"
-                    onClick={() => handleMarkAsRead(notification.id)}
-                    className="rounded-xl border border-[#C2A26A] px-4 py-2 text-sm font-semibold text-[#9B7A3F] transition hover:bg-[#FFF2D8]"
+                    onClick={() => handleDeleteNotification(notification.id)}
+                    className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-red-100 text-red-500 transition hover:bg-red-50"
+                    title="Delete notification"
                   >
-                    Mark as read
+                    <Trash2 className="h-4 w-4" />
                   </button>
-                )}
+                </div>
               </div>
             </article>
           ))}
