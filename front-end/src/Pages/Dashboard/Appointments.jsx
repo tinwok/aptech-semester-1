@@ -95,7 +95,7 @@ export default function Appointments() {
       fetchAppointments(pagination.current_page);
     } catch (err) {
       console.error("Complete appointment failed:", err);
-      console.log(err.response?.data?.message || "Complete failed");
+      console.log(err.response?.data || "Complete failed");
     }
   };
   const handleEdit = (appointment) => {
