@@ -44,6 +44,7 @@ const router = createBrowserRouter([
   {
     path: "/",
     element: <Layout />,
+    loader: homeLoader, // ← chỉ thêm dòng này
     children: [
       { index: true, element: <MainPage />, loader: homeLoader },
       { path: "services", element: <ServicesPage />, loader: homeLoader },
