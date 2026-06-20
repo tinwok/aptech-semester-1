@@ -36,11 +36,6 @@ class Invoices extends Model
         return $this->hasMany(Inventory_transactions::class, 'invoice_id');
     }
 
-    public function payment()
-    {
-        return $this->hasOne(Payments::class, 'payment_id');
-    }
-
     public function feedbacks()
     {
         return $this->hasOne(FeedBack::class, 'invoice_id');

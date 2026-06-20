@@ -52,6 +52,7 @@ Route::middleware('auth:sanctum')->group(function () {
         '/notifications/read-all',
         [NotificationsController::class, 'markAllRead']
     );
+    Route::delete('/notifications/{notification}', [NotificationsController::class, 'destroy']);
 
     Route::middleware('role:staff')->group(function () {
         Route::get('/staff/appointments', [InvoicesController::class, 'getStaffAppointments']);
@@ -62,9 +63,11 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/me/appointments', [InvoicesController::class, 'getCustomerAppointments']);
         Route::get('/me/appointments/history', [InvoicesController::class, 'getAppointmentsHistory']);
         Route::get('/appointments/{appointment}', [InvoicesController::class, 'show']);
+        Route::post('/appointments/{id}/complete', [InvoicesController::class, 'complete']);
         Route::post('/available-times', [InvoicesController::class, 'getAvailableTimeOfStaff']);
         Route::post('/book', [InvoicesController::class, 'store']);
         Route::put('/appointments/{invoice}', [InvoicesController::class, 'update']);
+        Route::delete('/appointments/{appointment}', [InvoicesController::class, 'destroy']);
         Route::post('/appointments/book', [InvoicesController::class, 'store']);
         Route::apiResource('feedbacks', FeedBackController::class);
     });

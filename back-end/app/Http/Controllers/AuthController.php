@@ -7,6 +7,7 @@ use App\Http\Requests\AuthRegisterRequest;
 use App\Http\Requests\UpdateProfile;
 use App\Models\Customers;
 use App\Models\User;
+use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -17,21 +18,27 @@ class AuthController extends Controller
 {
     public function register(AuthRegisterRequest $request)
     {
-        $user = User::create([
-            'email' => $request->email,
-            'phone' => $request->phone,
-            'password' => Hash::make($request->password),
-            'role' => 'customer',
-            'status' => 'active',
-        ]);
+        $user = null;
 
-        Customers::create([
-            'user_id' => $user->id,
-            'preferences' => null,
-            'allergies' => null,
-            'preferred_staff_id' => null,
-            'status' => 'active',
-        ]);
+        DB::transaction(function () use ($request, &$user) {
+            $user = User::create([
+                'email' => $request->email,
+                'phone' => $request->phone,
+                'password' => Hash::make($request->password),
+                'role' => 'customer',
+                'status' => 'active',
+            ]);
+
+            Customers::create([
+                'user_id' => $user->id,
+                'preferences' => null,
+                'allergies' => null,
+                'preferred_staff_id' => null,
+                'status' => 'active',
+            ]);
+        });
+
+        app(NotificationService::class)->sendWelcomeNotification($user);
 
         return response()->json([
             'data' => $user->load(['customer', 'staff']),

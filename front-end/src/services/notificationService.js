@@ -47,3 +47,11 @@ export async function markAllNotificationsAsReadApi() {
 
   return response.data;
 }
+
+export async function deleteNotificationApi(notificationId) {
+  const response = await api.delete(`/notifications/${notificationId}`, {
+    headers: getAuthHeaders(),
+  });
+
+  return response.data;
+}

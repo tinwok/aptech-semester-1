@@ -8,6 +8,7 @@ use App\Models\Inventory_transactions;
 use App\Models\Invoices;
 use App\Models\Services;
 use App\Models\Staffs;
+use App\Services\NotificationService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -63,6 +64,7 @@ class InvoicesController extends Controller
             if (!$customer) {
                 return response()->json([], 200);
             }
+
             $query->where('customer_id', $customer->id);
         }
 
@@ -91,13 +93,11 @@ class InvoicesController extends Controller
 
         $availableSlots = [];
 
-        // Nếu chọn staff
         if ($request->staff_id) {
             $appointments = Invoices::where('staff_id', $request->staff_id)
                 ->whereDate('appointment_date', $request->appointment_date)
                 ->get();
         } else {
-            // Không chọn staff -> lấy tất cả lịch hẹn
             $appointments = Invoices::whereDate(
                 'appointment_date',
                 $request->appointment_date
@@ -107,7 +107,6 @@ class InvoicesController extends Controller
         }
 
         while ($start < $end) {
-
             $slotStart = $start->format('H:i:s');
 
             $slotEnd = Carbon::parse($slotStart)
@@ -119,7 +118,6 @@ class InvoicesController extends Controller
             }
 
             if ($request->staff_id) {
-
                 $isBooked = $appointments->contains(
                     function ($appointment) use ($slotStart, $slotEnd) {
                         return $slotStart < $appointment->end_time
@@ -129,7 +127,6 @@ class InvoicesController extends Controller
 
                 $available = !$isBooked;
             } else {
-
                 $busyStaffs = $appointments
                     ->filter(function ($appointment) use ($slotStart, $slotEnd) {
                         return $slotStart < $appointment->end_time
@@ -139,7 +136,6 @@ class InvoicesController extends Controller
                     ->unique()
                     ->count();
 
-                // còn ít nhất 1 staff rảnh
                 $available = $busyStaffs < $totalStaffs;
             }
 
@@ -214,8 +210,7 @@ class InvoicesController extends Controller
             ], 422);
         }
 
-        DB::transaction(function () use ($validated, $endTime) {
-
+        $invoice = DB::transaction(function () use ($validated, $endTime) {
             $invoice = Invoices::create([
                 'customer_id' => $validated['customer_id'],
                 'staff_id' => $validated['staff_id'],
@@ -224,8 +219,8 @@ class InvoicesController extends Controller
                 'end_time' => $endTime,
                 'note' => $validated['note'] ?? null,
                 'status' => 'pending',
-                'payment_id' => null,
             ]);
+
             foreach ($validated['services'] as $item) {
                 $discount = $item['discount'] ?? 0;
                 $service = Services::findOrFail($item['service_id']);
@@ -237,7 +232,11 @@ class InvoicesController extends Controller
                     'subtotal' => $service->price * (1 - $discount / 100),
                 ]);
             }
+
+            return $invoice;
         });
+
+        app(NotificationService::class)->sendAppointmentBookedNotification($invoice);
 
         return response()->json([
             'message' => 'Appointment created successfully',
@@ -268,9 +267,10 @@ class InvoicesController extends Controller
         return null;
     }
 
-    public function complete(String $id)
+    public function complete(string $id)
     {
         $invoice = Invoices::findOrFail($id);
+
         DB::transaction(function () use ($invoice) {
             $invoice->update([
                 'status' => 'completed',
@@ -365,7 +365,6 @@ class InvoicesController extends Controller
             $invoice->update([
                 'customer_id' => $validated['customer_id'],
                 'staff_id' => $validated['staff_id'],
-                'payment_id' => $validated['payment_id'] ?? null,
                 'appointment_date' => $validated['appointment_date'],
                 'start_time' => $validated['start_time'],
                 'end_time' => $endTime,
@@ -398,6 +397,8 @@ class InvoicesController extends Controller
         $appointment->update([
             'status' => 'cancel',
         ]);
+
+        app(NotificationService::class)->sendAppointmentCancelledNotification($appointment);
 
         return response()->json([
             'message' => 'Cancel successfully!',

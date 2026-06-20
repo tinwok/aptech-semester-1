@@ -10,6 +10,8 @@ import OrdersPage from "./Pages/OrdersPage";
 import PromotionsPage from "./Pages/PromotionsPage";
 import NotificationsPage from "./Pages/NotificationsPage";
 import ChangePasswordPage from "./Pages/ChangePasswordPage";
+import PaymentPage from "./Pages/PaymentPage";
+import InvoiceDetailsPage from "./Pages/InvoiceDetailsPage";
 import AboutPage from "./Pages/About";
 import StaffPage from "./Pages/Staff";
 import { staffLoader } from "./loaders/staffLoader";
@@ -22,6 +24,8 @@ import Booking from "./Pages/Booking/Booking";
 import DashBoard from "./Pages/Dashboard/DashBoard";
 import Supplier from "./Pages/Dashboard/Supplier/Supplier";
 import Products from "./Pages/Dashboard/Products/Products";
+import FeedbackReports from "./Pages/Dashboard/FeedbackReports";
+import CustomerPreference from "./Pages/Dashboard/CustomerPreference";
 import { homeLoader } from "./loaders/homeLoader";
 import {
   protectedUserLoader,
@@ -77,6 +81,16 @@ const router = createBrowserRouter([
         loader: protectedUserLoader,
       },
       {
+        path: "user/payment/:appointmentId",
+        element: <PaymentPage />,
+        loader: protectedUserLoader,
+      },
+      {
+        path: "user/invoice-details",
+        element: <InvoiceDetailsPage />,
+        loader: protectedUserLoader,
+      },
+      {
         path: "user/service-history",
         element: <ServiceHistoryPage />,
         loader: protectedUserLoader,
@@ -125,6 +139,16 @@ const router = createBrowserRouter([
         loader: protectedUserLoader,
       },
       {
+        path: "staff/invoice-details",
+        element: <InvoiceDetailsPage />,
+        loader: protectedUserLoader,
+      },
+      {
+        path: "staff/notifications",
+        element: <NotificationsPage />,
+        loader: protectedUserLoader,
+      },
+      {
         path: "staff/change-password",
         element: <ChangePasswordPage />,
         loader: protectedUserLoader,
@@ -140,6 +164,10 @@ const router = createBrowserRouter([
       { index: true, element: <DashBoard /> },
       { path: "services", element: <Services /> },
       { path: "staffs", element: <Staffs /> },
+      { path: "customers", element: <Customers /> },
+      { path: "customer-preference", element: <CustomerPreference /> },
+      { path: "feedback-reports", element: <FeedbackReports /> },
+      { path: "inventory", element: <Products /> },
       {
         path: "customers",
         element: <Customers />,

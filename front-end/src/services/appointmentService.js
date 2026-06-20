@@ -30,3 +30,31 @@ export async function getMyAppointmentHistoryApi(role) {
 
   return response.data;
 }
+
+export async function getAppointmentDetailApi(appointmentId) {
+  const response = await api.get(`/appointments/${appointmentId}`, {
+    headers: getAuthHeaders(),
+  });
+
+  return response.data;
+}
+
+export async function completeAppointmentApi(appointmentId) {
+  const response = await api.post(
+    `/appointments/${appointmentId}/complete`,
+    {},
+    {
+      headers: getAuthHeaders(),
+    },
+  );
+
+  return response.data;
+}
+
+export async function cancelAppointmentApi(appointmentId) {
+  const response = await api.delete(`/appointments/${appointmentId}`, {
+    headers: getAuthHeaders(),
+  });
+
+  return response.data;
+}

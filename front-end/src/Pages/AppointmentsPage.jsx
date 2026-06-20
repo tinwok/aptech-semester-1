@@ -1,6 +1,17 @@
 import { useEffect, useState } from "react";
-import { CalendarDays, Clock, Scissors, UserRound } from "lucide-react";
-import { getMyAppointmentsApi } from "@/services/appointmentService";
+import {
+  CalendarDays,
+  Clock,
+  CreditCard,
+  Scissors,
+  Trash2,
+  UserRound,
+} from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import {
+  cancelAppointmentApi,
+  getMyAppointmentsApi,
+} from "@/services/appointmentService";
 import { useAuth } from "@/context/AuthContext";
 
 function formatMoney(value) {
@@ -40,34 +51,64 @@ function getCustomerName(appointment) {
 }
 
 function AppointmentsPage() {
+  const navigate = useNavigate();
   const { user, role } = useAuth();
 
   const [appointments, setAppointments] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isCancellingId, setIsCancellingId] = useState(null);
   const [error, setError] = useState("");
-  console.log(appointments);
+
+  async function loadAppointments() {
+    try {
+      setIsLoading(true);
+      setError("");
+
+      const data = await getMyAppointmentsApi(role);
+      const list = Array.isArray(data) ? data : [];
+
+      setAppointments(
+        list.filter(
+          (appointment) =>
+            appointment.status !== "completed" &&
+            appointment.status !== "cancel",
+        ),
+      );
+    } catch (err) {
+      setAppointments([]);
+      setError(
+        err.response?.data?.message ||
+          "Unable to load appointments. Please try again later.",
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  async function handleCancelAppointment(appointmentId) {
+    const confirmed = window.confirm(
+      "Are you sure you want to cancel this appointment?",
+    );
+
+    if (!confirmed) return;
+
+    try {
+      setIsCancellingId(appointmentId);
+      setError("");
+
+      await cancelAppointmentApi(appointmentId);
+      await loadAppointments();
+    } catch (err) {
+      setError(
+        err.response?.data?.message ||
+          "Unable to cancel appointment. Please try again later.",
+      );
+    } finally {
+      setIsCancellingId(null);
+    }
+  }
 
   useEffect(() => {
-    async function loadAppointments() {
-      try {
-        setIsLoading(true);
-        setError("");
-
-        const data = await getMyAppointmentsApi(role);
-
-        setAppointments(Array.isArray(data) ? data : []);
-        console.log(data);
-      } catch (err) {
-        setAppointments([]);
-        setError(
-          err.response?.data?.message ||
-            "Unable to load appointments. Please try again later.",
-        );
-      } finally {
-        setIsLoading(false);
-      }
-    }
-
     loadAppointments();
   }, [role]);
 
@@ -99,12 +140,12 @@ function AppointmentsPage() {
         )}
 
         {error && (
-          <div className="rounded-3xl border border-red-100 bg-red-50 p-6 text-red-600">
+          <div className="mb-5 rounded-3xl border border-red-100 bg-red-50 p-6 text-red-600">
             {error}
           </div>
         )}
 
-        {!isLoading && !error && appointments.length === 0 && (
+        {!isLoading && appointments.length === 0 && (
           <div className="rounded-3xl border border-[#E8D7B3] bg-white p-8 text-center shadow-sm">
             <CalendarDays className="mx-auto h-12 w-12 text-[#B89555]" />
 
@@ -120,12 +161,22 @@ function AppointmentsPage() {
 
         <div className="grid gap-5">
           {!isLoading &&
-            !error &&
             appointments.map((appointment) => {
               const details = appointment.invoice_details || [];
               const staffPosition = formatPosition(appointment.staff?.position);
               const staffName = getStaffName(appointment);
               const customerName = getCustomerName(appointment);
+              const total = details.reduce((sum, detail) => {
+                return sum + Number(detail.subtotal || 0);
+              }, 0);
+
+              const canPay =
+                role === "customer" && appointment.status !== "completed";
+
+              const canCancel =
+                role !== "staff" &&
+                appointment.status !== "completed" &&
+                appointment.status !== "cancel";
 
               return (
                 <div
@@ -214,6 +265,17 @@ function AppointmentsPage() {
                           </div>
                         ))}
                       </div>
+
+                      <div className="mt-4 flex justify-end">
+                        <div className="rounded-xl bg-white px-4 py-3 text-right">
+                          <p className="text-xs uppercase tracking-[0.16em] text-[#B89555]">
+                            Total
+                          </p>
+                          <p className="text-lg font-bold text-[#2B2115]">
+                            {formatMoney(total)}
+                          </p>
+                        </div>
+                      </div>
                     </div>
                   )}
 
@@ -222,6 +284,35 @@ function AppointmentsPage() {
                       Note: {appointment.note}
                     </p>
                   )}
+
+                  <div className="mt-5 flex flex-wrap justify-end gap-3">
+                    {canCancel && (
+                      <button
+                        type="button"
+                        onClick={() => handleCancelAppointment(appointment.id)}
+                        disabled={isCancellingId === appointment.id}
+                        className="inline-flex items-center gap-2 rounded-xl border border-red-200 bg-white px-5 py-3 text-sm font-semibold text-red-600 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                        {isCancellingId === appointment.id
+                          ? "Cancelling..."
+                          : "Cancel Appointment"}
+                      </button>
+                    )}
+
+                    {canPay && (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          navigate(`/user/payment/${appointment.id}`)
+                        }
+                        className="inline-flex items-center gap-2 rounded-xl bg-[#B89555] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#9B7A3F]"
+                      >
+                        <CreditCard className="h-4 w-4" />
+                        Pay Now
+                      </button>
+                    )}
+                  </div>
                 </div>
               );
             })}

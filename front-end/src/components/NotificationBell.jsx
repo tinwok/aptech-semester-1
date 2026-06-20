@@ -1,20 +1,64 @@
 import { useEffect, useState } from "react";
-import { Bell, CheckCheck } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { Bell, CheckCheck, Trash2 } from "lucide-react";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
+  deleteNotificationApi,
   getNotificationsApi,
   getUnreadNotificationCountApi,
   markAllNotificationsAsReadApi,
   markNotificationAsReadApi,
 } from "@/services/notificationService";
 
+function normalizeNotifications(response) {
+  if (Array.isArray(response)) return response;
+  if (Array.isArray(response?.data)) return response.data;
+  return [];
+}
+
+function formatNotificationTime(value) {
+  if (!value) return "Just now";
+
+  const date = new Date(value);
+  const now = new Date();
+
+  if (Number.isNaN(date.getTime())) return "Just now";
+
+  const diffMs = now.getTime() - date.getTime();
+  const diffSeconds = Math.floor(diffMs / 1000);
+  const diffMinutes = Math.floor(diffSeconds / 60);
+  const diffHours = Math.floor(diffMinutes / 60);
+
+  if (diffSeconds < 60) return "Just now";
+
+  if (diffMinutes < 60) {
+    return `${diffMinutes} minute${diffMinutes > 1 ? "s" : ""} ago`;
+  }
+
+  if (diffHours < 24) {
+    return `${diffHours} hour${diffHours > 1 ? "s" : ""} ago`;
+  }
+
+  return date.toLocaleString("en-US", {
+    month: "short",
+    day: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
 function NotificationBell() {
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [isOpen, setIsOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
+
+  const notificationPath = location.pathname.startsWith("/staff")
+    ? "/staff/notifications"
+    : "/user/notifications";
 
   async function loadNotifications() {
     try {
@@ -23,7 +67,7 @@ function NotificationBell() {
       const notificationResponse = await getNotificationsApi();
       const unreadResponse = await getUnreadNotificationCountApi();
 
-      setNotifications(notificationResponse.data || []);
+      setNotifications(normalizeNotifications(notificationResponse));
       setUnreadCount(unreadResponse.count || 0);
     } catch {
       setNotifications([]);
@@ -43,8 +87,23 @@ function NotificationBell() {
     await loadNotifications();
   }
 
+  async function handleDeleteNotification(event, notificationId) {
+    event.stopPropagation();
+
+    await deleteNotificationApi(notificationId);
+    await loadNotifications();
+  }
+
   useEffect(() => {
     loadNotifications();
+
+    const intervalId = window.setInterval(() => {
+      loadNotifications();
+    }, 30000);
+
+    return () => {
+      window.clearInterval(intervalId);
+    };
   }, []);
 
   return (
@@ -112,18 +171,39 @@ function NotificationBell() {
                   }`}
                 >
                   <div className="flex items-start justify-between gap-3">
-                    <p className="font-semibold text-[#2B2115]">
-                      {notification.title}
-                    </p>
+                    <div className="min-w-0">
+                      <p className="font-semibold text-[#2B2115]">
+                        {notification.title}
+                      </p>
 
-                    {!notification.is_read && (
-                      <span className="mt-1 h-2 w-2 rounded-full bg-red-500" />
-                    )}
+                      <p className="mt-1 line-clamp-2 text-sm text-[#7B684A]">
+                        {notification.message}
+                      </p>
+
+                      <p className="mt-2 text-xs text-[#8A6A35]">
+                        {formatNotificationTime(
+                          notification.created_at || notification.send_at,
+                        )}
+                      </p>
+                    </div>
+
+                    <div className="flex shrink-0 items-center gap-2">
+                      {!notification.is_read && (
+                        <span className="h-2 w-2 rounded-full bg-red-500" />
+                      )}
+
+                      <span
+                        role="button"
+                        tabIndex={0}
+                        onClick={(event) =>
+                          handleDeleteNotification(event, notification.id)
+                        }
+                        className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-red-100 text-red-500 transition hover:bg-red-50"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </span>
+                    </div>
                   </div>
-
-                  <p className="mt-1 line-clamp-2 text-sm text-[#7B684A]">
-                    {notification.message}
-                  </p>
                 </button>
               ))}
           </div>
@@ -132,7 +212,7 @@ function NotificationBell() {
             type="button"
             onClick={() => {
               setIsOpen(false);
-              navigate("/user/notifications");
+              navigate(notificationPath);
             }}
             className="mt-3 w-full rounded-xl bg-[#B89555] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#9B7A3F]"
           >
