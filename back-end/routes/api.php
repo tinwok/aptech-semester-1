@@ -74,7 +74,6 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 });
 
-// middleware(['auth:sanctum', 'role:admin'])->
 // Can phai la admin
 Route::prefix('dashboard')->middleware(['auth:sanctum', 'role:admin'])->group(function () {
     // Stats
