@@ -10,10 +10,26 @@ class ProductsController extends Controller
     /**
      * Danh sách sản phẩm
      */
-    public function index()
+    public function index(Request $request)
     {
-        $products = Products::latest()->paginate(10);
+        $query = Products::with('inventoryTransactions.supplier');
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%");
+                // ->orWhereHas(
+                //     'inventoryTransactions.suplier',
+                //     function ($supplier) use ($search) {
+                //         $supplier
+                //             ->where('name', 'like', "%{$search}%")
+                //             ->orWhere('email', 'like', "%{$search}%")
+                //             ->orWhere('phone', 'like', "%{$search}%");
+                //     }
+                // );
+            });
+        }
 
+        $products = $query->latest()->paginate(10);
         return response()->json([
             'success' => true,
             'data' => $products
@@ -48,7 +64,7 @@ class ProductsController extends Controller
      */
     public function show(Products $product)
     {
-        $product->with('supplier');
+        $product->load('inventoryTransactions.supplier');
         return response()->json([
             'success' => true,
             'data' => $product

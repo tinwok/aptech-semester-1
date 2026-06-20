@@ -217,7 +217,7 @@ function BookingForm({
           Booking
         </h1>
       )}
-      <div className="max-w-[1000px] mx-auto bg-white shadow rounded-lg p-6">
+      <div className="max-w-[1000px] mx-auto bg-white  rounded-lg p-6">
         {isAdmin && !isEdit && (
           <Customers
             onCustomerCreated={(customer) => {

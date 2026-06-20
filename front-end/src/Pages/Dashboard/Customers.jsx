@@ -24,7 +24,7 @@ import {
 } from "@/components/ui/dialog";
 import { Field } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+
 import CustomerTable from "./CustomerTable";
 import { toast } from "sonner";
 export default function Customers({ onCustomerCreated, selectedCustomerId }) {
@@ -248,7 +248,7 @@ export default function Customers({ onCustomerCreated, selectedCustomerId }) {
             placeholder="Search by name, phone or email..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="pl-10 h-11 w-fullrounded-xl border border-gray-200bg-white shadow-sm transition-all focus:border-blue-500 focus:ring-2 focus:ring-blue-200 "
+            className="pl-10 h-11 w-full rounded-xl border border-gray-200bg-white shadow-sm transition-all focus:border-blue-500 focus:ring-2 focus:ring-blue-200 "
           />
         </div>
       </Field>

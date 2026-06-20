@@ -10,30 +10,32 @@ import OrdersPage from "./Pages/OrdersPage";
 import PromotionsPage from "./Pages/PromotionsPage";
 import NotificationsPage from "./Pages/NotificationsPage";
 import ChangePasswordPage from "./Pages/ChangePasswordPage";
-import { homeLoader } from "./loaders/homeLoader";
 import AboutPage from "./Pages/About";
 import StaffPage from "./Pages/Staff";
 import { staffLoader } from "./loaders/staffLoader";
 
+import Staffs from "./Pages/Dashboard/Staffs";
+import Customers from "./Pages/Dashboard/Customers";
+import Appointments from "./Pages/Dashboard/Appointments";
+import Services from "./Pages/Dashboard/Services";
+import Booking from "./Pages/Booking/Booking";
+import DashBoard from "./Pages/Dashboard/DashBoard";
+import Supplier from "./Pages/Dashboard/Supplier/Supplier";
+import Products from "./Pages/Dashboard/Products/Products";
+import { homeLoader } from "./loaders/homeLoader";
 import {
   protectedUserLoader,
   changePasswordAction,
   updateProfileAction,
 } from "@/loaders/userLoaders";
 
-import Staffs from "./Pages/Dashboard/Staffs";
-import Customers from "./Pages/Dashboard/Customers";
-import Appointments from "./Pages/Dashboard/Appointments";
-import Services from "./Pages/Dashboard/Services";
-
 import MainPage from "./Pages/MainPage";
 import Layout from "./Layouts/mainLayouts";
 import DashBoardLayouts from "./Layouts/DashBoardLayouts";
-import DashBoardMain from "./Pages/Dashboard/DashBoardMain";
+
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { Toaster } from "sonner";
-import Booking from "./Pages/Booking/Booking";
-import DashBoard from "./Pages/Dashboard/DashBoard";
+
 const router = createBrowserRouter([
   {
     path: "/",
@@ -141,6 +143,14 @@ const router = createBrowserRouter([
       {
         path: "customers",
         element: <Customers />,
+      },
+      {
+        path: "inventory",
+        element: <Products />,
+      },
+      {
+        path: "supplier",
+        element: <Supplier />,
       },
       { path: "appointments", element: <Appointments /> },
     ],

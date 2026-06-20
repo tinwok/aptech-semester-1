@@ -67,6 +67,18 @@ function SideBar() {
           >
             Customers
           </Link>
+          <Link
+            to="/dashboard/inventory"
+            className="block rounded-lg px-3 py-2 text-gray-300 hover:bg-zinc-800 hover:text-white"
+          >
+            Inventory
+          </Link>
+          <Link
+            to="/dashboard/supplier"
+            className="block rounded-lg px-3 py-2 text-gray-300 hover:bg-zinc-800 hover:text-white"
+          >
+            Supplier
+          </Link>
         </nav>
       </aside>
 
