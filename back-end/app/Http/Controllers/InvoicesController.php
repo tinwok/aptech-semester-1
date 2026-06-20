@@ -170,10 +170,6 @@ class InvoicesController extends Controller
         return response()->json($appointments, 200);
     }
 
-    public function create()
-    {
-        //
-    }
 
     public function store(StoreInvoiceRequest $request)
     {

@@ -4,9 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreServiceRequest;
 use App\Http\Requests\UpdateServiceRequest;
+use App\Models\ServiceInventory;
 use App\Models\Services;
 use Illuminate\Http\Request;
 use App\Services\CloudinaryService;
+use Illuminate\Support\Facades\DB;
 
 class ServicesController extends Controller
 {
@@ -35,23 +37,52 @@ class ServicesController extends Controller
      */
     public function store(StoreServiceRequest $request)
     {
-        $imageUrl = null;
         $validated = $request->validated();
+
+        $imageUrl = null;
+
         if ($request->hasFile('image')) {
+
             $upload = $this->cloudinaryService->upload(
                 $request->file('image'),
                 'services'
             );
-            if ($upload && isset($upload['url'])) {
-                $imageUrl = $upload['url'];
-            } else {
+
+            if (!$upload || !isset($upload['url'])) {
                 return response()->json([
                     'message' => 'Upload image failed'
                 ], 500);
             }
+
+            $imageUrl = $upload['url'];
         }
-        $validated['image_url'] = $imageUrl;
-        $service = Services::create($validated);
+
+        $service = DB::transaction(function () use (
+            $validated,
+            $imageUrl
+        ) {
+
+            $inventories = $validated['inventories'];
+
+            unset($validated['inventories']);
+
+            $validated['image_url'] = $imageUrl;
+
+            $service = Services::create($validated);
+
+            foreach ($inventories as $inventory) {
+
+                $service->serviceInventories()->create([
+                    'product_id' => $inventory['product_id'],
+                    'quantity_used' => $inventory['quantity_used'],
+                ]);
+            }
+
+            return $service->load(
+                'serviceInventories.product'
+            )->paginate(10);
+        });
+
         return response()->json($service, 201);
     }
     /**
@@ -73,17 +104,50 @@ class ServicesController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateServiceRequest $request, Services $service)
-    {
-        $imageUrl = $service->image_url;
+    public function update(
+        StoreServiceRequest $request,
+        string $id
+    ) {
+        $service = Services::findOrFail($id);
         $validated = $request->validated();
+        $imageUrl = $service->image_url;
+
         if ($request->hasFile('image')) {
-            $upload = $this->cloudinaryService->upload($request->file('image'), 'services');
+            $upload = $this->cloudinaryService->upload(
+                $request->file('image'),
+                'services'
+            );
+            if (!$upload || !isset($upload['url'])) {
+                return response()->json([
+                    'message' => 'Upload image failed'
+                ], 500);
+            }
             $imageUrl = $upload['url'];
         }
-        $validated['image_url'] =  $imageUrl;
-        $service->update($validated);
-        return response()->json($service, 201);
+
+        DB::transaction(function () use (
+            $service,
+            $validated,
+            $imageUrl
+        ) {
+
+            $inventories = $validated['inventories'];
+            unset($validated['inventories']);
+            $validated['image_url'] = $imageUrl;
+            $service->update($validated);
+            $service->serviceInventories()->delete();
+            foreach ($inventories as $inventory) {
+                $service->serviceInventories()->create([
+                    'product_id' => $inventory['product_id'],
+                    'quantity_used' => $inventory['quantity_used'],
+                ]);
+            }
+        });
+        return response()->json(
+            $service->fresh()->load(
+                'serviceInventories.product'
+            )->paginate(10)
+        );
     }
 
     /**
