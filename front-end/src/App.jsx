@@ -11,6 +11,9 @@ import PromotionsPage from "./Pages/PromotionsPage";
 import NotificationsPage from "./Pages/NotificationsPage";
 import ChangePasswordPage from "./Pages/ChangePasswordPage";
 import AboutPage from "./Pages/About";
+import StaffPage from "./Pages/Staff";
+import { staffLoader } from "./loaders/staffLoader";
+
 import Staffs from "./Pages/Dashboard/Staffs";
 import Customers from "./Pages/Dashboard/Customers";
 import Appointments from "./Pages/Dashboard/Appointments";
@@ -45,6 +48,11 @@ const router = createBrowserRouter([
         path: "about-us",
         element: <AboutPage />,
         loader: homeLoader,
+      },
+      {
+        path: "staff",
+        element: <StaffPage />,
+        loader: staffLoader,
       },
 
       {
