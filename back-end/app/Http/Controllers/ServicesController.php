@@ -23,7 +23,12 @@ class ServicesController extends Controller
      */
     public function index()
     {
-        $services = Services::with('invoiceDetails.invoice')->latest()->paginate(10);
+        $services = Services::with('invoiceDetails.invoice', 'serviceInventories.product')->latest()->paginate(10);
+        return response()->json($services);
+    }
+    public function getAllService()
+    {
+        $services = Services::with('invoiceDetails.invoice', 'serviceInventories.product')->latest()->get();
         return response()->json($services);
     }
 
