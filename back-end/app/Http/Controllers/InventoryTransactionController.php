@@ -12,12 +12,39 @@ class InventoryTransactionController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function getInventoryHistory()
+    public function getInventoryHistory(Request $request)
     {
-        $data = Inventory_transactions::latest()->with('supliers', 'products', 'invoice ')->paginate(10);
+        $data = Inventory_transactions::query()
+            ->with(['supplier', 'product', 'invoice'])
+
+            ->when($request->type, function ($q) use ($request) {
+                $q->where('type', $request->type);
+            })
+
+            ->when($request->product_name, function ($q) use ($request) {
+                $q->whereHas('products', function ($sub) use ($request) {
+                    $sub->where('name', 'like', '%' . $request->product_name . '%');
+                });
+            })
+
+            ->latest()
+            ->paginate(10);
+
         return response()->json($data);
     }
+    public function productHistory(String  $Id)
+    {
+        Products::findOrFail($Id);
+        $history = Inventory_transactions::with([
+            'supplier',
+            'product',
+            'invoice'
+        ])
+            ->where('product_id', $Id)
+            ->latest()->paginate(10);
 
+        return response()->json($history);
+    }
     public function wastage(Request $request)
     {
         $validated = $request->validate([

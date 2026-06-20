@@ -43,7 +43,6 @@ function Products() {
   const [debouncedSearch] = useDebounce(search, 500);
   const [loading, setLoading] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
-  const [isEditing, setIsEditing] = useState(false);
 
   const [openDetail, setOpenDetail] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -57,20 +56,20 @@ function Products() {
     status: "available",
   };
   const [formData, setFormData] = useState(emtyData);
-  const fetchProducts = async (page = 1, search = "") => {
+  const fetchProducts = async (page, debouncedSearch) => {
     try {
       setLoading(true);
       const res = await api.get("dashboard/products", {
         params: {
           page,
-          search: search,
+          search: debouncedSearch,
         },
       });
-      console.log(res.data.data.data);
+
       setPagination({
-        current_page: res.data.current_page ?? 1,
-        last_page: res.data.last_page ?? 1,
-        total: res.data.total ?? 0,
+        current_page: res.data.data.current_page ?? 1,
+        last_page: res.data.data.last_page ?? 1,
+        total: res.data.data.total ?? 0,
       });
       setLoading(false);
       setProducts(res.data.data.data);
@@ -120,9 +119,13 @@ function Products() {
     }
   };
   const handleDetail = async (id) => {
-    const res = await api.get(`dashboard/products/${id}`);
-    setSelectedProduct(res.data.data);
-    setOpenDetail(true);
+    try {
+      const res = await api.get(`dashboard/products/${id}`);
+      setSelectedProduct(res.data.data);
+      setOpenDetail(true);
+    } catch (error) {
+      console.error(error?.response?.data);
+    }
   };
   const handleDelete = async (id) => {
     try {
@@ -137,6 +140,7 @@ function Products() {
     }
   };
   useEffect(() => {
+    setPage(1);
     fetchProducts(1, debouncedSearch);
   }, [debouncedSearch]);
   return (
@@ -166,6 +170,7 @@ function Products() {
           onClick={() => {
             setDialogOpen(true);
             setSelectedProduct(null);
+            setFormData(emtyData);
           }}
         >
           Create Products
@@ -173,6 +178,7 @@ function Products() {
       </div>
 
       <ProductTable
+        fetchProducts={fetchProducts}
         pagination={pagination}
         setDialogOpen={setDialogOpen}
         products={products}
@@ -180,11 +186,7 @@ function Products() {
         onDelete={handleDelete}
         onDetail={handleDetail}
       />
-      {/* <ProductDetailDialog
-        open={openDetail}
-        setOpen={setOpenDetail}
-        product={selectedProduct}
-      /> */}
+
       <Pagination className="mt-6">
         <PaginationContent>
           <PaginationItem>
@@ -239,7 +241,7 @@ function Products() {
             onSubmit={handleSubmit}
             onSuccess={() => {
               setDialogOpen(false);
-              fetchAppointments();
+              fetchProducts();
             }}
           />
         </DialogContent>

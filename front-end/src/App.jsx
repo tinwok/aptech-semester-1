@@ -13,12 +13,16 @@ import ChangePasswordPage from "./Pages/ChangePasswordPage";
 import PaymentPage from "./Pages/PaymentPage";
 import InvoiceDetailsPage from "./Pages/InvoiceDetailsPage";
 import AboutPage from "./Pages/About";
+import StaffPage from "./Pages/Staff";
+import { staffLoader } from "./loaders/staffLoader";
+
 import Staffs from "./Pages/Dashboard/Staffs";
 import Customers from "./Pages/Dashboard/Customers";
 import Appointments from "./Pages/Dashboard/Appointments";
 import Services from "./Pages/Dashboard/Services";
 import Booking from "./Pages/Booking/Booking";
 import DashBoard from "./Pages/Dashboard/DashBoard";
+import Supplier from "./Pages/Dashboard/Supplier/Supplier";
 import Products from "./Pages/Dashboard/Products/Products";
 import FeedbackReports from "./Pages/Dashboard/FeedbackReports";
 import CustomerPreference from "./Pages/Dashboard/CustomerPreference";
@@ -48,6 +52,11 @@ const router = createBrowserRouter([
         path: "about-us",
         element: <AboutPage />,
         loader: homeLoader,
+      },
+      {
+        path: "staff",
+        element: <StaffPage />,
+        loader: staffLoader,
       },
 
       {
@@ -159,6 +168,18 @@ const router = createBrowserRouter([
       { path: "customer-preference", element: <CustomerPreference /> },
       { path: "feedback-reports", element: <FeedbackReports /> },
       { path: "inventory", element: <Products /> },
+      {
+        path: "customers",
+        element: <Customers />,
+      },
+      {
+        path: "inventory",
+        element: <Products />,
+      },
+      {
+        path: "supplier",
+        element: <Supplier />,
+      },
       { path: "appointments", element: <Appointments /> },
     ],
   },

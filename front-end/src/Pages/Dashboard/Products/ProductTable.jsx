@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   Table,
   TableBody,
@@ -6,10 +7,31 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Eye, Pencil, Trash2 } from "lucide-react";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import InventoryDetail from "../Inventory/InventoryDetail";
+import { Eye, PenIcon, TrashIcon, Package } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-function ProductTable({ products, onDetail, onEdit, onDelete, pagination }) {
+import InventoryOrder from "../Inventory/InventoryOrder";
+function ProductTable({
+  products,
+  onDetail,
+  onEdit,
+  onDelete,
+  pagination,
+  fetchProducts,
+}) {
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [orderOpen, setOrderOpen] = useState(false);
+  const [product, setProducts] = useState({});
+
   return (
     <div>
       <Table>
@@ -20,6 +42,8 @@ function ProductTable({ products, onDetail, onEdit, onDelete, pagination }) {
             <TableHead>Quantity</TableHead>
             <TableHead>Import</TableHead>
             <TableHead>Retail</TableHead>
+            <TableHead>Unit</TableHead>
+
             <TableHead>Status</TableHead>
             <TableHead>Actions</TableHead>
           </TableRow>
@@ -43,6 +67,7 @@ function ProductTable({ products, onDetail, onEdit, onDelete, pagination }) {
               <TableCell>
                 {Number(product.retail_price).toLocaleString("vi-VN")} ₫
               </TableCell>
+              <TableCell>{product.unit}</TableCell>
 
               <TableCell>
                 <Badge
@@ -56,33 +81,80 @@ function ProductTable({ products, onDetail, onEdit, onDelete, pagination }) {
 
               <TableCell>
                 <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => onDetail(product.id)}
-                  >
-                    <Eye />
-                  </Button>
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => onEdit(product)}
-                  >
-                    Edit
-                  </Button>
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    onClick={() => onDelete(product.id)}
-                  >
-                    Delete
-                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger className="border border-solid-gray px-2  rounded hover:bg-black hover:text-white cursor-pointer">
+                      ...
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                      <DropdownMenuGroup>
+                        <DropdownMenuItem
+                          onClick={() => {
+                            setOrderOpen(true);
+                            setProducts(product);
+                          }}
+                        >
+                          <Package></Package>Order
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            (onDetail(product.id), setDialogOpen(true));
+                            setProducts(product);
+                          }}
+                        >
+                          <Eye /> Details
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          variant="secondary"
+                          size="sm"
+                          onClick={() => onEdit(product)}
+                        >
+                          <PenIcon></PenIcon> Edit
+                        </DropdownMenuItem>
+                      </DropdownMenuGroup>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuGroup>
+                        <DropdownMenuItem
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => onDelete(product.id)}
+                        >
+                          <TrashIcon />
+                          Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuGroup>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               </TableCell>
             </TableRow>
           ))}
         </TableBody>
       </Table>
+      {/* Detail Dialog */}
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent className="sm:max-w-[1200px] max-h-[90vh] overflow-y-auto bg-white border-trans text-black-500">
+          <InventoryDetail
+            product={product}
+            onSuccess={() => {
+              setDialogOpen(false);
+            }}
+          ></InventoryDetail>
+        </DialogContent>
+      </Dialog>
+      {/* Order Dialog */}
+      <Dialog open={orderOpen} onOpenChange={setOrderOpen}>
+        <DialogContent className="sm:max-w-[1200px] max-h-[90vh] overflow-y-auto bg-white border-trans text-black-500">
+          <InventoryOrder
+            product={product}
+            onSuccess={() => {
+              setOrderOpen(false);
+              fetchProducts();
+            }}
+          ></InventoryOrder>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

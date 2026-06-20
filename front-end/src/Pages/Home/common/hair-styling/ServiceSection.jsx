@@ -56,7 +56,7 @@ export default function ServicesSection({ services = [] }) {
             {services.map((item) => (
               <CarouselItem
                 key={item.id}
-                className="pl-4 basis-full sm:basis-1/2 lg:basis-1/4 overflow-visible transition-[z-index] hover:z-20"
+                className="flex pl-4 basis-full sm:basis-1/2 lg:basis-1/4 overflow-visible transition-[z-index] hover:z-20"
               >
                 <ServiceCard item={item} moreInfoLink="/services" />
               </CarouselItem>

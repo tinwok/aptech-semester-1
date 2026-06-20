@@ -11,13 +11,22 @@ class SuppliersController extends Controller
     /**
      * Danh sách nhà cung cấp
      */
-    public function index()
+    public function index(Request $request)
     {
-        $suppliers = Suppliers::latest()->paginate(10);
+        $query = Suppliers::query();
 
-        return response()->json($suppliers);
+        if ($request->filled('search')) {
+            $search = $request->search;
+
+            $query->where('name', 'like', "%{$search}%")
+                ->orWhere('phone', 'like', "%{$search}%")
+                ->orWhere('email', 'like', "%{$search}%");
+        }
+
+        return response()->json(
+            $query->latest()->paginate(10)
+        );
     }
-
     /**
      * Thêm nhà cung cấp
      */

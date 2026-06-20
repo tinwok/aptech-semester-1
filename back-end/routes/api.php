@@ -24,7 +24,6 @@ Route::get('services/{service}', [ServicesController::class, 'show']);
 Route::get('/products', [ProductsController::class, 'index']);
 
 // Quản lí nhà cung cấp
-Route::apiResource('/suppliers', SuppliersController::class);
 Route::get('staffs', [StaffsController::class, 'index']);
 Route::apiResource('services', ServicesController::class);
 
@@ -92,8 +91,13 @@ Route::prefix('dashboard')->middleware(['auth:sanctum', 'role:admin'])->group(fu
     Route::apiResource('/notification', NotificationsController::class);
 
     // quản lí kho
-    Route::post('inventory', [InventoryTransactionController::class, 'getInventoryHistory']);
+    Route::get('inventory', [InventoryTransactionController::class, 'getInventoryHistory']);
+    Route::get(
+        'inventory/product/{product}',
+        [InventoryTransactionController::class, 'productHistory']
+    );
     Route::post('inventory/import', [InventoryTransactionController::class, 'importStock']);
     Route::post('inventory/wastage', [InventoryTransactionController::class, 'wastage']);
     Route::apiResource('/products', ProductsController::class);
+    Route::apiResource('/suppliers', SuppliersController::class);
 });

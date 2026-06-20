@@ -18,6 +18,8 @@ function SideBar() {
     { label: "Customer Preference", path: "/dashboard/customer-preference" },
     { label: "Feedback Reports", path: "/dashboard/feedback-reports" },
     { label: "Inventory", path: "/dashboard/inventory" },
+    { label: "Supplier", path: "/dashboard/supplier" },
+    
   ];
 
   const handleLogout = async () => {

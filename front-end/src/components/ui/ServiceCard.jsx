@@ -8,7 +8,7 @@ export default function ServiceCard({ item, moreInfoLink, size }) {
 
   return (
     <div
-      className={`relative flex flex-col border-2 border-[var(--color-zen-accent)] overflow-hidden hover:shadow-xl hover:shadow-black/20 hover:scale-[1.03] hover:z-10 transition-all duration-300 group ${isSmall ? "w-44" : "w-full"}`}
+      className={`relative flex h-full flex-col border-2 border-[var(--color-zen-accent)] overflow-hidden hover:shadow-xl hover:shadow-black/20 hover:scale-[1.03] hover:z-10 transition-all duration-300 group ${isSmall ? "w-44" : "w-full"}`}
     >
       {/* Image */}
       <div className={`w-full overflow-hidden ${isSmall ? "h-36" : "h-52"}`}>
@@ -24,7 +24,7 @@ export default function ServiceCard({ item, moreInfoLink, size }) {
         className={`flex flex-col flex-1 bg-white ${isSmall ? "p-3 gap-2" : "p-4 gap-3"}`}
       >
         <h3
-          className={`font-[var(--font-logo)] font-semibold text-[var(--color-zen-primary)] tracking-wide ${isSmall ? "text-sm line-clamp-1" : "text-lg"}`}
+          className={`font-[var(--font-logo)] font-semibold text-[var(--color-zen-primary)] tracking-wide ${isSmall ? "text-sm line-clamp-1" : "text-lg line-clamp-2"}`}
         >
           {item.name}
         </h3>
@@ -32,7 +32,7 @@ export default function ServiceCard({ item, moreInfoLink, size }) {
         {/* Description (services) hoặc Unit (products) */}
         {item.description ? (
           <p
-            className={`font-[var(--font-sans)] text-sm text-[var(--color-zen-primary)]/70 flex-1 ${isSmall ? "line-clamp-2" : ""}`}
+            className={`font-[var(--font-sans)] text-sm text-[var(--color-zen-primary)]/70 flex-1 ${isSmall ? "line-clamp-2" : "line-clamp-3"}`}
           >
             {item.description}
           </p>

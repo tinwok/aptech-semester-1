@@ -36,6 +36,7 @@ import {
 } from "@/components/ui/pagination";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 function getCustomerName(item) {
   return item.customer?.user?.name || item.customer?.user?.phone || "N/A";
 }
@@ -94,7 +95,7 @@ export default function Appointments() {
       fetchAppointments(pagination.current_page);
     } catch (err) {
       console.error("Complete appointment failed:", err);
-      alert(err.response?.data?.message || "Complete failed");
+      console.log(err.response?.data || "Complete failed");
     }
   };
   const handleEdit = (appointment) => {
@@ -115,7 +116,7 @@ export default function Appointments() {
       fetchAppointments(pagination.current_page);
     } catch (err) {
       console.error("Cancel appointment failed:", err);
-      alert(err.response?.data?.message || "Cancel failed");
+      toast.warning("Deleted failed");
     }
   };
 
@@ -330,7 +331,7 @@ export default function Appointments() {
         </PaginationContent>
       </Pagination>
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-[1200px] max-h-[90vh] overflow-y-auto bg-trans border-trans text-black-500">
+        <DialogContent className="sm:max-w-[1200px] max-h-[90vh] overflow-y-auto bg-white border-trans text-black-500">
           <BookingForm
             isAdmin
             endpoint="/dashboard/appointments"
