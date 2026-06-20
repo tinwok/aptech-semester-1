@@ -17,7 +17,7 @@ import Appointments from "./Pages/Dashboard/Appointments";
 import Services from "./Pages/Dashboard/Services";
 import Booking from "./Pages/Booking/Booking";
 import DashBoard from "./Pages/Dashboard/DashBoard";
-import Inventory from "./Pages/Dashboard/Inventory";
+import Supplier from "./Pages/Dashboard/Supplier/Supplier";
 import Products from "./Pages/Dashboard/Products/Products";
 import { homeLoader } from "./loaders/homeLoader";
 import {
@@ -139,6 +139,10 @@ const router = createBrowserRouter([
       {
         path: "inventory",
         element: <Products />,
+      },
+      {
+        path: "supplier",
+        element: <Supplier />,
       },
       { path: "appointments", element: <Appointments /> },
     ],

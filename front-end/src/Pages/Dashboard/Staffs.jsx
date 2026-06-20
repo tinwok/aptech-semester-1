@@ -6,6 +6,15 @@ import { Pencil, Trash2 } from "lucide-react";
 import { useDebounce } from "use-debounce";
 
 import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Dialog,
   DialogContent,
   DialogHeader,
@@ -14,7 +23,6 @@ import {
 import {
   Pagination,
   PaginationContent,
-  PaginationEllipsis,
   PaginationItem,
   PaginationLink,
   PaginationNext,
@@ -33,6 +41,9 @@ export default function Staffs() {
   const [open, setOpen] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
   const [editingId, setEditingId] = useState(null);
+
+  console.log(editingId);
+
   // pagitanion
   const [pagination, setPagination] = useState({
     current_page: 1,
@@ -97,7 +108,6 @@ export default function Staffs() {
     const loadData = async () => {
       await fetchStaffs();
     };
-
     loadData();
   }, []);
   const handleChange = (e) => {
@@ -109,7 +119,6 @@ export default function Staffs() {
   const handleEdit = (staff) => {
     setIsEdit(true);
     setEditingId(staff.id);
-
     setFormData({
       name: staff.users?.name || "",
       email: staff.users?.email || "",
@@ -120,35 +129,25 @@ export default function Staffs() {
       shift: staff.shift || "",
       status: staff.status || "active",
     });
-
     setOpen(true);
   };
   const handleSubmit = async () => {
     try {
-      let response;
-
       if (isEdit) {
-        response = await axiosClient.put(
-          `/dashboard/staffs/${editingId}`,
-          formData,
-        );
-      } else {
-        response = await axiosClient.post("/dashboard/staffs", formData);
-      }
-
-      const data = response.data;
-
-      if (response.status === 200 || response.status === 201) {
-        toast.success("Created staff successfuly");
-
+        await axiosClient.put(`/dashboard/staffs/${editingId}`, formData);
+        toast.success("Update successful");
         setOpen(false);
-
         setFormData(emtyData);
-
         fetchStaffs();
+      } else {
+        await axiosClient.post("/dashboard/staffs", formData);
+        setOpen(false);
+        setFormData(emtyData);
+        fetchStaffs();
+        toast.success("Created staff successfuly");
       }
     } catch (error) {
-      console.log("FULL ERROR:", error.response?.data);
+      console.log(error.response?.data);
     }
   };
   const handleDelete = async (id) => {
@@ -225,9 +224,7 @@ export default function Staffs() {
           onClick={() => {
             setIsEdit(false);
             setEditingId(null);
-
             setFormData(emtyData);
-
             setOpen(true);
           }}
         >
@@ -448,18 +445,29 @@ export default function Staffs() {
                 onChange={handleChange}
               />
             </div>
-            <div>
-              <label htmlFor="shift"></label>
-              <Input
-                className="bg-zinc-600 "
-                id="shift"
-                placeholder="Shift"
-                name="shift"
-                value={formData.shift}
-                onChange={handleChange}
-              />
-            </div>
 
+            <Select
+              value={formData.shift}
+              onValueChange={(value) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  shift: value,
+                }))
+              }
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select a shift" />
+              </SelectTrigger>
+
+              <SelectContent>
+                <SelectGroup>
+                  <SelectLabel>Working Shift</SelectLabel>
+                  <SelectItem value="08:00-18:00">08:00 - 18:00</SelectItem>
+                  <SelectItem value="09:00-19:00">09:00 - 19:00</SelectItem>
+                  <SelectItem value="10:00-20:00">10:00 - 20:00</SelectItem>
+                </SelectGroup>
+              </SelectContent>
+            </Select>
             <Button
               className="w-full bg-green-600 hover:bg-green-700"
               onClick={handleSubmit}

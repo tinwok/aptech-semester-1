@@ -64,7 +64,7 @@ class ProductsController extends Controller
      */
     public function show(Products $product)
     {
-        $product->load('inventoryTransactions.suplier');
+        $product->load('inventoryTransactions.supplier');
         return response()->json([
             'success' => true,
             'data' => $product
