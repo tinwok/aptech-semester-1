@@ -2,6 +2,19 @@ import { useEffect, useState } from "react";
 import { Clock, Scissors } from "lucide-react";
 import { getServicesApi } from "@/services/serviceService";
 
+const SERVICE_IMAGES = {
+  "Men Haircut": "/images/services/haircuttingclassic.png",
+  "Women Haircut": "/images/services/haircuttinglayer.png",
+  "Hair Wash": "/images/services/beauty_hairwash.png",
+  "Hair Coloring": "/images/services/haircoloring.png",
+  "Hair Highlight": "/images/services/haircoloring.png",
+  "Hair Perm": "/images/services/haircuttinglayer.png",
+  "Hair Straightening": "/images/services/haircuttingclassic.png",
+  "Hair Spa": "/images/services/beauty_hairwash.png",
+  "Hair Recovery Treatment": "/images/services/beauty_hairwash.png",
+  "Beard Trim": "/images/services/haircuttingundercut.png",
+};
+
 function formatMoney(value) {
   if (!value) return "Liên hệ";
   return Number(value).toLocaleString("vi-VN") + " VND";
@@ -74,57 +87,61 @@ function ServicesPage() {
         )}
 
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {services.map((service) => (
-            <article
-              key={service.id}
-              className="overflow-hidden rounded-3xl border border-[#E8D7B3] bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-md"
-            >
-              <div className="flex h-48 items-center justify-center bg-[#FFF2D8]">
-                {service.image_url ? (
-                  <img
-                    src={service.image_url}
-                    alt={service.title}
-                    className="h-full w-full object-cover"
-                  />
-                ) : (
-                  <Scissors className="h-14 w-14 text-[#B89555]" />
-                )}
-              </div>
+          {services.map((service) => {
+            const imageSrc = service.image_url ?? SERVICE_IMAGES[service.title];
 
-              <div className="p-5">
-                <div className="flex items-start justify-between gap-3">
-                  <h2 className="text-xl font-bold text-[#2B2115]">
-                    {service.title}
-                  </h2>
-
-                  <span className="rounded-full bg-[#FFF2D8] px-3 py-1 text-xs font-semibold capitalize text-[#8A6A35]">
-                    {service.status || "active"}
-                  </span>
+            return (
+              <article
+                key={service.id}
+                className="overflow-hidden rounded-3xl border border-[#E8D7B3] bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-md"
+              >
+                <div className="flex h-48 items-center justify-center bg-[#FFF2D8]">
+                  {imageSrc ? (
+                    <img
+                      src={imageSrc}
+                      alt={service.title}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <Scissors className="h-14 w-14 text-[#B89555]" />
+                  )}
                 </div>
 
-                <p className="mt-3 line-clamp-3 text-sm leading-6 text-[#7B684A]">
-                  {service.description || "Chưa có mô tả cho dịch vụ này."}
-                </p>
+                <div className="p-5">
+                  <div className="flex items-start justify-between gap-3">
+                    <h2 className="text-xl font-bold text-[#2B2115]">
+                      {service.title}
+                    </h2>
 
-                <div className="mt-4 flex items-center justify-between border-t border-[#E8D7B3] pt-4">
-                  <p className="font-bold text-[#B89555]">
-                    {formatMoney(service.price)}
-                  </p>
-
-                  <div className="flex items-center gap-2 text-sm text-[#7B684A]">
-                    <Clock className="h-4 w-4" />
-                    <span>{service.duration_minutes || 0} phút</span>
+                    <span className="rounded-full bg-[#FFF2D8] px-3 py-1 text-xs font-semibold capitalize text-[#8A6A35]">
+                      {service.status || "active"}
+                    </span>
                   </div>
-                </div>
 
-                {service.note && (
-                  <p className="mt-3 rounded-xl bg-[#FFF7E6] p-3 text-sm text-[#7B684A]">
-                    {service.note}
+                  <p className="mt-3 line-clamp-3 text-sm leading-6 text-[#7B684A]">
+                    {service.description || "Chưa có mô tả cho dịch vụ này."}
                   </p>
-                )}
-              </div>
-            </article>
-          ))}
+
+                  <div className="mt-4 flex items-center justify-between border-t border-[#E8D7B3] pt-4">
+                    <p className="font-bold text-[#B89555]">
+                      {formatMoney(service.price)}
+                    </p>
+
+                    <div className="flex items-center gap-2 text-sm text-[#7B684A]">
+                      <Clock className="h-4 w-4" />
+                      <span>{service.duration_minutes || 0} phút</span>
+                    </div>
+                  </div>
+
+                  {service.note && (
+                    <p className="mt-3 rounded-xl bg-[#FFF7E6] p-3 text-sm text-[#7B684A]">
+                      {service.note}
+                    </p>
+                  )}
+                </div>
+              </article>
+            );
+          })}
         </div>
 
         {pagination && pagination.last_page > 1 && (
