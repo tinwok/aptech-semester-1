@@ -17,15 +17,6 @@ class ProductsController extends Controller
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%");
-                // ->orWhereHas(
-                //     'inventoryTransactions.suplier',
-                //     function ($supplier) use ($search) {
-                //         $supplier
-                //             ->where('name', 'like', "%{$search}%")
-                //             ->orWhere('email', 'like', "%{$search}%")
-                //             ->orWhere('phone', 'like', "%{$search}%");
-                //     }
-                // );
             });
         }
 

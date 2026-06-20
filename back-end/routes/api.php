@@ -85,6 +85,7 @@ Route::prefix('dashboard')->middleware(['auth:sanctum', 'role:admin'])->group(fu
     Route::apiResource('users', UserController::class);
     Route::patch('users/{id}/restore', [UserController::class, 'restore']);
     Route::apiResource('services', ServicesController::class);
+    Route::apiResource('services-getall', [ServicesController::class, 'getAllService']);
     Route::apiResource('/appointments', InvoicesController::class);
     Route::post('appointments/{id}/complete', [InvoicesController::class, 'complete']);
 

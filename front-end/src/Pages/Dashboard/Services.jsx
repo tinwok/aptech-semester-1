@@ -10,8 +10,24 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export default function Services() {
+  const [products, setProducts] = useState([]);
+  const [inventories, setInventories] = useState([
+    {
+      product_id: "",
+      quantity_used: "",
+    },
+  ]);
+  console.log(inventories);
+
   const [services, setServices] = useState([]);
   const [pagination, setPagination] = useState({
     current_page: 1,
@@ -25,7 +41,6 @@ export default function Services() {
   const [editingId, setEditingId] = useState(null);
 
   const [file, setFile] = useState(null);
-
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -34,12 +49,53 @@ export default function Services() {
     status: "active",
     note: "",
   });
+  const addInventory = () => {
+    setInventories([
+      ...inventories,
+      {
+        product_id: "",
+        quantity_used: "",
+      },
+    ]);
+  };
+
+  const removeInventory = (index) => {
+    setInventories(inventories.filter((_, i) => i !== index));
+  };
+
+  const handleInventoryChange = (index, field, value) => {
+    const updated = [...inventories];
+
+    updated[index][field] = value;
+
+    setInventories(updated);
+  };
+  const fetchProducts = async (page) => {
+    try {
+      const res = await api.get("dashboard/products", {
+        params: {
+          page,
+        },
+      });
+
+      setProducts(res.data.data.data);
+      setPagination({
+        current_page: res.data.data.current_page ?? 1,
+        last_page: res.data.data.last_page ?? 1,
+        total: res.data.data.total ?? 0,
+      });
+    } catch (err) {
+      console.error("Data:", err.response?.data);
+      toast.error("Failed to load products");
+    }
+  };
 
   // ===== GET (PAGINATION) =====
   const fetchServices = async (page = 1) => {
     try {
       setLoading(true);
       const res = await api.get(`/services?page=${page}`);
+
       const data = res.data;
       setServices(data.data);
 
@@ -62,6 +118,7 @@ export default function Services() {
   // ===== CREATE =====
   const handleCreate = async () => {
     try {
+      fetchProducts();
       const data = new FormData();
 
       data.append("title", formData.title);
@@ -70,11 +127,15 @@ export default function Services() {
       data.append("status", formData.status);
       data.append("note", formData.note);
       data.append("price", formData.price);
-
+      inventories.forEach((item, index) => {
+        data.append(`inventories[${index}][product_id]`, item.product_id);
+        data.append(`inventories[${index}][quantity_used]`, item.quantity_used);
+      });
       if (file) {
         data.append("image", file);
       }
-      await api.post("/services", data);
+      const res = await api.post("/services", data);
+
       setOpen(false);
       resetForm();
       fetchServices(pagination.current_page);
@@ -87,13 +148,22 @@ export default function Services() {
   const handleUpdate = async () => {
     try {
       const data = new FormData();
+      setInventories([
+        {
+          product_id: "",
+          quantity_used: "",
+        },
+      ]);
 
       data.append("title", formData.title);
       data.append("description", formData.description);
       data.append("duration_minutes", formData.duration_minutes);
       data.append("status", formData.status);
       data.append("note", formData.note);
-
+      inventories.forEach((item, index) => {
+        data.append(`inventories[${index}][product_id]`, item.product_id);
+        data.append(`inventories[${index}][quantity_used]`, item.quantity_used);
+      });
       if (file) {
         data.append("image", file);
       }
@@ -120,6 +190,7 @@ export default function Services() {
   // ===== EDIT =====
   const handleEdit = (item) => {
     setEditingId(item.id);
+    console.log(item.service_inventories);
 
     setFormData({
       title: item.title,
@@ -129,7 +200,17 @@ export default function Services() {
       price: item.price,
       note: item.note,
     });
-
+    setInventories(
+      item.service_inventories?.map((inventory) => ({
+        product_id: inventory.product_id.toString(),
+        quantity_used: inventory.quantity_used.toString(),
+      })) || [
+        {
+          product_id: "",
+          quantity_used: "",
+        },
+      ],
+    );
     setOpen(true);
   };
 
@@ -142,7 +223,12 @@ export default function Services() {
       price: "",
       note: "",
     });
-
+    setInventories([
+      {
+        product_id: "",
+        quantity_used: "",
+      },
+    ]);
     setFile(null);
   };
 
@@ -159,6 +245,7 @@ export default function Services() {
             setEditingId(null);
             resetForm();
             setOpen(true);
+            fetchProducts();
           }}
         >
           Add Service
@@ -285,6 +372,61 @@ export default function Services() {
                 })
               }
             />
+            {inventories.map((item, index) => (
+              <div key={index} className="flex gap-2 items-center">
+                <Select
+                  value={item.product_id?.toString()}
+                  onValueChange={(value) =>
+                    handleInventoryChange(index, "product_id", value)
+                  }
+                >
+                  <SelectTrigger className="flex-1">
+                    <SelectValue placeholder="Select Product" />
+                  </SelectTrigger>
+
+                  <SelectContent>
+                    {products.map((product) => (
+                      <SelectItem
+                        key={product.id}
+                        value={product.id.toString()}
+                      >
+                        {product.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                <Input
+                  type="number"
+                  placeholder="Qty"
+                  value={item.quantity_used}
+                  onChange={(e) =>
+                    handleInventoryChange(
+                      index,
+                      "quantity_used",
+                      e.target.value,
+                    )
+                  }
+                  className="w-24 "
+                />
+
+                <Button
+                  type="button"
+                  variant="destructive"
+                  onClick={() => removeInventory(index)}
+                >
+                  X
+                </Button>
+              </div>
+            ))}
+            <Button
+              type="button"
+              variant="outline"
+              className="text-white bg-green-500 hover:text-white hover:bg-green-700"
+              onClick={addInventory}
+            >
+              + Add Product
+            </Button>
             <h3>Note</h3>
             <Input
               placeholder="Note"
