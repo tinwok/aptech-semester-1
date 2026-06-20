@@ -26,11 +26,6 @@ class ServicesController extends Controller
         $services = Services::with('invoiceDetails.invoice', 'serviceInventories.product')->latest()->paginate(10);
         return response()->json($services);
     }
-    public function getAllService()
-    {
-        $services = Services::with('invoiceDetails.invoice', 'serviceInventories.product')->latest()->get();
-        return response()->json($services);
-    }
 
     /**
      * Show the form for creating a new resource.

@@ -59,6 +59,7 @@ const mapProduct = (item) => ({
 
 export const getAllProducts = async () => {
   const res = await api.get("/products", { params: { per_page: 50 } });
+
   const items = res.data?.data?.data ?? [];
   return items.map(mapProduct);
 };

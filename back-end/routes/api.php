@@ -72,7 +72,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::apiResource('feedbacks', FeedBackController::class);
     });
 });
-// middleware(['auth:sanctum', 'role:admin'])->
+
 // Can phai la admin
 Route::prefix('dashboard')->middleware(['auth:sanctum', 'role:admin'])->group(function () {
     // Stats
@@ -85,7 +85,6 @@ Route::prefix('dashboard')->middleware(['auth:sanctum', 'role:admin'])->group(fu
     Route::apiResource('users', UserController::class);
     Route::patch('users/{id}/restore', [UserController::class, 'restore']);
     Route::apiResource('services', ServicesController::class);
-    Route::apiResource('services-getall', [ServicesController::class, 'getAllService']);
     Route::apiResource('/appointments', InvoicesController::class);
     Route::post('appointments/{id}/complete', [InvoicesController::class, 'complete']);
 
